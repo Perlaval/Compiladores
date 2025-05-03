@@ -1,0 +1,54 @@
+### IntelliJ IDEA ###
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Compilación
+/out/
+target/
+build/
+
+# Archivos de sistema
+*.class
+*.log
+
+# Maven
+.mvn/
+!**/src/main/**/maven-wrapper.jar
+
+# Gradle
+.gradle/
+
+
+# Archivos del sistema operativo
+Thumbs.db
