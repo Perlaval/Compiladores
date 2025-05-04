@@ -146,6 +146,7 @@ public class Lexico {
                     case '+':
                         if (charSig == '='){
                             almacenarToken("masIgual", "+=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            avanzar();
                         }else{
                             almacenarToken("mas","+", String.valueOf(contadorLineas), String.valueOf(contadorColumnas) );
                         }
@@ -154,6 +155,7 @@ public class Lexico {
                     case '-':
                         if (charSig == '='){
                             almacenarToken("menosIgual", "-=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            avanzar();
                         }else{
                             almacenarToken("menos", "-", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                         }
@@ -162,6 +164,7 @@ public class Lexico {
                     case '*':
                         if (charSig == '='){
                             almacenarToken("porIgual", "*=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            avanzar();
                         }else{
                             almacenarToken("por", "*", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                         }
@@ -170,6 +173,7 @@ public class Lexico {
                     case '%':
                         if (charSig == '='){
                             almacenarToken("modIgual", "%=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            avanzar();
                         }else{
                             almacenarToken("mod", "%", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                         }
@@ -178,6 +182,7 @@ public class Lexico {
                     case '<':
                         if (charSig == '=') {
                             almacenarToken("menorIgual", "<=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            avanzar();
                         }else{
                             almacenarToken("menor", "<", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                         }
@@ -186,6 +191,7 @@ public class Lexico {
                     case '>':
                         if (charSig == '=') {
                             almacenarToken("mayorIgual", ">=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            avanzar();
                         } else {
                             almacenarToken("mayor", ">", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                         }
@@ -194,6 +200,7 @@ public class Lexico {
                     case '=':
                         if (charSig == '=') {
                             almacenarToken("igualIgual", "==", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            avanzar();
                         }else{
                             almacenarToken("igual", "=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                         }
@@ -202,6 +209,7 @@ public class Lexico {
                     case '!':
                         if (charSig == '=') {
                             almacenarToken("diferente", "!=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            avanzar();
                         }else{
                             almacenarToken("not", "!", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                         }
@@ -210,6 +218,7 @@ public class Lexico {
                     case '&' :
                         if (charSig == '&'){
                             almacenarToken("andLog", "&&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            avanzar();
                         }else{
                             System.out.println(charActual);
                             almacenarToken("andBit", "&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
@@ -235,7 +244,7 @@ public class Lexico {
                 }
 
 
-                if (!esFinArchivo(puntero) && !Character.isWhitespace(charActual) && !esDelimitador(charActual)){
+                if (!esFinArchivo(puntero) && !Character.isWhitespace(charActual) && !esDelimitador(charActual) && !esOperador(charActual)){
 
                     lexemaError = lexema;
 
@@ -284,7 +293,7 @@ public class Lexico {
 
                 }
 
-                if (charActual == '.' | (!Character.isWhitespace(charActual) && !esDelimitador(charActual))){
+                if (charActual == '.' | (!Character.isWhitespace(charActual) && !esDelimitador(charActual) && !esOperador(charActual))){
                     lexemaError = lexema;
                     while (!esFinArchivo(puntero) && !Character.isWhitespace(charActual)){
                         lexemaError += charActual;
@@ -297,10 +306,12 @@ public class Lexico {
                 } else {
 
                     if (flagPto && !esDelimitador(charActual)){
-                        almacenarToken("double", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        almacenarToken("double", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
                     } else {
-                        almacenarToken("int", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        almacenarToken("int", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
                     }
+
+                    flagPto = false;
                 }
 
                 // DELIMITADORES ---------------------------------------------------------------------------------------

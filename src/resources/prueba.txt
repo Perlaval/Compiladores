@@ -7,5 +7,7 @@ H8ola
 if (num == 0){
 ret true;
 }
+a = 3
+(a && b){
 kmgr
-gkmel
+gkmel dkjfnd nkfnd (4 == 6)
