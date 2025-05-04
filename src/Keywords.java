@@ -22,7 +22,7 @@ public class Keywords {
         tabla.put("self", "pr");
         tabla.put("div", "pr");
 
-        //then, array
+        //then, array, int, str, double
 
     }
 

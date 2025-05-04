@@ -33,7 +33,7 @@ public class Lexico {
 
         inicializarCharActual();
 
-        while (!esFinArchivo()){
+        while (!esFinArchivo(puntero)){
 
             // ESPACIOS ------------------------------------------------------------------------------------------------
             if (Character.isWhitespace(charActual)){
@@ -65,7 +65,7 @@ public class Lexico {
                 if (charSig == '/'){
                     avanzar(); // incremento puntero, incremento columnas, cambio charActual
                     actualizarCharSig();
-                    while (!esFinArchivo () && (int) charSig != 10 && (int) charSig != 13){
+                    while (!esFinArchivo(puntero) && (int) charSig != 10 && (int) charSig != 13){
                         avanzar();
                         actualizarCharSig();
                     }
@@ -74,7 +74,7 @@ public class Lexico {
                 } else if (charSig == '*') { // /*
                     avanzar();
                     actualizarCharSig();
-                    while (!esFinArchivo() && charActual != '*' && charSig != '/'){
+                    while (!esFinArchivo(puntero) && charActual != '*' && charSig != '/'){
                         if (((int) charActual == 13 && (int) charSig == 10) | charActual == 10 ){
                             //hay un salto de lineas: incremento lineas y reinicio columnas
                             incrementarLineas();
@@ -84,7 +84,7 @@ public class Lexico {
                         actualizarCharSig();
                     }
 
-                    if (esFinArchivo()){
+                    if (esFinArchivo(puntero)){
                         throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRO EL COMENTARIO MULTIPLE");
                         // REPORTAR ERROR: NO SE CERRO EL COMENTARIO MULTPLE
                     }else{
@@ -103,25 +103,37 @@ public class Lexico {
             } else if ((int) charActual == 34){
 
                 // Comillas dobles, almacena strings
+
+
+                lexema = "" + charActual;
+
                 avanzar();
                 actualizarCharSig();
-                lexema = "";
-                while (!esFinArchivo() && charActual != 34){
-                    if (((int) charActual == 13 && (int) charSig == 10) | charActual == 10 ){
+
+
+                while (!esFinArchivo(puntero) && (int) charActual != 34){
+
+                    if (((int) charActual == 13 && (int) charSig == 10) | (int) charActual == 10 ){
                         //hay un salto de lineas: incremento lineas y reinicio columnas
+
                         incrementarLineas();
                         reiniciarColumnas();
+
                     }else{
                         lexema += charActual; // se puede o no agregar el salto a la cadena (no lo agrego)
                     }
+
                     avanzar();
                     actualizarCharSig();
                 }
-                if (esFinArchivo()){
+
+                if (esFinArchivo(puntero)){
                     throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRÓ LA CADENA DE CARACTERES");
                     // ERROR LEXICO: NO SE CERRO LA CADENA DE CARACTERES
                 }else{
+                    lexema += charActual;
                     almacenarToken("Str", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                    avanzar();
                     // revisar si se muestra con comillas o sin comillas
                 }
 
@@ -131,63 +143,84 @@ public class Lexico {
                 actualizarCharSig();
 
                 switch (charActual){
-                    case '+': if (charSig == '='){
-                        almacenarToken("masIgual", "+=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }else{
-                        almacenarToken("mas","+", String.valueOf(contadorLineas), String.valueOf(contadorColumnas) );
-                    }
+                    case '+':
+                        if (charSig == '='){
+                            almacenarToken("masIgual", "+=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }else{
+                            almacenarToken("mas","+", String.valueOf(contadorLineas), String.valueOf(contadorColumnas) );
+                        }
+                        break;
 
-                    case '-': if (charSig == '='){
-                        almacenarToken("menosIgual", "-=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }else{
-                        almacenarToken("menos", "-", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }
+                    case '-':
+                        if (charSig == '='){
+                            almacenarToken("menosIgual", "-=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }else{
+                            almacenarToken("menos", "-", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }
+                        break;
 
-                    case '*': if (charSig == '='){
-                        almacenarToken("porIgual", "*=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }else{
-                        almacenarToken("por", "*", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }
+                    case '*':
+                        if (charSig == '='){
+                            almacenarToken("porIgual", "*=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }else{
+                            almacenarToken("por", "*", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }
+                        break;
 
-                    case '%': if (charSig == '='){
-                        almacenarToken("modIgual", "%=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }else{
-                        almacenarToken("mod", "%", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }
+                    case '%':
+                        if (charSig == '='){
+                            almacenarToken("modIgual", "%=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }else{
+                            almacenarToken("mod", "%", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }
+                        break;
 
-                    case '<': if (charSig == '=') {
-                        almacenarToken("menorIgual", "<=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }else{
-                        almacenarToken("menor", "<", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }
+                    case '<':
+                        if (charSig == '=') {
+                            almacenarToken("menorIgual", "<=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }else{
+                            almacenarToken("menor", "<", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }
+                        break;
 
-                    case '>': if (charSig == '=') {
-                        almacenarToken("mayorIgual", ">=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    } else {
-                        almacenarToken("mayor", ">", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }
+                    case '>':
+                        if (charSig == '=') {
+                            almacenarToken("mayorIgual", ">=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        } else {
+                            almacenarToken("mayor", ">", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }
+                        break;
 
-                    case '=': if (charSig == '=') {
-                        almacenarToken("igualIgual", "==", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }else{
-                        almacenarToken("igual", "=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }
+                    case '=':
+                        if (charSig == '=') {
+                            almacenarToken("igualIgual", "==", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }else{
+                            almacenarToken("igual", "=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }
+                        break;
 
-                    case '!': if (charSig == '=') {
-                        almacenarToken("diferente", "!=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }else{
-                        almacenarToken("not", "!", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }
+                    case '!':
+                        if (charSig == '=') {
+                            almacenarToken("diferente", "!=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }else{
+                            almacenarToken("not", "!", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }
+                        break;
 
-                    case '&' : if (charSig == '&'){
-                        almacenarToken("andLog", "&&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }else{
-                        almacenarToken("andBit", "&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    }
+                    case '&' :
+                        if (charSig == '&'){
+                            almacenarToken("andLog", "&&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }else{
+                            System.out.println(charActual);
+                            almacenarToken("andBit", "&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        }
+                        break;
 
-                    case '|' : almacenarToken("or", "|", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                    default:
+                        almacenarToken("or", "|", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
 
                 }
+
                 avanzar();
 
             // IDENTIFICADORES: PRESERVADAS, METVAR --------------------------------------------------------------------
@@ -202,11 +235,11 @@ public class Lexico {
                 }
 
 
-                if (!esFinArchivo() && !Character.isWhitespace(charActual)){
+                if (!esFinArchivo(puntero) && !Character.isWhitespace(charActual) && !esDelimitador(charActual)){
 
                     lexemaError = lexema;
 
-                    while (!esFinArchivo() && !Character.isWhitespace(charActual)){
+                    while (!esFinArchivo(puntero) && !Character.isWhitespace(charActual)){
                         lexemaError += charActual;
                         avanzar();
                     }
@@ -251,18 +284,19 @@ public class Lexico {
 
                 }
 
-                if (charActual == '.'){
+                if (charActual == '.' | (!Character.isWhitespace(charActual) && !esDelimitador(charActual))){
                     lexemaError = lexema;
-                    while (!esFinArchivo() && !Character.isWhitespace(charActual)){
+                    while (!esFinArchivo(puntero) && !Character.isWhitespace(charActual)){
                         lexemaError += charActual;
                         avanzar();
                     }
 
-                    throw new ErrorLexico(contadorLineas, contadorColumnas, "IDENTIFICADOR INCORRECTO: " + lexemaError);
+                    throw new ErrorLexico(contadorLineas, contadorColumnas-1, "IDENTIFICADOR INCORRECTO: " + lexemaError);
                     //REPORTAR ERROR LEXICO IDENTIFICADOR INCORRECTO
 
                 } else {
-                    if (flagPto){
+
+                    if (flagPto && !esDelimitador(charActual)){
                         almacenarToken("double", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                     } else {
                         almacenarToken("int", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
@@ -271,14 +305,35 @@ public class Lexico {
 
                 // DELIMITADORES ---------------------------------------------------------------------------------------
             } else if (esDelimitador(charActual)) {
+
                 switch (charActual){
-                    case '(': almacenarToken("parDer", "(", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    case ')': almacenarToken("parIzq", ")", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    case '[': almacenarToken("corcheteDer", "[", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    case ']': almacenarToken("corcheteIzq", "]", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    case ';': almacenarToken("ptoComa", ";", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                    case ',': almacenarToken("coma", ",", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                    case '(':
+                        almacenarToken("parDer", "(", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        break;
+                    case ')':
+                        almacenarToken("parIzq", ")", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        break;
+                    case '[':
+                        almacenarToken("corcheteDer", "[", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        break;
+                    case ']':
+                        almacenarToken("corcheteIzq", "]", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        break;
+                    case '{':
+                        almacenarToken("llaveDer", "{", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        break;
+                    case '}':
+                        almacenarToken("llaveIzq", "}", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        break;
+                    case ';':
+                        almacenarToken("ptoComa", ";", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        break;
+                    case ',':
+                        almacenarToken("coma", ",", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        break;
                 }
+
+                avanzar();
 
             } else {
                 throw new ErrorLexico(contadorLineas, contadorColumnas, "CARACTER DESCONOCIDO: " + charActual);
@@ -312,7 +367,7 @@ public class Lexico {
     private void avanzar(){
 
         puntero += 1;
-        if (esFinArchivo()){
+        if (esFinArchivo(puntero)){
             charActual = '\0';
         }else{
             incrementarColumnas(1);
@@ -323,7 +378,8 @@ public class Lexico {
     }
 
     private void actualizarCharSig(){
-        if (esFinArchivo()){
+
+        if (esFinArchivo(puntero + 1)){
             charSig = '\0';
         } else {
             charSig = codFuente.charAt(puntero+1);
@@ -342,14 +398,14 @@ public class Lexico {
     }
 
     private boolean esDelimitador(char delim){
-        if (delim == ')' | delim == '(' | delim == '[' | delim == ']' | delim == ';' | delim == ','){
+        if (delim == ')' | delim == '(' | delim == '[' | delim == ']' | delim == ';' | delim == ',' | delim == '{' | delim == '}'){
             return true;
         }
         return false;
     }
 
-    private boolean esFinArchivo(){
-        if (puntero >= codFuente.length()){
+    private boolean esFinArchivo(int punt){
+        if (punt >= codFuente.length()){
             return true;
         }
         return false;

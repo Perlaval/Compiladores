@@ -1,4 +1,11 @@
 esto es una prueba jnbdk jnrkg
-bjer
+bjer = "fkjvnejv/%$"
+class Beto
+int numEntero = 4
+double numDou_7ble = 4.67
+H8ola
+if (num == 0){
+ret true;
+}
 kmgr
 gkmel
