@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+
         try{
             String codigoFuente = Files.readString(Paths.get("src/resources/prueba.txt"));
             Lexico analisisLexico = new Lexico(codigoFuente);
