@@ -12,16 +12,16 @@ public class Lexico {
 
     public Lexico (String codFuente) {
         this.codFuente = codFuente;
-        this.contadorLineas = 0;
-        this.contadorColumnas = 0;
+        this.contadorLineas = 1;
+        this.contadorColumnas = 1;
         this.puntero = 0;
         this.token = new ArrayList<>();
     }
 
-    public void analisis(){
+    public void analizador() throws ErrorLexico{
 
         //Inicializo la tabla de palabras reservadas
-        PalabrasReservadas.inicializar();
+        Keywords.inicializar();
 
         String lexema;
         String lexemaError;
@@ -44,7 +44,9 @@ public class Lexico {
                 } else if ((int) charActual == 10) { // \n : salto de linea en Linux
                     incrementarLineas();
                     reiniciarColumnas();
+                    avanzar();
 
+                // REVISAR ------------------------------------------
                 } else if ((int) charActual == 9) { // \t : tab (8 posiciones)
                     //aumentamos un tab
                     int incrementoCol = (tab - (this.contadorColumnas % tab));
@@ -80,16 +82,15 @@ public class Lexico {
                         }
                         avanzar();
                         actualizarCharSig();
-
                     }
 
                     if (esFinArchivo()){
+                        throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRO EL COMENTARIO MULTIPLE");
                         // REPORTAR ERROR: NO SE CERRO EL COMENTARIO MULTPLE
                     }else{
                         // charActual = '*' y charSig = '/'
                         avanzar(); // charActual = '/'
                         avanzar();
-
                     }
 
                 // OPERADOR /= -----------------------------------------------------------------------------------------
@@ -117,6 +118,7 @@ public class Lexico {
                     actualizarCharSig();
                 }
                 if (esFinArchivo()){
+                    throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRÓ LA CADENA DE CARACTERES");
                     // ERROR LEXICO: NO SE CERRO LA CADENA DE CARACTERES
                 }else{
                     almacenarToken("Str", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
@@ -176,6 +178,15 @@ public class Lexico {
                     }else{
                         almacenarToken("not", "!", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                     }
+
+                    case '&' : if (charSig == '&'){
+                        almacenarToken("andLog", "&&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                    }else{
+                        almacenarToken("andBit", "&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                    }
+
+                    case '|' : almacenarToken("or", "|", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+
                 }
                 avanzar();
 
@@ -200,25 +211,28 @@ public class Lexico {
                         avanzar();
                     }
 
+
+                    throw new ErrorLexico(contadorLineas, contadorColumnas, "IDENTIFICADOR INCORRECTO: " + lexemaError);
+
                     // REPORTAR ERROR LEXICO: IDENTIFICADOR INCORRECTO: nombre_Edad*.4
 
 
                 }else{
                     // 1. Verifico si es palabra reservada
-                    if (PalabrasReservadas.esPr(lexema)){
-                        almacenarToken("pr", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                    if (Keywords.esPr(lexema)){
+                        almacenarToken("pr", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
 
                     } else {
 
                         // 2. Si empieza por mayúscula es identificador de clase
                         if (Character.isUpperCase(lexema.charAt(0))) {
 
-                            almacenarToken("idClass", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("idClass", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
 
                             //3. Sino es identificador de metodo o variable
                         } else{
 
-                            almacenarToken("idMetVar", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("idMetVar", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
 
                         }
                     }
@@ -244,6 +258,7 @@ public class Lexico {
                         avanzar();
                     }
 
+                    throw new ErrorLexico(contadorLineas, contadorColumnas, "IDENTIFICADOR INCORRECTO: " + lexemaError);
                     //REPORTAR ERROR LEXICO IDENTIFICADOR INCORRECTO
 
                 } else {
@@ -252,7 +267,6 @@ public class Lexico {
                     } else {
                         almacenarToken("int", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                     }
-
                 }
 
                 // DELIMITADORES ---------------------------------------------------------------------------------------
@@ -267,14 +281,16 @@ public class Lexico {
                 }
 
             } else {
-                if (esFinArchivo()){
-                    // REPORTE DE TOKENS Y LEXEMAS
-                }
-
+                throw new ErrorLexico(contadorLineas, contadorColumnas, "CARACTER DESCONOCIDO: " + charActual);
             }
         }
+    }
 
-
+    public void ejecutador(){
+        System.out.print("CORRECTO: ANALISIS LEXICO\n" + "| TOKEN | LEXEMA | NÚMERO DE LÍNEA (NÚMERO DE COLUMNA) |\n");
+        for (String s : token){
+            System.out.println(s);
+        }
     }
 
     private void almacenarToken(String token, String lexema, String linea, String columna){
@@ -294,10 +310,11 @@ public class Lexico {
     }
 
     private void avanzar(){
+
+        puntero += 1;
         if (esFinArchivo()){
             charActual = '\0';
-        } else {
-            puntero += 1;
+        }else{
             incrementarColumnas(1);
             charActual = codFuente.charAt(puntero);
         }
@@ -311,20 +328,17 @@ public class Lexico {
         } else {
             charSig = codFuente.charAt(puntero+1);
         }
-
-
     }
 
     private void inicializarCharActual(){
-        charActual = codFuente.charAt(0);
+        charActual = codFuente.charAt(puntero);
     }
 
     private boolean esOperador(char c){
-        if (c == '+' | c == '-' | c == '*' | c == '%' | c == '<' | c == '>' | c == '!' | c == '=' ){
+        if (c == '+' | c == '-' | c == '*' | c == '%' | c == '<' | c == '>' | c == '!' | c == '=' | c == '&' | c == '|'){
             return true;
         }
         return false;
-
     }
 
     private boolean esDelimitador(char delim){

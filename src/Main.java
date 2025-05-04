@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.SQLOutput;
 import java.util.List;
 
 public class Main {
@@ -10,9 +11,14 @@ public class Main {
         try{
             String codigoFuente = Files.readString(Paths.get("src/resources/prueba.txt"));
             Lexico analisisLexico = new Lexico(codigoFuente);
-            analisisLexico.analisis();
+            analisisLexico.analizador();
+            analisisLexico.ejecutador();
         } catch (IOException e) {
-            System.out.println("Error al leer el archivo" + e.getMessage());        }
+            System.out.println("Error al leer el archivo" + e.getMessage());
+        }catch (ErrorLexico e){
+            System.out.println(e.getMessage());
+        }
+
 
     }
 }

@@ -1,6 +1,6 @@
 import java.util.HashMap;
 
-public class PalabrasReservadas {
+public class Keywords {
     private static final HashMap<String, String> tabla = new HashMap<>();
 
 
