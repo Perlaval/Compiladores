@@ -64,22 +64,28 @@ public class Lexico {
                 // 1. COMENTARIO SIMPLE
                 if (charSig == '/'){
                     avanzar(); // incremento puntero, incremento columnas, cambio charActual
-                    actualizarCharSig();
-                    while (!esFinArchivo(puntero) && (int) charSig != 10 && (int) charSig != 13){
+                    //actualizarCharSig();
+                    while (!esFinArchivo(puntero) && (int) charActual != 10 && (int) charActual != 13){
                         avanzar();
-                        actualizarCharSig();
+                        //actualizarCharSig();
                     }
 
                 // 2. COMENTARIO MULTIPLE
                 } else if (charSig == '*') { // /*
+                    avanzar(); // charActual = '*'
                     avanzar();
                     actualizarCharSig();
                     while (!esFinArchivo(puntero) && charActual != '*' && charSig != '/'){
-                        if (((int) charActual == 13 && (int) charSig == 10) | charActual == 10 ){
+                        if ((int) charActual == 13 && (int) charSig == 10){
                             //hay un salto de lineas: incremento lineas y reinicio columnas
+                            avanzar(); // (int) charActual = 10
+                            incrementarLineas();
+                            reiniciarColumnas();
+                        } else if (charActual == 10) {
                             incrementarLineas();
                             reiniciarColumnas();
                         }
+
                         avanzar();
                         actualizarCharSig();
                     }
@@ -113,9 +119,16 @@ public class Lexico {
 
                 while (!esFinArchivo(puntero) && (int) charActual != 34){
 
-                    if (((int) charActual == 13 && (int) charSig == 10) | (int) charActual == 10 ){
+                    if (((int) charActual == 13 && (int) charSig == 10) | (int) charActual == 10 ) {
                         //hay un salto de lineas: incremento lineas y reinicio columnas
+                        avanzar();
+                        lexema += " ";
+                        incrementarLineas();
+                        reiniciarColumnas();
 
+                    } else if ((int) charActual == 10) {
+
+                        lexema += " ";
                         incrementarLineas();
                         reiniciarColumnas();
 

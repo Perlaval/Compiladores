@@ -8,6 +8,13 @@ if (num == 0){
 ret true;
 }
 a = 3
+// jfrksengkjnvbsjrkgnvjsnrgv
+"hola buenas
+esto es prueba"
+/* nckancjknfrvjsnvsgr
+kdfvkdsjfvn cdkjfn
+*/ jkcnajcvnk
+prueba1
 (a && b){
 kmgr
 gkmel dkjfnd nkfnd (4 == 6)
