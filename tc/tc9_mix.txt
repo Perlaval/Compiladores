@@ -18,5 +18,7 @@ prueba1
 (a && b){
 kmgr
 gkmel dkjfnd nkfnd (4 == 6)
-99
 0
+99
+// el print larga error
+System.out.println

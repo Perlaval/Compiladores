@@ -1,0 +1,2 @@
+double str int class impl else false if ret while true nil new fn st pub self div for "Hola"
+

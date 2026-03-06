@@ -1,0 +1,3 @@
+nombre
+edad score
+variable1 _total persona Cliente
