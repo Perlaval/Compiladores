@@ -18,3 +18,5 @@ prueba1
 (a && b){
 kmgr
 gkmel dkjfnd nkfnd (4 == 6)
+99
+0

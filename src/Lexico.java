@@ -101,7 +101,10 @@ public class Lexico {
 
                 // OPERADOR /= -----------------------------------------------------------------------------------------
                 } else if (charSig == '=') {
-                    almacenarToken("div1 ", "/=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                    almacenarToken("opdivIgual ", "/=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                    avanzar();
+                } else {
+                    almacenarToken("opdiv", "/",String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                     avanzar();
                 }
 
@@ -141,11 +144,11 @@ public class Lexico {
                 }
 
                 if (esFinArchivo(puntero)){
-                    throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRÓ LA CADENA DE CARACTERES");
+                    throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRO LA CADENA DE CARACTERES");
                     // ERROR LEXICO: NO SE CERRO LA CADENA DE CARACTERES
                 }else{
                     lexema += charActual;
-                    almacenarToken("Str", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                    almacenarToken("literal_cadena", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                     avanzar();
                     // revisar si se muestra con comillas o sin comillas
                 }
@@ -158,88 +161,104 @@ public class Lexico {
                 switch (charActual){
                     case '+':
                         if (charSig == '='){
-                            almacenarToken("masIgual", "+=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opMasIgual", "+=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                             avanzar();
                         }else{
-                            almacenarToken("mas","+", String.valueOf(contadorLineas), String.valueOf(contadorColumnas) );
+                            almacenarToken("opMas","+", String.valueOf(contadorLineas), String.valueOf(contadorColumnas) );
+
                         }
                         break;
 
                     case '-':
                         if (charSig == '='){
-                            almacenarToken("menosIgual", "-=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opMenosIgual", "-=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                             avanzar();
                         }else{
-                            almacenarToken("menos", "-", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opMenos", "-", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+
                         }
                         break;
 
                     case '*':
                         if (charSig == '='){
-                            almacenarToken("porIgual", "*=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opPorIgual", "*=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                             avanzar();
                         }else{
-                            almacenarToken("por", "*", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opPor", "*", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+
                         }
                         break;
 
                     case '%':
                         if (charSig == '='){
-                            almacenarToken("modIgual", "%=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opModIgual", "%=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                             avanzar();
                         }else{
-                            almacenarToken("mod", "%", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opMod", "%", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+
                         }
                         break;
 
                     case '<':
                         if (charSig == '=') {
-                            almacenarToken("menorIgual", "<=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opMenorIgual", "<=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                             avanzar();
                         }else{
-                            almacenarToken("menor", "<", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opMenor", "<", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+
                         }
                         break;
 
                     case '>':
                         if (charSig == '=') {
-                            almacenarToken("mayorIgual", ">=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opMayorIgual", ">=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                             avanzar();
                         } else {
-                            almacenarToken("mayor", ">", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opMayor", ">", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+
                         }
                         break;
 
                     case '=':
                         if (charSig == '=') {
-                            almacenarToken("igualIgual", "==", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opIgualIgual", "==", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                             avanzar();
                         }else{
-                            almacenarToken("igual", "=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opIgual", "=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+
                         }
                         break;
 
                     case '!':
                         if (charSig == '=') {
-                            almacenarToken("diferente", "!=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opDiferente", "!=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                             avanzar();
                         }else{
-                            almacenarToken("not", "!", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opNot", "!", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+
                         }
                         break;
 
                     case '&' :
                         if (charSig == '&'){
-                            almacenarToken("andLog", "&&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opAndLog", "&&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                             avanzar();
                         }else{
                             System.out.println(charActual);
-                            almacenarToken("andBit", "&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            almacenarToken("opAndBit", "&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+
                         }
                         break;
 
-                    default:
-                        almacenarToken("or", "|", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                    case '|' :
+                        if (charSig == '|'){
+                            almacenarToken("opOr", "||", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                            avanzar();
+                        }else{
+                            throw new ErrorLexico(contadorLineas, contadorColumnas,
+                                    "OPERADOR INVALIDO: |");
+                        }
+                        break;
 
                 }
 
@@ -275,7 +294,12 @@ public class Lexico {
                 }else{
                     // 1. Verifico si es palabra reservada
                     if (Keywords.esPr(lexema)){
-                        almacenarToken("pr", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
+                        // devuelvo la pr con + info
+                        String tokenPr = Keywords.getToken(lexema);
+                        if (tokenPr != null){
+                            almacenarToken(tokenPr, lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
+                        }
+
 
                     } else {
 
@@ -285,7 +309,7 @@ public class Lexico {
                             almacenarToken("idClass", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
 
                             //3. Sino es identificador de metodo o variable
-                        } else{
+                        } else {
 
                             almacenarToken("idMetVar", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
 
@@ -306,7 +330,7 @@ public class Lexico {
 
                 }
 
-                if (charActual == '.' | (!Character.isWhitespace(charActual) && !esDelimitador(charActual) && !esOperador(charActual))){
+                if (!esFinArchivo(puntero) && charActual == '.' | (!Character.isWhitespace(charActual) && !esDelimitador(charActual) && !esOperador(charActual))){
                     lexemaError = lexema;
                     while (!esFinArchivo(puntero) && !Character.isWhitespace(charActual)){
                         lexemaError += charActual;
@@ -319,9 +343,9 @@ public class Lexico {
                 } else {
 
                     if (flagPto && !esDelimitador(charActual)){
-                        almacenarToken("double", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
+                        almacenarToken("literal_doble", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
                     } else {
-                        almacenarToken("int", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
+                        almacenarToken("literal_entero", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
                     }
 
                     flagPto = false;
@@ -355,6 +379,9 @@ public class Lexico {
                     case ',':
                         almacenarToken("coma", ",", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                         break;
+                    case ':':
+                        almacenarToken("dosPuntos",":",String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                        break;
                 }
 
                 avanzar();
@@ -366,7 +393,7 @@ public class Lexico {
     }
 
     public void ejecutador(){
-        System.out.print("CORRECTO: ANALISIS LEXICO\n" + "| TOKEN | LEXEMA | NÚMERO DE LÍNEA (NÚMERO DE COLUMNA) |\n");
+        System.out.print("CORRECTO: ANALISIS LEXICO\n" + "| TOKEN | LEXEMA | NUMERO DE LINEA (NUMERO DE COLUMNA) |\n");
         for (String s : token){
             System.out.println(s);
         }
@@ -422,7 +449,7 @@ public class Lexico {
     }
 
     private boolean esDelimitador(char delim){
-        if (delim == ')' | delim == '(' | delim == '[' | delim == ']' | delim == ';' | delim == ',' | delim == '{' | delim == '}'){
+        if (delim == ')' | delim == '(' | delim == '[' | delim == ']' | delim == ';' | delim == ',' | delim == '{' | delim == '}' | delim == ':'){
             return true;
         }
         return false;

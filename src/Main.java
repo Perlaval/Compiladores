@@ -8,6 +8,7 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
+        /*
         try{
             String codigoFuente = Files.readString(Paths.get("src/resources/prueba.txt"));
             Lexico analisisLexico = new Lexico(codigoFuente);
@@ -17,10 +18,28 @@ public class Main {
             System.out.println("Error al leer el archivo" + e.getMessage());
         }catch (ErrorLexico e){
             System.out.println(e.getMessage());
+        }*/
+        if (args.length == 0) {
+            System.out.println("Debe indicar un archivo fuente.");
+            return;
         }
 
+        try {
 
+            String codigoFuente = Files.readString(Paths.get(args[0]));
+
+            Lexico analisisLexico = new Lexico(codigoFuente);
+            analisisLexico.analizador();
+            analisisLexico.ejecutador();
+
+        } catch (IOException e) {
+            System.out.println("Error al leer el archivo " + e.getMessage());
+        } catch (ErrorLexico e) {
+            System.out.println(e.getMessage());
+        }
     }
+
+
 }
 
 
