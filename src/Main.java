@@ -8,8 +8,8 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
-        /*
-        try{
+
+        /*try{
             String codigoFuente = Files.readString(Paths.get("src/resources/prueba.txt"));
             Lexico analisisLexico = new Lexico(codigoFuente);
             analisisLexico.analizador();
@@ -19,6 +19,7 @@ public class Main {
         }catch (ErrorLexico e){
             System.out.println(e.getMessage());
         }*/
+
         if (args.length == 0) {
             System.out.println("Debe indicar un archivo fuente.");
             return;

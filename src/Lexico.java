@@ -25,7 +25,6 @@ public class Lexico {
 
         String lexema;
         String lexemaError;
-        boolean flagPto = false;
 
         //1. Analizamos el codigo fuente y evaluamos cada uno de los casos
         //int longitud = codFuente.length();
@@ -320,11 +319,8 @@ public class Lexico {
 
                 lexema = "";
 
-                while (Character.isDigit(charActual) | (charActual == '.' && !flagPto)){
+                while (Character.isDigit(charActual)){
                     // es un decimal
-                    if (charActual == '.'){
-                        flagPto = true;
-                    }
                     lexema += charActual;
                     avanzar();
 
@@ -342,13 +338,8 @@ public class Lexico {
 
                 } else {
 
-                    if (flagPto && !esDelimitador(charActual)){
-                        almacenarToken("literal_doble", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
-                    } else {
-                        almacenarToken("literal_entero", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
-                    }
+                    almacenarToken("literal_entero", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas-1));
 
-                    flagPto = false;
                 }
 
                 // DELIMITADORES ---------------------------------------------------------------------------------------
@@ -382,6 +373,8 @@ public class Lexico {
                     case ':':
                         almacenarToken("dosPuntos",":",String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                         break;
+                    case '.':
+                        almacenarToken("pto",".",String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                 }
 
                 avanzar();
