@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 
+//Esta clase corresponde a la etapa del analizador lexico del compilador, en la misma se identifican tanto los lexemas y su token correspondiente como el numero de linea y columna en la que se encuentra cada uno en el codigo fuente, en caso de que exista un error lexico el analizador lanza una excepion notificando el error sino la información se almacena en un array para que luego pueda ser presentada por el ejecutador
 public class Lexico {
     private int contadorLineas;
     private int contadorColumnas;
@@ -18,6 +19,11 @@ public class Lexico {
         this.token = new ArrayList<>();
     }
 
+    //Recorre el codigo fuente caracter a caracter formando lexemas y verificando que que cada uno cumpla con las reglas lexicas
+    //Se ignoran los comentarios y espacios en blanco
+    //Almacena en un arreglo los lexemas cuya verficación lexica sea correcta
+    //Actualiza el contador de lineas y el contador de columnas a medida que va haciendo el analisis
+    //Detiene la ejecución en caso de que consiga algún error lexico y notifica la informacion del error
     public void analizador() throws ErrorLexico{
 
         //Inicializo la tabla de palabras reservadas
@@ -91,7 +97,7 @@ public class Lexico {
 
                     if (esFinArchivo(puntero)){
                         throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRO EL COMENTARIO MULTIPLE");
-                        // REPORTAR ERROR: NO SE CERRO EL COMENTARIO MULTPLE
+
                     }else{
                         // charActual = '*' y charSig = '/'
                         avanzar(); // charActual = '/'
@@ -385,29 +391,28 @@ public class Lexico {
         }
     }
 
-    public void ejecutador(){
-        System.out.print("CORRECTO: ANALISIS LEXICO\n" + "| TOKEN | LEXEMA | NUMERO DE LINEA (NUMERO DE COLUMNA) |\n");
-        for (String s : token){
-            System.out.println(s);
-        }
-    }
-
+    //almacena en un arraylist cada lexema-token-nrolinea-nrocolumna encontrado durante el analisis lexico
     private void almacenarToken(String token, String lexema, String linea, String columna){
         this.token.add("| " + token + " | " + lexema + " | " + "LINEA " + linea + " (COLUMNA " + columna + ") |");
     }
 
+    //incrementa el numero de lineas
     private void incrementarLineas(){
         contadorLineas += 1;
     }
 
+    //incrementa el numero de columnas
     private void incrementarColumnas(int cant){
         contadorColumnas += cant;
     }
 
+    //reinicia el numero de columnas
+    //se utiliza cuando hay un salto de linea
     private void reiniciarColumnas(){
         contadorColumnas = 0;
     }
 
+    //incrementa el puntero y actualiza el caracter actual en casa de que no se haya consumido completamente el codigo fuente
     private void avanzar(){
 
         puntero += 1;
@@ -417,10 +422,9 @@ public class Lexico {
             incrementarColumnas(1);
             charActual = codFuente.charAt(puntero);
         }
-
-
     }
 
+    // Actualiza el caracter siguiente en caso de que no haya llegado al final del codigo fuente
     private void actualizarCharSig(){
 
         if (esFinArchivo(puntero + 1)){
@@ -430,10 +434,12 @@ public class Lexico {
         }
     }
 
+    //asigna el valor del primer caracter del codigo fuente a la cariable charActual
     private void inicializarCharActual(){
         charActual = codFuente.charAt(puntero);
     }
 
+    //identifica si el parámetro recibido es un operador reconocido por la gramática
     private boolean esOperador(char c){
         if (c == '+' | c == '-' | c == '*' | c == '%' | c == '<' | c == '>' | c == '!' | c == '=' | c == '&' | c == '|'){
             return true;
@@ -441,18 +447,28 @@ public class Lexico {
         return false;
     }
 
+    //identifica si el parámetro recibido es un operador delimitador reconocido por la gramatica
     private boolean esDelimitador(char delim){
-        if (delim == ')' | delim == '(' | delim == '[' | delim == ']' | delim == ';' | delim == ',' | delim == '{' | delim == '}' | delim == ':'){
+        if (delim == ')' | delim == '(' | delim == '[' | delim == ']' | delim == ';' | delim == ',' | delim == '{' | delim == '}' | delim == ':' | delim == '.'){
             return true;
         }
         return false;
     }
 
+    //identifica si se ha consumido por completo el codigo fuente
     private boolean esFinArchivo(int punt){
         if (punt >= codFuente.length()){
             return true;
         }
         return false;
+    }
+
+    //Imprime por pantalla una lista con cada uno de los lexemas identificados en el codigo fuente asi como también el token, número de linea y numero de columna correspondiente a cada lexema
+    public void ejecutador(){
+        System.out.print("CORRECTO: ANALISIS LEXICO\n" + "| TOKEN | LEXEMA | NUMERO DE LINEA (NUMERO DE COLUMNA) |\n");
+        for (String s : token){
+            System.out.println(s);
+        }
     }
 
 
