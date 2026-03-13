@@ -22,13 +22,15 @@ public class Keywords {
         tabla.put("self", "prSelf");
         tabla.put("div", "prDiv");
         tabla.put("for", "prFor");
+        tabla.put("in", "prIn");
+        tabla.put("do", "prDo");
+        tabla.put("void", "prVoid");
 
         // tipos
-        tabla.put("int", "tInt");
-        tabla.put("double", "tDouble");
-        tabla.put("boolean","tboolean");
-        tabla.put("str", "tStr");
-        tabla.put("array", "tArray");
+        tabla.put("Int", "tInt");
+        tabla.put("Bool","tBool");
+        tabla.put("Str", "tStr");
+        tabla.put("Array", "tArray");
 
         //then, array, int, str, double
 
