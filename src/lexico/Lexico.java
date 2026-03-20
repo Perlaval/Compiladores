@@ -1,7 +1,10 @@
+package lexico;
 import java.util.ArrayList;
 import java.util.List;
 
-//Esta clase corresponde a la etapa del analizador lexico del compilador, en la misma se identifican tanto los lexemas y su token correspondiente como el numero de linea y columna en la que se encuentra cada uno en el codigo fuente, en caso de que exista un error lexico el analizador lanza una excepion notificando el error sino la información se almacena en un array para que luego pueda ser presentada por el ejecutador
+
+//Esta clase corresponde a la etapa del analizador lexico del compilador, en la misma se identifican tanto los lexemas y su token correspondiente como el numero de linea y columna en la que se encuentra cada uno en el codigo fuente,
+//en caso de que exista un error lexico el analizador lanza una excepion notificando el error sino la información se almacena en un array para que luego pueda ser presentada por el ejecutador
 public class Lexico {
     private int contadorLineas;
     private int contadorColumnas;
@@ -383,22 +386,22 @@ public class Lexico {
 
                                                                 switch (charActual) {
                                                                     case '(':
-                                                                        almacenarToken("parDer", "(", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                                                                        almacenarToken("parAbre", "(", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                                                                         break;
                                                                     case ')':
-                                                                        almacenarToken("parIzq", ")", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                                                                        almacenarToken("parCierra", ")", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                                                                         break;
                                                                     case '[':
-                                                                        almacenarToken("corcheteDer", "[", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                                                                        almacenarToken("corcheteAbre", "[", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                                                                         break;
                                                                     case ']':
-                                                                        almacenarToken("corcheteIzq", "]", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                                                                        almacenarToken("corcheteCierra", "]", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                                                                         break;
                                                                     case '{':
-                                                                        almacenarToken("llaveDer", "{", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                                                                        almacenarToken("llaveAbre", "{", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                                                                         break;
                                                                     case '}':
-                                                                        almacenarToken("llaveIzq", "}", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
+                                                                        almacenarToken("llaveCierra", "}", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
                                                                         break;
                                                                     case ';':
                                                                         almacenarToken("ptoComa", ";", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));

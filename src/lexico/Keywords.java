@@ -1,3 +1,4 @@
+package lexico;
 import java.util.HashMap;
 
 public class Keywords {

@@ -4,6 +4,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLOutput;
 import java.util.List;
+import lexico.Lexico;
+import lexico.ErrorLexico;
 
 public class Main {
     public static void main(String[] args) {
