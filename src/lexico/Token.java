@@ -7,4 +7,28 @@ public class Token{
     String lexema;
     int fila;
     int columna;
+
+    public Token(String tipo, String lexema, int fila, int columna) {
+        this.tipo = tipo;
+        this.lexema = lexema;
+        this.fila = fila;
+        this.columna = columna;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public String getLexema() {
+        return lexema;
+    }
+
+    public int getFila() {
+        return fila;
+    }
+
+    public int getColumna() {
+        return columna;
+    }
+
 }

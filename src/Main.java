@@ -6,6 +6,9 @@ import java.sql.SQLOutput;
 import java.util.List;
 import lexico.Lexico;
 import lexico.ErrorLexico;
+import lexico.Token;
+import sintactico.Sintactico;
+import sintactico.ErrorSintactico;
 
 public class Main {
     public static void main(String[] args) {
@@ -35,9 +38,26 @@ public class Main {
             analisisLexico.analizador();
             analisisLexico.ejecutador();
 
+            // obtengo los tokens
+            List<Token> tokens = analisisLexico.getTokens();
+            // esto usado para probar como va funcionando
+            /*
+            System.out.println("Lista de tokens para usar con el sintactico");
+            for (Token t: tokens){
+                System.out.println(t.getTipo());
+            }*/
+
+
+
+            Sintactico analisisSintactico = new Sintactico(tokens);
+            analisisSintactico.analizador();
+            System.out.println("CORRECTO: ANALISIS SINTACTICO");
+
         } catch (IOException e) {
             System.out.println("Error al leer el archivo " + e.getMessage());
         } catch (ErrorLexico e) {
+            System.out.println(e.getMessage());
+        } catch (ErrorSintactico e) {
             System.out.println(e.getMessage());
         }
     }
