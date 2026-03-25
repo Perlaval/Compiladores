@@ -12,6 +12,7 @@ public class Lexico {
     private String codFuente;
     private char charActual;
     private char charSig;
+    private boolean newLexema;
     private List<String> token;
 
     // agrego una lista de tokens para pasarle al sintactico
@@ -22,6 +23,7 @@ public class Lexico {
         this.contadorLineas = 1;
         this.contadorColumnas = 1;
         this.puntero = 0;
+        this.newLexema = false;
         this.token = new ArrayList<>();
     }
 
@@ -30,21 +32,21 @@ public class Lexico {
     //Almacena en un arreglo los lexemas cuya verficación lexica sea correcta
     //Actualiza el contador de lineas y el contador de columnas a medida que va haciendo el analisis
     //Detiene la ejecución en caso de que consiga algún error lexico y notifica la informacion del error
-    public void analizador() throws ErrorLexico{
+    public Token analizador() throws ErrorLexico{
 
         //Inicializo la tabla de palabras reservadas
         Keywords.inicializar();
 
         String lexema;
         String lexemaError;
-
+        
         //1. Analizamos el codigo fuente y evaluamos cada uno de los casos
         //int longitud = codFuente.length();
         int tab = 8; // defino esta variable estableciendo que un tab son 8 posiciones
 
         inicializarCharActual();
 
-        while (!esFinArchivo(puntero)){
+        //while (!esFinArchivo(puntero)){
 
             // ESPACIOS ------------------------------------------------------------------------------------------------
             if (Character.isWhitespace(charActual)){
@@ -132,16 +134,17 @@ public class Lexico {
                                 // OPERADOR /= -----------------------------------------------------------------------------------------
                                 else {
                                         if (charSig == '=') {
-                                            //almacenarToken("opdivIgual", "/=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                            almacenarToken("opdivIgual", "/=", contadorLineas, contadorColumnas);
                                             avanzar();
+                                            //almacenarToken("opdivIgual", "/=", contadorLineas, contadorColumnas);
+                                            return new Token("opdivIgual", "/=", contadorLineas, contadorColumnas);
+                                            
                                         }
                                         // OPERADOR / ------------------------------------------------------------------------------------------
                                         else {
-
-                                            //almacenarToken("opdiv", "/", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                            almacenarToken("opdiv", "/", contadorLineas, contadorColumnas);
                                             avanzar();
+                                            //almacenarToken("opdiv", "/", contadorLineas, contadorColumnas);
+                                            return new Token("opdiv", "/", contadorLineas, contadorColumnas);
+                                            
                                         }
                                 }
                         }
@@ -190,9 +193,10 @@ public class Lexico {
                                 }
                                 else {
                                     lexema += charActual;
-                                    //almacenarToken("literal_cadena", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                    almacenarToken("literal_cadena", lexema, contadorLineas, contadorColumnas);
                                     avanzar();
+                                    //almacenarToken("literal_cadena", lexema, contadorLineas, contadorColumnas);
+                                    return new Token("literal_cadena", lexema, contadorLineas, contadorColumnas);
+                                    
                                 }
                             }
                             // OPERADORES ARITMÉTICOS Y DE DECREMENTO ------------------------------------------------------------------
@@ -204,126 +208,154 @@ public class Lexico {
                                         switch (charActual) {
                                             case '+':
                                                 if (charSig == '=') {
-                                                    //almacenarToken("opMasIgual", "+=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opMasIgual", "+=", contadorLineas, contadorColumnas);
                                                     avanzar();
+                                                    avanzar();
+                                                    //almacenarToken("opMasIgual", "+=", contadorLineas, contadorColumnas);
+                                                    return new Token("opMasIgual", "+=", contadorLineas, contadorColumnas);
+                                                    
                                                 } else {
-                                                    //almacenarToken("opMas", "+", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opMas", "+", contadorLineas, contadorColumnas);
+                                                    avanzar();
+                                                    //almacenarToken("opMas", "+", contadorLineas, contadorColumnas);
+                                                    return new Token("opMas", "+", contadorLineas, contadorColumnas);
 
                                                 }
                                                 // para los casos de opUniario que tiene ++ y --
                                                 if (charSig == '+'){
-                                                    almacenarToken("opMasMas", "++", contadorLineas, contadorColumnas);
                                                     avanzar();
+                                                    avanzar();
+                                                    //almacenarToken("opMasMas", "++", contadorLineas, contadorColumnas);
+                                                    return new Token("opMasMas", "++", contadorLineas, contadorColumnas);
+                                                    
                                                 }
                                                 break;
 
                                             case '-':
                                                 if (charSig == '=') {
-                                                    //almacenarToken("opMenosIgual", "-=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opMenosIgual", "-=", contadorLineas, contadorColumnas);
                                                     avanzar();
+                                                    avanzar();
+                                                    //almacenarToken("opMenosIgual", "-=", contadorLineas, contadorColumnas);
+                                                    return new Token("opMenosIgual", "-=", contadorLineas, contadorColumnas);
+                                                    
                                                 } else {
-                                                    //almacenarToken("opMenos", "-", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opMenos", "-", contadorLineas, contadorColumnas);
+                                                    //almacenarToken("opMenos", "-", contadorLineas, contadorColumnas);
+                                                    return new Token("opMenos", "-", contadorLineas, contadorColumnas);
 
                                                 }
                                                 if (charSig == '-'){
-                                                    almacenarToken("opMenosMenos", "--", contadorLineas, contadorColumnas);
                                                     avanzar();
+                                                    avanzar();
+                                                    //almacenarToken("opMenosMenos", "--", contadorLineas, contadorColumnas);
+                                                    return new Token("opMenosMenos", "--", contadorLineas, contadorColumnas);
+                                                    
                                                 }
                                                 break;
 
                                             case '*':
                                                 if (charSig == '=') {
-                                                    //almacenarToken("opPorIgual", "*=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opPorIgual", "*=", contadorLineas, contadorColumnas);
                                                     avanzar();
+                                                    avanzar();
+                                                    //almacenarToken("opPorIgual", "*=", contadorLineas, contadorColumnas);
+                                                    return new Token("opPorIgual", "*=", contadorLineas, contadorColumnas);
+                                                    
                                                 } else {
-                                                    //almacenarToken("opPor", "*", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opPor", "*", contadorLineas, contadorColumnas);
+                                                    //almacenarToken("opPor", "*", contadorLineas, contadorColumnas);
+                                                    return new Token("opPor", "*", contadorLineas, contadorColumnas);
 
                                                 }
                                                 break;
 
                                             case '%':
                                                 if (charSig == '=') {
-                                                    //almacenarToken("opModIgual", "%=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opModIgual", "%=", contadorLineas, contadorColumnas);
                                                     avanzar();
+                                                    avanzar();
+                                                    //almacenarToken("opModIgual", "%=", contadorLineas, contadorColumnas);
+                                                    return new Token("opModIgual", "%=", contadorLineas, contadorColumnas);
+                                                    
                                                 } else {
-                                                    //almacenarToken("opMod", "%", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opMod", "%", contadorLineas, contadorColumnas);
+                                                    //almacenarToken("opMod", "%", contadorLineas, contadorColumnas);
+                                                    return new Token("opMod", "%", contadorLineas, contadorColumnas);
 
                                                 }
                                                 break;
 
                                             case '<':
                                                 if (charSig == '=') {
-                                                    //almacenarToken("opMenorIgual", "<=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opMenorIgual", "<=", contadorLineas, contadorColumnas);
                                                     avanzar();
+                                                    avanzar();
+                                                    //almacenarToken("opMenorIgual", "<=", contadorLineas, contadorColumnas);
+                                                    return new Token("opMenorIgual", "<=", contadorLineas, contadorColumnas);
+                                                    
                                                 } else {
-                                                    //almacenarToken("opMenor", "<", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opMenor", "<", contadorLineas, contadorColumnas);
+                                                    //almacenarToken("opMenor", "<", contadorLineas, contadorColumnas);
+                                                    return new Token("opMenor", "<", contadorLineas, contadorColumnas);
 
                                                 }
                                                 break;
 
                                             case '>':
                                                 if (charSig == '=') {
-                                                    //almacenarToken("opMayorIgual", ">=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opMayorIgual", ">=", contadorLineas, contadorColumnas);
                                                     avanzar();
+                                                    avanzar();
+                                                    //almacenarToken("opMayorIgual", ">=", contadorLineas, contadorColumnas);
+                                                    return new Token("opMayorIgual", ">=", contadorLineas, contadorColumnas);
+                                                    
                                                 } else {
-                                                    //almacenarToken("opMayor", ">", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opMayor", ">", contadorLineas, contadorColumnas);
+                                                    avanzar();
+                                                    //almacenarToken("opMayor", ">", contadorLineas, contadorColumnas);
+                                                    return new Token("opMayor", ">", contadorLineas, contadorColumnas);
 
                                                 }
                                                 break;
 
                                             case '=':
                                                 if (charSig == '=') {
-                                                    //almacenarToken("opIgualIgual", "==", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opIgualIgual", "==", contadorLineas, contadorColumnas);
                                                     avanzar();
+                                                    //almacenarToken("opIgualIgual", "==", contadorLineas, contadorColumnas);
+                                                    return new Token("opIgualIgual", "==", contadorLineas, contadorColumnas);
+                                                
                                                 } else {
-                                                    //almacenarToken("opIgual", "=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opIgual", "=", contadorLineas, contadorColumnas);
+                                                    avanzar();
+                                                    //almacenarToken("opIgual", "=", contadorLineas, contadorColumnas);
+                                                    return new Token("opIgual", "=", contadorLineas, contadorColumnas);
 
                                                 }
                                                 break;
 
                                             case '!':
                                                 if (charSig == '=') {
-                                                    //almacenarToken("opDiferente", "!=", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opDiferente", "!=", contadorLineas, contadorColumnas);
                                                     avanzar();
+                                                    avanzar();
+                                                    //almacenarToken("opDiferente", "!=", contadorLineas, contadorColumnas);
+                                                    return new Token("opDiferente", "!=", contadorLineas, contadorColumnas);
+                                                    
                                                 } else {
-                                                    //almacenarToken("opNot", "!", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opNot", "!", contadorLineas, contadorColumnas);
+                                                    avanzar();
+                                                    //almacenarToken("opNot", "!", contadorLineas, contadorColumnas);
+                                                    returnn new Token("opNot", "!", contadorLineas, contadorColumnas);
 
                                                 }
                                                 break;
 
                                             case '&':
                                                 if (charSig == '&') {
-                                                    //almacenarToken("opAndLog", "&&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opAndLog", "&&", contadorLineas, contadorColumnas);
                                                     avanzar();
+                                                    avanzar();
+                                                    //almacenarToken("opAndLog", "&&", contadorLineas, contadorColumnas);
+                                                    return new Token("opAndLog", "&&", contadorLineas, contadorColumnas);
+                                                    
                                                 } else {
+                                                    avanzar();
                                                     //System.out.println(charActual);
-                                                    //almacenarToken("opAndBit", "&", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opAndBit", "&", contadorLineas, contadorColumnas);
+                                                    //almacenarToken("opAndBit", "&", contadorLineas, contadorColumnas);
+                                                    return new Token("opAndBit", "&", contadorLineas, contadorColumnas);
 
                                                 }
                                                 break;
 
                                             case '|':
                                                 if (charSig == '|') {
-                                                    //almacenarToken("opOr", "||", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                    almacenarToken("opOr", "||", contadorLineas, contadorColumnas);
+                                                    //almacenarToken("opOr", "||", contadorLineas, contadorColumnas);
+                                                    new Token("opOr", "||", contadorLineas, contadorColumnas);
                                                     avanzar();
                                                 } else {
                                                     throw new ErrorLexico(contadorLineas, contadorColumnas,
@@ -333,7 +365,7 @@ public class Lexico {
 
                                         }
 
-                                        avanzar();
+                                        //avanzar();
                                     }
                                     // IDENTIFICADORES: PRESERVADAS, METVAR --------------------------------------------------------------------
                                     else {
@@ -367,8 +399,8 @@ public class Lexico {
                                                         // devuelvo la pr con + info
                                                         String tokenPr = Keywords.getToken(lexema);
                                                         if (tokenPr != null) {
-                                                            //almacenarToken(tokenPr, lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas - 1));
-                                                            almacenarToken(tokenPr, lexema, contadorLineas, contadorColumnas-1);
+                                                            //almacenarToken(tokenPr, lexema, contadorLineas, contadorColumnas-1);
+                                                            return new Token(tokenPr, lexema, contadorLineas, contadorColumnas-1);
                                                         }
 
 
@@ -377,14 +409,14 @@ public class Lexico {
                                                         // 2. Si empieza por mayúscula es identificador de clase
                                                         if (Character.isUpperCase(lexema.charAt(0))) {
 
-                                                            //almacenarToken("idClass", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas - 1));
-                                                            almacenarToken("idClass", lexema, contadorLineas, contadorColumnas-1);
+                                                            //almacenarToken("idClass", lexema, contadorLineas, contadorColumnas-1);
+                                                            return new Token("idClass", lexema, contadorLineas, contadorColumnas-1);
 
                                                             //3. Sino es identificador de metodo o variable
                                                         } else {
 
-                                                            //almacenarToken("idMetVar", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas - 1));
-                                                            almacenarToken("idMetVar", lexema, contadorLineas, contadorColumnas-1);
+                                                            //almacenarToken("idMetVar", lexema, contadorLineas, contadorColumnas-1);
+                                                            return new Token("idMetVar", lexema, contadorLineas, contadorColumnas-1);
 
                                                         }
                                                     }
@@ -414,8 +446,8 @@ public class Lexico {
 
                                                         } else {
 
-                                                            //almacenarToken("literal_entero", lexema, String.valueOf(contadorLineas), String.valueOf(contadorColumnas - 1));
-                                                            almacenarToken("literal_entero", lexema, contadorLineas, contadorColumnas-1);
+                                                            //almacenarToken("literal_entero", lexema, contadorLineas, contadorColumnas-1);
+                                                            return new Token("literal_entero", lexema, contadorLineas, contadorColumnas-1);
 
                                                         }
                                                     }
@@ -423,50 +455,54 @@ public class Lexico {
                                                     else {
                                                             if (esDelimitador(charActual)) {
 
+                                                                Token token;
+
                                                                 switch (charActual) {
                                                                     case '(':
-                                                                        //almacenarToken("parAbre", "(", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                                        almacenarToken("parAbre", "(", contadorLineas, contadorColumnas);
+                                                                        avanzar();
+                                                                        //almacenarToken("parAbre", "(", contadorLineas, contadorColumnas);
+                                                                        token = new Token("parAbre", "(", contadorLineas, contadorColumnas);
                                                                         break;
                                                                     case ')':
-                                                                        //almacenarToken("parCierra", ")", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                                        almacenarToken("parCierra", ")", contadorLineas, contadorColumnas);
+                                                                        avanzar();
+                                                                        //almacenarToken("parCierra", ")", contadorLineas, contadorColumnas);
+                                                                        token = new Token("parCierra", ")", contadorLineas, contadorColumnas);
                                                                         break;
                                                                     case '[':
-                                                                        //almacenarToken("corcheteAbre", "[", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                                        almacenarToken("corcheteAbre", "[", contadorLineas, contadorColumnas);
+                                                                        //almacenarToken("corcheteAbre", "[", contadorLineas, contadorColumnas);
+                                                                        token = new Token("corcheteAbre", "[", contadorLineas, contadorColumnas);
                                                                         break;
                                                                     case ']':
-                                                                        //almacenarToken("corcheteCierra", "]", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                                        almacenarToken("corcheteCierra", "]", contadorLineas, contadorColumnas);
+                                                                        //almacenarToken("corcheteCierra", "]", contadorLineas, contadorColumnas);
+                                                                        token = new Token("corcheteCierra", "]", contadorLineas, contadorColumnas);
                                                                         break;
                                                                     case '{':
-                                                                        //almacenarToken("llaveAbre", "{", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                                        almacenarToken("llaveAbre", "{", contadorLineas, contadorColumnas);
+                                                                        //almacenarToken("llaveAbre", "{", contadorLineas, contadorColumnas);
+                                                                        token = new Token("llaveAbre", "{", contadorLineas, contadorColumnas);
                                                                         break;
                                                                     case '}':
-                                                                        //almacenarToken("llaveCierra", "}", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                                        almacenarToken("llaveCierra", "}", contadorLineas, contadorColumnas);
+                                                                        //almacenarToken("llaveCierra", "}", contadorLineas, contadorColumnas);
+                                                                        token = new Token("llaveCierra", "}", contadorLineas, contadorColumnas);
                                                                         break;
                                                                     case ';':
-                                                                        //almacenarToken("ptoComa", ";", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                                        almacenarToken("ptoComa", ";", contadorLineas, contadorColumnas);
+                                                                        //almacenarToken("ptoComa", ";", contadorLineas, contadorColumnas);
+                                                                        token = new Token("ptoComa", ";", contadorLineas, contadorColumnas);
                                                                         break;
                                                                     case ',':
-                                                                        //almacenarToken("coma", ",", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                                        almacenarToken("coma", ",", contadorLineas, contadorColumnas);
+                                                                        //almacenarToken("coma", ",", contadorLineas, contadorColumnas);
+                                                                        token = new Token("coma", ",", contadorLineas, contadorColumnas);
                                                                         break;
                                                                     case ':':
-                                                                        //almacenarToken("dosPuntos", ":", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                                        almacenarToken("dosPuntos", ":", contadorLineas, contadorColumnas);
+                                                                        //almacenarToken("dosPuntos", ":", contadorLineas, contadorColumnas);
+                                                                        token = new Token("dosPuntos", ":", contadorLineas, contadorColumnas);
                                                                         break;
                                                                     case '.':
-                                                                        //almacenarToken("pto", ".", String.valueOf(contadorLineas), String.valueOf(contadorColumnas));
-                                                                        almacenarToken("pto", ".", contadorLineas, contadorColumnas);
-
+                                                                        //almacenarToken("pto", ".", contadorLineas, contadorColumnas);
+                                                                        token = new Token("pto", ".", contadorLineas, contadorColumnas);
                                                                 }
 
                                                                 avanzar();
+                                                                return token;
                                                             }
                                                             else {
                                                                 throw new ErrorLexico(contadorLineas, contadorColumnas, "CARACTER DESCONOCIDO: " + charActual);
@@ -477,7 +513,7 @@ public class Lexico {
                             }
                     }
             }
-        }
+        //}
     }
 
     //almacena en un arraylist cada lexema-token-nrolinea-nrocolumna encontrado durante el analisis lexico
@@ -487,8 +523,8 @@ public class Lexico {
         this.token.add("| " + token + " | " + lexema + " | " + "LINEA " + linea + " (COLUMNA " + columna + ") |");
     }*/
     // como necesito pasarle objetos token al sintactico esta es el metodo a usar
-    private void almacenarToken(String tipo, String lexema, int fila, int columna){
-        listaTokens.add(new Token(tipo, lexema, fila, columna));
+    private void almacenarToken(Token token){
+        listaTokens.add(token);
     }
 
     //incrementa el numero de lineas
@@ -571,9 +607,25 @@ public class Lexico {
         }
     }*/
 
+   private Token nextToken(){
+
+   }
+
     public void ejecutador(){
+        //Pide next token
+        //El analizador crea el token y se lo envia al ejecutador
+        //Cada vez que el ejecutador pide next token el analizador avanza
+
         System.out.print("CORRECTO: ANALISIS LEXICO\n" +
                 "| TOKEN | LEXEMA | NUMERO DE LINEA (NUMERO DE COLUMNA) |\n");
+
+        
+
+        while (!esFinArchivo(puntero)){
+            Token token = analizador();
+            almacenarToken(token);
+
+        }
 
         for (Token t : listaTokens){
             System.out.println("| " + t.getTipo() + " | " + t.getLexema() +
