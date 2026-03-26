@@ -12,10 +12,7 @@ public class Lexico {
     private String codFuente;
     private char charActual;
     private char charSig;
-    private boolean newLexema;
-    private List<String> token;
-
-    // agrego una lista de tokens para pasarle al sintactico
+    //agrego una lista de tokens para pasarle al sintactico
     private List<Token> listaTokens = new ArrayList<>();
 
     public Lexico (String codFuente) {
@@ -23,8 +20,7 @@ public class Lexico {
         this.contadorLineas = 1;
         this.contadorColumnas = 1;
         this.puntero = 0;
-        this.newLexema = false;
-        this.token = new ArrayList<>();
+
     }
 
     //Recorre el codigo fuente caracter a caracter formando lexemas y verificando que que cada uno cumpla con las reglas lexicas
@@ -45,15 +41,15 @@ public class Lexico {
         int tab = 8; // defino esta variable estableciendo que un tab son 8 posiciones
 
         inicializarCharActual();
+        //avanzar();
 
-        //while (!esFinArchivo(puntero)){
+        while (true){
 
             // ESPACIOS ------------------------------------------------------------------------------------------------
             if (Character.isWhitespace(charActual)){
-
+                //System.out.println("WHITESPACE AT: LINEA" + contadorLineas + ", COLUMNA" + contadorColumnas + " ");
                 if ((int) charActual == 32 | (int) charActual == 11){ // ' ', \v
                     avanzar();
-
                 }
                 else {
                         if ((int) charActual == 10) { // \n : salto de linea en Linux
@@ -81,7 +77,6 @@ public class Lexico {
             //  COMENTARIOS --------------------------------------------------------------------------------------------
             else {
                     if (charActual == '/') {
-
                         actualizarCharSig();
 
                         // 1. COMENTARIO SIMPLE
@@ -121,12 +116,11 @@ public class Lexico {
 
                                     if (esFinArchivo(puntero)) {
                                         throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRO EL COMENTARIO MULTIPLE");
-                                        // REPORTAR ERROR: NO SE CERRO EL COMENTARIO MULTPLE
                                     }
                                     else {
                                         // charActual = '*' y charSig = '/'
                                         avanzar(); // charActual = '/'
-                                        avanzar();
+
                                     }
 
 
@@ -137,14 +131,14 @@ public class Lexico {
                                             avanzar();
                                             //almacenarToken("opdivIgual", "/=", contadorLineas, contadorColumnas);
                                             return new Token("opdivIgual", "/=", contadorLineas, contadorColumnas);
-                                            
+
                                         }
                                         // OPERADOR / ------------------------------------------------------------------------------------------
                                         else {
                                             avanzar();
                                             //almacenarToken("opdiv", "/", contadorLineas, contadorColumnas);
                                             return new Token("opdiv", "/", contadorLineas, contadorColumnas);
-                                            
+
                                         }
                                 }
                         }
@@ -171,7 +165,6 @@ public class Lexico {
                                     }
                                     else {
                                         if ((int) charActual == 10) {
-
                                             lexema += " ";
                                             incrementarLineas();
                                             reiniciarColumnas();
@@ -196,7 +189,7 @@ public class Lexico {
                                     avanzar();
                                     //almacenarToken("literal_cadena", lexema, contadorLineas, contadorColumnas);
                                     return new Token("literal_cadena", lexema, contadorLineas, contadorColumnas);
-                                    
+
                                 }
                             }
                             // OPERADORES ARITMÉTICOS Y DE DECREMENTO ------------------------------------------------------------------
@@ -212,22 +205,21 @@ public class Lexico {
                                                     avanzar();
                                                     //almacenarToken("opMasIgual", "+=", contadorLineas, contadorColumnas);
                                                     return new Token("opMasIgual", "+=", contadorLineas, contadorColumnas);
-                                                    
-                                                } else {
-                                                    avanzar();
-                                                    //almacenarToken("opMas", "+", contadorLineas, contadorColumnas);
-                                                    return new Token("opMas", "+", contadorLineas, contadorColumnas);
 
+                                                } else {
+                                                    // para los casos de opUniario que tiene ++ y --
+                                                    if (charSig == '+'){
+                                                        avanzar();
+                                                        avanzar();
+                                                        //almacenarToken("opMasMas", "++", contadorLineas, contadorColumnas);
+                                                        return new Token("opMasMas", "++", contadorLineas, contadorColumnas);
+
+                                                    } else {
+                                                        avanzar();
+                                                        //almacenarToken("opMas", "+", contadorLineas, contadorColumnas);
+                                                        return new Token("opMas", "+", contadorLineas, contadorColumnas);
+                                                    }
                                                 }
-                                                // para los casos de opUniario que tiene ++ y --
-                                                if (charSig == '+'){
-                                                    avanzar();
-                                                    avanzar();
-                                                    //almacenarToken("opMasMas", "++", contadorLineas, contadorColumnas);
-                                                    return new Token("opMasMas", "++", contadorLineas, contadorColumnas);
-                                                    
-                                                }
-                                                break;
 
                                             case '-':
                                                 if (charSig == '=') {
@@ -235,20 +227,20 @@ public class Lexico {
                                                     avanzar();
                                                     //almacenarToken("opMenosIgual", "-=", contadorLineas, contadorColumnas);
                                                     return new Token("opMenosIgual", "-=", contadorLineas, contadorColumnas);
-                                                    
-                                                } else {
-                                                    //almacenarToken("opMenos", "-", contadorLineas, contadorColumnas);
-                                                    return new Token("opMenos", "-", contadorLineas, contadorColumnas);
 
+                                                } else {
+                                                    if (charSig == '-'){
+                                                        avanzar();
+                                                        avanzar();
+                                                        //almacenarToken("opMenosMenos", "--", contadorLineas, contadorColumnas);
+                                                        return new Token("opMenosMenos", "--", contadorLineas, contadorColumnas);
+
+                                                    } else {
+                                                        avanzar();
+                                                        //almacenarToken("opMenos", "-", contadorLineas, contadorColumnas);
+                                                        return new Token("opMenos", "-", contadorLineas, contadorColumnas);
+                                                    }
                                                 }
-                                                if (charSig == '-'){
-                                                    avanzar();
-                                                    avanzar();
-                                                    //almacenarToken("opMenosMenos", "--", contadorLineas, contadorColumnas);
-                                                    return new Token("opMenosMenos", "--", contadorLineas, contadorColumnas);
-                                                    
-                                                }
-                                                break;
 
                                             case '*':
                                                 if (charSig == '=') {
@@ -256,13 +248,13 @@ public class Lexico {
                                                     avanzar();
                                                     //almacenarToken("opPorIgual", "*=", contadorLineas, contadorColumnas);
                                                     return new Token("opPorIgual", "*=", contadorLineas, contadorColumnas);
-                                                    
+
                                                 } else {
+                                                    avanzar();
                                                     //almacenarToken("opPor", "*", contadorLineas, contadorColumnas);
                                                     return new Token("opPor", "*", contadorLineas, contadorColumnas);
 
                                                 }
-                                                break;
 
                                             case '%':
                                                 if (charSig == '=') {
@@ -270,13 +262,13 @@ public class Lexico {
                                                     avanzar();
                                                     //almacenarToken("opModIgual", "%=", contadorLineas, contadorColumnas);
                                                     return new Token("opModIgual", "%=", contadorLineas, contadorColumnas);
-                                                    
+
                                                 } else {
+                                                    avanzar();
                                                     //almacenarToken("opMod", "%", contadorLineas, contadorColumnas);
                                                     return new Token("opMod", "%", contadorLineas, contadorColumnas);
 
                                                 }
-                                                break;
 
                                             case '<':
                                                 if (charSig == '=') {
@@ -284,13 +276,14 @@ public class Lexico {
                                                     avanzar();
                                                     //almacenarToken("opMenorIgual", "<=", contadorLineas, contadorColumnas);
                                                     return new Token("opMenorIgual", "<=", contadorLineas, contadorColumnas);
-                                                    
+
                                                 } else {
+                                                    avanzar();
                                                     //almacenarToken("opMenor", "<", contadorLineas, contadorColumnas);
                                                     return new Token("opMenor", "<", contadorLineas, contadorColumnas);
 
                                                 }
-                                                break;
+
 
                                             case '>':
                                                 if (charSig == '=') {
@@ -298,28 +291,29 @@ public class Lexico {
                                                     avanzar();
                                                     //almacenarToken("opMayorIgual", ">=", contadorLineas, contadorColumnas);
                                                     return new Token("opMayorIgual", ">=", contadorLineas, contadorColumnas);
-                                                    
+
                                                 } else {
                                                     avanzar();
                                                     //almacenarToken("opMayor", ">", contadorLineas, contadorColumnas);
-                                                    return new Token("opMayor", ">", contadorLineas, contadorColumnas);
+                                                    return new Token("opMayor", ">", contadorLineas, contadorColumnas-1);
 
                                                 }
-                                                break;
+
 
                                             case '=':
                                                 if (charSig == '=') {
                                                     avanzar();
+                                                    avanzar();
                                                     //almacenarToken("opIgualIgual", "==", contadorLineas, contadorColumnas);
                                                     return new Token("opIgualIgual", "==", contadorLineas, contadorColumnas);
-                                                
+
                                                 } else {
                                                     avanzar();
                                                     //almacenarToken("opIgual", "=", contadorLineas, contadorColumnas);
                                                     return new Token("opIgual", "=", contadorLineas, contadorColumnas);
 
                                                 }
-                                                break;
+
 
                                             case '!':
                                                 if (charSig == '=') {
@@ -327,14 +321,13 @@ public class Lexico {
                                                     avanzar();
                                                     //almacenarToken("opDiferente", "!=", contadorLineas, contadorColumnas);
                                                     return new Token("opDiferente", "!=", contadorLineas, contadorColumnas);
-                                                    
+
                                                 } else {
                                                     avanzar();
                                                     //almacenarToken("opNot", "!", contadorLineas, contadorColumnas);
-                                                    returnn new Token("opNot", "!", contadorLineas, contadorColumnas);
+                                                    return new Token("opNot", "!", contadorLineas, contadorColumnas);
 
                                                 }
-                                                break;
 
                                             case '&':
                                                 if (charSig == '&') {
@@ -342,26 +335,24 @@ public class Lexico {
                                                     avanzar();
                                                     //almacenarToken("opAndLog", "&&", contadorLineas, contadorColumnas);
                                                     return new Token("opAndLog", "&&", contadorLineas, contadorColumnas);
-                                                    
+
                                                 } else {
                                                     avanzar();
-                                                    //System.out.println(charActual);
                                                     //almacenarToken("opAndBit", "&", contadorLineas, contadorColumnas);
                                                     return new Token("opAndBit", "&", contadorLineas, contadorColumnas);
 
                                                 }
-                                                break;
 
                                             case '|':
                                                 if (charSig == '|') {
+                                                    avanzar();
                                                     //almacenarToken("opOr", "||", contadorLineas, contadorColumnas);
                                                     new Token("opOr", "||", contadorLineas, contadorColumnas);
-                                                    avanzar();
+
                                                 } else {
                                                     throw new ErrorLexico(contadorLineas, contadorColumnas,
                                                             "OPERADOR INVALIDO: |");
                                                 }
-                                                break;
 
                                         }
 
@@ -378,7 +369,6 @@ public class Lexico {
                                                     lexema += charActual;
                                                     avanzar();
                                                 }
-
 
                                                 if (!esFinArchivo(puntero) && !Character.isWhitespace(charActual) && !esDelimitador(charActual) && !esOperador(charActual)) {
 
@@ -408,13 +398,13 @@ public class Lexico {
 
                                                         // 2. Si empieza por mayúscula es identificador de clase
                                                         if (Character.isUpperCase(lexema.charAt(0))) {
-
+                                                            //avanzar();
                                                             //almacenarToken("idClass", lexema, contadorLineas, contadorColumnas-1);
                                                             return new Token("idClass", lexema, contadorLineas, contadorColumnas-1);
 
                                                             //3. Sino es identificador de metodo o variable
                                                         } else {
-
+                                                            //avanzar();
                                                             //almacenarToken("idMetVar", lexema, contadorLineas, contadorColumnas-1);
                                                             return new Token("idMetVar", lexema, contadorLineas, contadorColumnas-1);
 
@@ -442,10 +432,9 @@ public class Lexico {
                                                             }
 
                                                             throw new ErrorLexico(contadorLineas, contadorColumnas - 1, "IDENTIFICADOR INCORRECTO: " + lexemaError);
-                                                            //REPORTAR ERROR LEXICO IDENTIFICADOR INCORRECTO
 
                                                         } else {
-
+                                                            //avanzar();
                                                             //almacenarToken("literal_entero", lexema, contadorLineas, contadorColumnas-1);
                                                             return new Token("literal_entero", lexema, contadorLineas, contadorColumnas-1);
 
@@ -455,57 +444,67 @@ public class Lexico {
                                                     else {
                                                             if (esDelimitador(charActual)) {
 
-                                                                Token token;
-
                                                                 switch (charActual) {
                                                                     case '(':
                                                                         avanzar();
                                                                         //almacenarToken("parAbre", "(", contadorLineas, contadorColumnas);
-                                                                        token = new Token("parAbre", "(", contadorLineas, contadorColumnas);
-                                                                        break;
+                                                                        return new Token("parAbre", "(", contadorLineas, contadorColumnas);
+
                                                                     case ')':
                                                                         avanzar();
                                                                         //almacenarToken("parCierra", ")", contadorLineas, contadorColumnas);
-                                                                        token = new Token("parCierra", ")", contadorLineas, contadorColumnas);
-                                                                        break;
+                                                                        return new Token("parCierra", ")", contadorLineas, contadorColumnas);
+
                                                                     case '[':
+                                                                        avanzar();
                                                                         //almacenarToken("corcheteAbre", "[", contadorLineas, contadorColumnas);
-                                                                        token = new Token("corcheteAbre", "[", contadorLineas, contadorColumnas);
-                                                                        break;
+                                                                        return new Token("corcheteAbre", "[", contadorLineas, contadorColumnas);
+
                                                                     case ']':
+                                                                        avanzar();
                                                                         //almacenarToken("corcheteCierra", "]", contadorLineas, contadorColumnas);
-                                                                        token = new Token("corcheteCierra", "]", contadorLineas, contadorColumnas);
-                                                                        break;
+                                                                        return new Token("corcheteCierra", "]", contadorLineas, contadorColumnas);
+
                                                                     case '{':
+                                                                        avanzar();
                                                                         //almacenarToken("llaveAbre", "{", contadorLineas, contadorColumnas);
-                                                                        token = new Token("llaveAbre", "{", contadorLineas, contadorColumnas);
-                                                                        break;
+                                                                        return new Token("llaveAbre", "{", contadorLineas, contadorColumnas);
+
                                                                     case '}':
+                                                                        avanzar();
                                                                         //almacenarToken("llaveCierra", "}", contadorLineas, contadorColumnas);
-                                                                        token = new Token("llaveCierra", "}", contadorLineas, contadorColumnas);
-                                                                        break;
+                                                                        return new Token("llaveCierra", "}", contadorLineas, contadorColumnas);
+
                                                                     case ';':
+                                                                        avanzar();
                                                                         //almacenarToken("ptoComa", ";", contadorLineas, contadorColumnas);
-                                                                        token = new Token("ptoComa", ";", contadorLineas, contadorColumnas);
-                                                                        break;
+                                                                        return new Token("ptoComa", ";", contadorLineas, contadorColumnas);
+
                                                                     case ',':
+                                                                        avanzar();
                                                                         //almacenarToken("coma", ",", contadorLineas, contadorColumnas);
-                                                                        token = new Token("coma", ",", contadorLineas, contadorColumnas);
-                                                                        break;
+                                                                        return new Token("coma", ",", contadorLineas, contadorColumnas);
+
                                                                     case ':':
+                                                                        avanzar();
                                                                         //almacenarToken("dosPuntos", ":", contadorLineas, contadorColumnas);
-                                                                        token = new Token("dosPuntos", ":", contadorLineas, contadorColumnas);
-                                                                        break;
+                                                                        return new Token("dosPuntos", ":", contadorLineas, contadorColumnas);
+
                                                                     case '.':
+                                                                        avanzar();
                                                                         //almacenarToken("pto", ".", contadorLineas, contadorColumnas);
-                                                                        token = new Token("pto", ".", contadorLineas, contadorColumnas);
+                                                                        return new Token("pto", ".", contadorLineas, contadorColumnas);
+
                                                                 }
 
-                                                                avanzar();
-                                                                return token;
                                                             }
                                                             else {
-                                                                throw new ErrorLexico(contadorLineas, contadorColumnas, "CARACTER DESCONOCIDO: " + charActual);
+                                                                if (charActual == '\0') {
+                                                                    return new Token("EOF", "", contadorLineas, contadorColumnas);
+                                                                } else {
+                                                                    throw new ErrorLexico(contadorLineas, contadorColumnas, "CARACTER DESCONOCIDO: " + charActual);
+                                                                }
+
                                                             }
                                                     }
                                             }
@@ -513,7 +512,7 @@ public class Lexico {
                             }
                     }
             }
-        //}
+        }
     }
 
     //almacena en un arraylist cada lexema-token-nrolinea-nrocolumna encontrado durante el analisis lexico
@@ -549,13 +548,12 @@ public class Lexico {
         puntero += 1;
         if (esFinArchivo(puntero)){
             charActual = '\0';
-        }
-        else {
+            charSig = '\0';
+        } else {
             incrementarColumnas(1);
             charActual = codFuente.charAt(puntero);
+
         }
-
-
     }
 
     // Actualiza el caracter siguiente en caso de que no haya llegado al final del codigo fuente
@@ -571,7 +569,14 @@ public class Lexico {
 
     //asigna el valor del primer caracter del codigo fuente a la cariable charActual
     private void inicializarCharActual(){
-        charActual = codFuente.charAt(puntero);
+        if (!esFinArchivo()){
+            charActual = codFuente.charAt(puntero);
+        } else {
+            charActual = '\0';
+            charSig = '\0';
+        }
+
+
     }
 
     //identifica si el parámetro recibido es un operador reconocido por la gramática
@@ -598,44 +603,36 @@ public class Lexico {
         return false;
     }
 
-    //Imprime por pantalla una lista con cada uno de los lexemas identificados en el codigo fuente asi como también el token, número de linea y numero de columna correspondiente a cada lexema
-    /*
-    public void ejecutador(){
-        System.out.print("CORRECTO: ANALISIS LEXICO\n" + "| TOKEN | LEXEMA | NUMERO DE LINEA (NUMERO DE COLUMNA) |\n");
-        for (String s : token){
-            System.out.println(s);
+    public boolean esFinArchivo() {
+        if (this.puntero >= codFuente.length()) {
+            return true;
         }
-    }*/
+        return false;
+    }
 
-   private Token nextToken(){
-
-   }
-
-    public void ejecutador(){
-        //Pide next token
-        //El analizador crea el token y se lo envia al ejecutador
-        //Cada vez que el ejecutador pide next token el analizador avanza
-
-        System.out.print("CORRECTO: ANALISIS LEXICO\n" +
-                "| TOKEN | LEXEMA | NUMERO DE LINEA (NUMERO DE COLUMNA) |\n");
-
-        
+    //Solicita el next token al analizador y genera e imprime por pantalla una lista con cada uno de los lexemas identificados en el codigo fuente asi como también el token, número de linea y numero de columna correspondiente a cada lexema
+    public void ejecutador() throws ErrorLexico {
 
         while (!esFinArchivo(puntero)){
-            Token token = analizador();
+            Token token = this.analizador();
             almacenarToken(token);
 
         }
+
+        System.out.print("CORRECTO: ANALISIS LEXICO\n" +
+                "| TOKEN | LEXEMA | NUMERO DE LINEA (NUMERO DE COLUMNA) |\n");
 
         for (Token t : listaTokens){
             System.out.println("| " + t.getTipo() + " | " + t.getLexema() +
                     " | LINEA " + t.getFila() + " (COLUMNA " + t.getColumna() + ") |");
         }
-        listaTokens.add(new Token("EOF", "", contadorLineas, contadorColumnas));
     }
-    public List<Token> getTokens() {
+
+
+
+    /*public List<Token> getTokens() {
         return listaTokens;
-    }
+    }*/
 
 
 }

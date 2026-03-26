@@ -35,10 +35,9 @@ public class Main {
             String codigoFuente = Files.readString(Paths.get(args[0]));
 
             Lexico analisisLexico = new Lexico(codigoFuente);
-            analisisLexico.analizador();
-            analisisLexico.ejecutador();
+            //analisisLexico.ejecutador();
 
-            // obtengo los tokens
+            /* obtengo los tokens
             List<Token> tokens = analisisLexico.getTokens();
             // esto usado para probar como va funcionando
             /*
@@ -49,15 +48,13 @@ public class Main {
 
 
 
-            Sintactico analisisSintactico = new Sintactico(tokens);
+            Sintactico analisisSintactico = new Sintactico(analisisLexico);
             analisisSintactico.analizador();
             System.out.println("CORRECTO: ANALISIS SINTACTICO");
 
         } catch (IOException e) {
             System.out.println("Error al leer el archivo " + e.getMessage());
-        } catch (ErrorLexico e) {
-            System.out.println(e.getMessage());
-        } catch (ErrorSintactico e) {
+        } catch (ErrorLexico | ErrorSintactico e) {
             System.out.println(e.getMessage());
         }
     }
