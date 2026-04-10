@@ -653,7 +653,7 @@ public class Sintactico {
         }
     }
 
-    // opUnario -> + | - | ++ | -- | (Int)
+    // opUnario -> + | - | ++ | --
     private void opUnario() throws ErrorSintactico, ErrorLexico {
         String tipo = token.getTipo();
         switch (tipo){
@@ -668,11 +668,6 @@ public class Sintactico {
                 break;
             case "opMenosMenos":
                 match("opMenosMenos");
-                break;
-            case "parAbre":
-                match("parAbre");
-                match("tInt");
-                match("parCierra");
                 break;
         }
     }
