@@ -610,7 +610,8 @@ public class Lexico {
         return false;
     }
 
-    //Solicita el next token al analizador y genera e imprime por pantalla una lista con cada uno de los lexemas identificados en el codigo fuente asi como también el token, número de linea y numero de columna correspondiente a cada lexema
+    //Solicita el next token al analizador y genera e imprime por pantalla una lista con cada uno de los lexemas identificados
+    // en el codigo fuente asi como también el token, número de linea y numero de columna correspondiente a cada lexema
     public void ejecutador() throws ErrorLexico {
 
         while (!esFinArchivo(puntero)){
