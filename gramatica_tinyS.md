@@ -85,7 +85,7 @@
 81. ListaExpresiones -> Expresion ListaExpresionesRec
 82. ListaExpresionesRec -> , ListaExpresiones | lambda
 83. Encadenado -> . EncadenadoRec
-84. EncadenadoRec -> LlamadaMetodo | AccesVa
+84. EncadenadoRec -> LlamadaMetodo | AccesoVar
 ````
 
 ## Primeros
@@ -252,6 +252,98 @@ Sig(ListaExpresiones)= { ) }
 Sig(ListaExpresionesRec)= { ) }
 Sig(Encadenado)= Sig(Operando)
 Sig(EncadenadoRec)= Sig(Operando)
+````
+
+## Analisis Semantico
+### Identificar las reglas con atributos sintetizados (que se calculan) y luego identificar los heredados
+````
+1. Program -> ListaDefiniciones Start
+2. Start -> start BloqueMetodo
+3. ListaDefiniciones -> Class ListaDefiniciones | Impl ListaDefiniciones | lambda
+4. Class -> class idClass HerenciaOpt {ListaAtributos}
+5. HerenciaOpt -> Herencia | lambda
+6. ListaAtributos -> Atributo ListaAtributos | lambda
+7. Impl -> impl idClass { ListaMiembros }
+8.ListaMiembros -> Miembro ListaMiembros | lambda
+9. Herencia -> Tipo
+10. Miembro -> Metodo | Constructor
+11. Metodo -> FormaMetodoOpt fn TipoMetodoOpt idMetAt ArgumentosFormales BloqueMetodo
+12. FormaMetodoOpt -> formaMetodo | lambda
+13. TipoMetodoOpt -> TipoMetodo | lambda
+14. ArgumentosFormales -> ( ListaArgumentosFormalesOpt )
+15. Constructor -> . ArgumentosFormales BloqueMetodo
+16. Atributo -> VisibilidadOpt Tipo ListaDeclaracionVar ;
+17. VisibilidadOpt -> Visibilidad | lambda
+18. Tipo -> TipoPrimitivo | TipoReferencia | TipoArreglo
+19. ListaDeclaracionVar -> idMetAt ListaDeclaracionesVarRec
+20. ListaDeclaracionVarRec -> , ListaDeclaracionVar | lambda
+21. BloqueMetodo -> { ListaDeclaracioVarLocal ListaSentencia }
+22. ListaDeclaracionVarLocal -> DeclaracionVarLocal ListaDeclaracionVarLocal | lambda
+23. ListaSentencia -> Sentencia ListaSentencia | lambda
+24. Visibilidad -> pub {Visibilidad.tipo = tpub}
+25. FormaMetodo -> st
+26. TipoPrimitivo -> Str {TipoPrimitivo.tipo = tStr}
+    TipoPrimitivo -> Bool {TipoPrimitivo.tipo = tBool}
+    TipoPrimitivo -> Int {TipoPrimitivo.tipo = tInt}
+27. TipoReferencia -> idClass {TipoRferencia.tipo = tidClass}
+28. TipoArray -> Array TipoPrimitivo {TipoArray.tipo = TipoPrimitivo.tipo} #Heredado
+29. DeclaracionVarLocal -> Tipo ListaDeclaracionVar ;
+30. ListaArgumentosFormalesOpt -> ListaArgumentosFormales | lambda
+31. ListaArgumentosFormales -> ArgumentoFormal ListaArgumentosFormalesRec
+32. ListaArgumentosFormalesRec -> , ListaArgumentosFormales | lambda
+33. ArgumentoFormal -> Tipo idMetAt
+34. TipoMetodo -> Tipo | void
+35. Sentencia -> ; | Asignacion | SentenciaSimple ; | if ( Expresion ) SentenciaRec | while ( Expresion ) Sentencia |
+36. for ( TipoPrimitivo idMetAt in idMetAt) Sentencia | Bloque | ret ExpresionOpt
+37. SentenciaRec -> Sentencia RecursivoElse
+38. RecursivoElse -> else Sentencia | lambda
+39. ExpresionOpt -> Expresion | lambda
+40. SentenciaSimple -> ( Expresion )
+41. Expresion -> ExpresionOr
+42. BLoque -> { ListaSentencia }
+43. Asignacion -> AccesoVarSimple = Expresion | AccesoSelfSimple = Expresion
+44. AccesoVarSimple -> id AccesoVarSImpleRec
+45. AccesoVarSimpleRec -> ListaEncadenadoSImple | [ Expresion ]
+46. ListaEncadenadoSimple -> EncadenadoSimpple ListaEncadenadoSimple | lambda
+47. AccesoSelfSimple -> self ListaEncadenadoSimple
+48. EncadenadoSimple -> . id
+49. ExpresionOr -> ExpresionAnd ExpresionOrRec
+50. ExpresionOrRec -> || ExpresionAnd ExpresionOrRec | lambda
+51. ExpresionAnd -> ExpIgual ExpAndRec
+52. ExpresionAndRec -> && ExpIgual ExpresionAndRec | lamnda
+53. ExpresionIgual -> ExpresionComp ExpresionIgualRec
+54. ExpresionIgualRec -> OpIgual ExpresionComp ExpresionIgualRec | lambda
+55. ExpresionComp -> ExpresionAd ExpresionCompRec
+56. ExpresionCompRec -> OpComp ExpresionAd | lambda
+57. ExpresionMul -> ExpresionUnario ExpresionMulRec
+58. ExpresionMulRec -> OpMul ExpresionUnario ExpresionMulRec | lambda
+59. ExpresionUnario -> OpUnario ExpresionUnario | Operando
+60. ExpresionAd -> ExpresionMul ExpresionAdRec
+61. ExpresionAdRec -> OpAd ExpresionMul ExpresionAdRec | lambda
+62. OpIgual -> == | !=
+63. opComp -> < | > | <= | >=
+64. opAd -> + | -
+65. opUnario -> + | - | ++ | --
+66. OpMul -> * | /
+67. Operando -> Literal | Primario | EncadenadoOpt
+68. EncadenadoOpt -> Encadenado | lambda
+69. Literal -> nil | true | false | intLiteral | strLiteral
+70. Primario -> ExpresionParentizada | AccesoSelf | AccesoVar | LlamadaMetodo | LlamadaMetodoEstatico | LlamadaConClassor
+71. ExpresionParentizada -> ( Expresion ) EncadenadoOpt
+72. AccesoSelf -> self EncadenadoOpt
+73. AccesoVar -> id AccesoVarRec
+74. AccesoVarRec -> EncadenadoOpt | [ Expresion ] EncadenadoOpt
+75. LlamadaMetdo -> id ArgumentosActuales EncadenadoOpt
+76. LlamadaMetodoEstatico -> idClass . LlamadaMetodo EncadenadoOpt
+77. LlamadaConClassor -> new LLamadaConClassOrRec
+78. LlamadaConClassorRec -> idClass ArgumentosActuales EncadenadoOpt | TipoPrimitivo [ Expresion ]
+79. ArgumentosActuales -> ( ListaExpresionesOpt )
+80. ListaExpresionesOpt -> ListaExpresiones | lambda
+81. ListaExpresiones -> Expresion ListaExpresionesRec
+82. ListaExpresionesRec -> , ListaExpresiones | lambda
+83. Encadenado -> . EncadenadoRec
+84. EncadenadoRec -> LlamadaMetodo | AccesoVar
+
 ````
 
 
