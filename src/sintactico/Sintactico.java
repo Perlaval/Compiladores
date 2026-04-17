@@ -44,6 +44,7 @@ public class Sintactico {
         listaDefiniciones();
         // si es lambda va directo a start
         start();
+        System.out.println("token final: "+ token.getTipo());
         match("EOF"); // ver si tiene que ser $ o EOF
     }
 
@@ -329,10 +330,17 @@ public class Sintactico {
         tipo();
         match("idMetVar");
     }
-     // TipoMetodo -> Tipo void
+     // TipoMetodo -> Tipo | void
+    // Prim(Tipo)= {str, bool int, idClass, Array}
     private void tipoMetodo() throws ErrorSintactico, ErrorLexico {
-        tipo();
-        match("prVoid");
+        if (token.getTipo().equals("tStr") || token.getTipo().equals("tBool") || token.getTipo().equals("tInt") ||
+                token.getTipo().equals("idClass") || token.getTipo().equals("tArray")) {
+            tipo();
+        }
+        else {
+            match("prVoid");
+        }
+
     }
 
     // Sentencia -> ; | Asignacion | SentenciaSimple ; | if ( Expresion ) SentenciaRec | while ( Expresion ) Sentencia |
@@ -866,7 +874,7 @@ public class Sintactico {
         }
     }
 
-    // Encadenado -> . EncadenadoRec
+    // Encadenado -> . fec
     private void encadenado() throws ErrorSintactico, ErrorLexico {
         match("pto");
         encadenadoRec();
