@@ -95,7 +95,7 @@ public class Sintactico {
         // Sig(HerenciaOpt) = { { }
         // si el token que viene no esta en los primeros de herencia es porque o vino {, entonces aca no hace nada, o vino algo mal
         // entonces verifico con los primeros
-        if (esPrimeroHerencia(token.getTipo())){
+        if (token.getTipo().equals("dosPuntos")) {
             herencia();
         }
     }
@@ -133,8 +133,9 @@ public class Sintactico {
         }
     }
 
-    // Herencia -> Tipo
+    // Herencia -> : Tipo
     private void herencia() throws ErrorSintactico, ErrorLexico {
+        match("dosPuntos");
         tipo();
     }
 

@@ -1,12 +1,16 @@
 class A {}
 impl A {
-.() {}
-fn B retB(Int x) {
-if (x > 5) {
-ret new B(0);
-} else {
-ret new B(1);
+    .() {}
+    fn B retB(Int x) {
+        if (x > 5) {
+        ret new B(0);
+        } else {
+        ret new B(1);
+        }
+    }
 }
+
+class B : A {
 }
-}
+impl B {fn Str f() {}}
 start {}
