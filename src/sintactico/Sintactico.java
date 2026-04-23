@@ -698,7 +698,7 @@ public class Sintactico {
         }
     }
 
-    // Operando -> Literal | Primario | EncadenadoOpt
+    // Operando -> Literal | Primario EncadenadoOpt
     private void operando() throws ErrorSintactico, ErrorLexico {
         String tipo = token.getTipo();
         // si viene un literal
@@ -710,8 +710,6 @@ public class Sintactico {
             // Prim(Primario) = { (, self, id, idclass, new}
             case "parAbre", "prSelf", "idMetVar", "idClass", "prNew":
                 primario();
-            // Prim(EncadenadoOpt) = { . , lambda}
-            case "pto":
                 encadenadoOpt();
         }
     }
