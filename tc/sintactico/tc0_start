@@ -1,1 +1,11 @@
+class A Int {
+    pub int a, b;
+}
+impl A {
+    .(){}
+    fn b(){
+        int c;
+        if (3 > c) {}
+    }
+}
 start {}

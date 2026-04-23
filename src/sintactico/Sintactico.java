@@ -65,12 +65,14 @@ public class Sintactico {
     // ListaDefiniciones -> Clase ListaDefiniciones | Implementacion ListaDefiniciones | lambda
     private void listaDefiniciones() throws ErrorSintactico, ErrorLexico {
         // es recursiva, por lo que voy a agregar un while, mientras lea la palabra reservada class o impl, tiene que volver a entrar
-        while (token.getTipo().equals("prClass") || token.getTipo().equals("prImpl")){
+        if (token.getTipo().equals("prClass") || token.getTipo().equals("prImpl")){
             if (token.getTipo().equals("prClass")){
                 clase();
+                listaDefiniciones();
             }
             else {
                 impl();
+                listaDefiniciones();
             }
         }
     }
@@ -103,10 +105,11 @@ public class Sintactico {
         // si lo que viene no esta en los primeros de Atributo es porque listaAtributos es lambda entonces aca no hace nada
         // es recursiva, por lo tanto siempre que venga alguno de los primeros de A vuelvo a entrar
         // como puede no tener prPub, tambien puedo ir directamente a Tipo
-        while (tipo.equals("prPub") | tipo.equals("tStr") | tipo.equals("tBool") | tipo.equals("tInt") | tipo.equals("idClass") | tipo.equals("tArray")){
+        if (tipo.equals("prPub") | tipo.equals("tStr") | tipo.equals("tBool") | tipo.equals("tInt") | tipo.equals("idClass") | tipo.equals("tArray")){
             atributo();
             // actualizo el tipo
             tipo = token.getTipo();
+            listaAtributos();
         }
     }
 
@@ -123,8 +126,9 @@ public class Sintactico {
     private void listaMiembros() throws ErrorSintactico, ErrorLexico {
         // si lo que viene esta en los primeros de miembro es porque lista miembro no es lambda
         // Prim(E) = { st, . , lambda}
-        while (esPrimeroMiembro(token.getTipo()) | token.getTipo().equals("prFn")){
+        if (esPrimeroMiembro(token.getTipo()) | token.getTipo().equals("prFn")){
             miembro();
+            listaMiembros();
         }
     }
 
@@ -247,16 +251,18 @@ public class Sintactico {
     private void listaDeclaracionVarLocal() throws ErrorSintactico, ErrorLexico {
         // recursiva
         // si lo que viene esta en los primeros de declaracionVarLocal es porque no es lambda
-        while (esPrimeroDeclaracionVarLocal(token.getTipo())){
+        uf (esPrimeroDeclaracionVarLocal(token.getTipo())){
             declaracionVarLocal();
+            listaDeclaracionVarLocal();
         }
     }
 
     // ListaSentencia -> Sentencia ListaSentencia | lambda
     private void listaSentencia() throws ErrorSintactico, ErrorLexico {
         // mientras este en los primeros de sentencia vuelvo a entrar
-        while (esPrimeroSentencia(token.getTipo())){
+        if (esPrimeroSentencia(token.getTipo())){
             sentencia();
+            listaSentencia();
         }
     }
 
@@ -519,7 +525,7 @@ public class Sintactico {
 
     //ExpresionAndRec -> && ExpIgual ExpresionAndRec | lamnda
     private void expresionAndRec() throws ErrorSintactico, ErrorLexico {
-        while (token.getTipo().equals("opAndLog")){
+        if (token.getTipo().equals("opAndLog")){
             match("opAndLog");
             expresionIgual();
             expresionAndRec();
@@ -570,7 +576,7 @@ public class Sintactico {
     // ExpresionMulRec -> OpMul ExpresionUnario ExpresionMulRec | lambda
     private void expresionMulRec() throws ErrorSintactico, ErrorLexico {
         // simpre que venga un opMul hago recursividad
-        while (token.getTipo().equals("opPor") | token.getTipo().equals("opdiv")){
+        if (token.getTipo().equals("opPor") | token.getTipo().equals("opdiv")){
             opMul();
             expresionUnario();
             expresionMulRec();
@@ -581,22 +587,22 @@ public class Sintactico {
     private Tipo expresionUnario() throws ErrorSintactico, ErrorLexico {
         Tipo tipoRetorno = null;
         // siempre que venga un opUnario vuelvo
-        if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos")){
-            while (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos") |
-                    token.getTipo().equals("opNot") | token.getTipo().equals("parAbre")){
+        if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos") |
+                token.getTipo().equals("opMasMas") | token.getTipo().equals("opMenosMenos")){
                 opUnario();
                 if (tipoRetorno == "tInt") {
                     // solo si es de tipo int entro a expresion unario de nuevo
                     // porque ya consumi el opUnario, entonces lo que venga dsp tiene que ser int
 
-                    expresionUnario();
+                    //expresionUnario();
                 }
-                //expresionUnario();
+                expresionUnario();
             }
         }
         else { // si no es opMas ni opMenos es un operando
             tipoRetorno = operando();
         }
+        return tipoRetorno;
     }
 
     // ExpresionAd -> ExpresionMul ExpresionAdRec
@@ -609,7 +615,7 @@ public class Sintactico {
     private void expresionAdRec() throws ErrorSintactico, ErrorLexico {
         // es recursiva cada vez que venga un opAd vuelvo a entrar
         // Prim(OpAd) = {+ , -}
-        while (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos")){
+        if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos")){
             opAd();
             expresionMul();
             expresionAdRec();
@@ -711,12 +717,15 @@ public class Sintactico {
                     case "prNil":
                         literal();
                         tipoRetorno = new TipoNil();
+                        break;
                     case "literal_entero":
                         literal();
                         tipoRetorno = new TipoInt();
+                        break;
                     case "literal_cadena":
                         literal();
                         tipoRetorno = new TipoStr();
+                        break;
                 }
                 //literal();
                 //break;
@@ -1046,7 +1055,6 @@ public class Sintactico {
             return next;
         }
         return null;*/
-
 
     }
 
