@@ -478,7 +478,7 @@ public class Sintactico {
     private void listaEncadenadoSimple() throws ErrorSintactico, ErrorLexico {
         // es recursiva por lo tanto cada vez que viene un primero de encadenado simple vuelvo a entrar
         // Prim(EncadenadoSimple) = {.}
-        while (token.getTipo().equals("pto")){
+        if (token.getTipo().equals("pto")){
             encadenadoSimple();
             listaEncadenadoSimple();
         }
@@ -536,7 +536,7 @@ public class Sintactico {
     private void expresionigualRec() throws ErrorSintactico, ErrorLexico {
         // voy a repetir siempre que vengan los primros de opIgual
         // Prim(OpIgual) = { == , != }
-        while (token.getTipo().equals("opIgualIgual") | token.getTipo().equals("opDiferente")){
+        if (token.getTipo().equals("opIgualIgual") | token.getTipo().equals("opDiferente")){
             opIgual();
             expresionComp();
             expresionigualRec();
@@ -578,17 +578,24 @@ public class Sintactico {
     }
 
     // ExpresionUnario -> OpUnario ExpresionUnario | Operando
-    private void expresionUnario() throws ErrorSintactico, ErrorLexico {
+    private Tipo expresionUnario() throws ErrorSintactico, ErrorLexico {
+        Tipo tipoRetorno = null;
         // siempre que venga un opUnario vuelvo
         if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos")){
             while (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos") |
                     token.getTipo().equals("opNot") | token.getTipo().equals("parAbre")){
                 opUnario();
-                expresionUnario();
+                if (tipoRetorno == "tInt") {
+                    // solo si es de tipo int entro a expresion unario de nuevo
+                    // porque ya consumi el opUnario, entonces lo que venga dsp tiene que ser int
+
+                    expresionUnario();
+                }
+                //expresionUnario();
             }
         }
         else { // si no es opMas ni opMenos es un operando
-            operando();
+            tipoRetorno = operando();
         }
     }
 
@@ -685,14 +692,34 @@ public class Sintactico {
     }
 
     // Operando -> Literal | Primario | EncadenadoOpt
-    private void operando() throws ErrorSintactico, ErrorLexico {
+    // Operando retorna un tipo
+    private Tipo operando() throws ErrorSintactico, ErrorLexico {
         String tipo = token.getTipo();
+        Tipo tipoRetorno = null;
+
         // si viene un literal
         switch (tipo){
             // Prim(Literal) = {nil, true, false, intLiteral, strLiteral}
+            // agrego un swtich para devolver el tipo de cada uno individual
+            // Operando.tipo == Literal.tipo
             case "prNil" , "prTrue", "prFalse", "literal_entero", "literal_cadena":
-                literal();
-                break;
+                switch (tipo) {
+                    case "prTrue" | "prFalse":
+                        literal(); // voy a literal, consumo el token y vuelvo
+                        tipoRetorno = new TipoBool();
+                        break;
+                    case "prNil":
+                        literal();
+                        tipoRetorno = new TipoNil();
+                    case "literal_entero":
+                        literal();
+                        tipoRetorno = new TipoInt();
+                    case "literal_cadena":
+                        literal();
+                        tipoRetorno = new TipoStr();
+                }
+                //literal();
+                //break;
             // Prim(Primario) = { (, self, id, idclass, new}
             case "parAbre", "prSelf", "idMetVar", "idClass", "prNew":
                 primario();
@@ -700,6 +727,7 @@ public class Sintactico {
             case "pto":
                 encadenadoOpt();
         }
+        return tipoRetorno;
     }
 
     // EncadenadoOpt -> Encadenado | lambda
