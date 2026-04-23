@@ -79,7 +79,7 @@ public class Sintactico {
     // Class -> class idClass HerenciaOpt { listaAtributos }
     private void clase() throws ErrorSintactico, ErrorLexico {
         match("prClass");
-        match("idClass");
+        match("idClass"); //guardarTS(lexema);
         herenciaOpt(); //metodo creado a partir del ?, ya que puede o no estar
         match("llaveAbre");
         listaAtributos(); // si lo que viene es } es porque era lambda
@@ -242,6 +242,7 @@ public class Sintactico {
         listaDeclaracionVarLocal();
         listaSentencia();
         match("llaveCierra");
+        System.out.println("deberia no ver llave cierra, y veo: "+token.getTipo());
     }
 
     // ListaDeclaracionVarLocal -> DeclaracionVarLocal ListaDeclaracionVarLocal | lambda
@@ -291,7 +292,7 @@ public class Sintactico {
     }
     // TipoArray -> Array TipoPrimitivo
     private void tipoArreglo() throws ErrorSintactico, ErrorLexico {
-        match("tArray");
+        match("prArray");
         tipoPrimitivo();
     }
 
@@ -358,7 +359,7 @@ public class Sintactico {
                 if (token.getTipo().equals("prIf")){
                     match(("prIf"));
                     match("parAbre");
-                    expresion();
+                    expresion(); //devuelvo la condicion
                     match("parCierra");
                     sentenciaRec();
                 }

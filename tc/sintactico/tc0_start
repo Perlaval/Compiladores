@@ -32,3 +32,4 @@ io = new IO();
 a = new A();
 (io.out_str(a.retB(10).y.hola));
 }
+

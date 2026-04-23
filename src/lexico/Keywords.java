@@ -26,14 +26,13 @@ public class Keywords {
         tabla.put("in", "prIn");
         tabla.put("do", "prDo");
         tabla.put("void", "prVoid");
+        tabla.put("Array", "prArray");
 
 
         // tipos
         tabla.put("Int", "tInt");
         tabla.put("Bool","tBool");
         tabla.put("Str", "tStr");
-        tabla.put("Array", "tArray");
-
 
     }
 
