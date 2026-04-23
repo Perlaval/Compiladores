@@ -66,12 +66,14 @@ public class Sintactico {
     // ListaDefiniciones -> Clase ListaDefiniciones | Implementacion ListaDefiniciones | lambda
     private void listaDefiniciones() throws ErrorSintactico, ErrorLexico {
         // es recursiva, por lo que voy a agregar un while, mientras lea la palabra reservada class o impl, tiene que volver a entrar
-        while (token.getTipo().equals("prClass") || token.getTipo().equals("prImpl")){
+        if (token.getTipo().equals("prClass") || token.getTipo().equals("prImpl")){
             if (token.getTipo().equals("prClass")){
                 clase();
+                listaDefiniciones();
             }
             else {
                 impl();
+                listaDefiniciones();
             }
         }
     }
@@ -104,10 +106,11 @@ public class Sintactico {
         // si lo que viene no esta en los primeros de Atributo es porque listaAtributos es lambda entonces aca no hace nada
         // es recursiva, por lo tanto siempre que venga alguno de los primeros de A vuelvo a entrar
         // como puede no tener prPub, tambien puedo ir directamente a Tipo
-        while (tipo.equals("prPub") | tipo.equals("tStr") | tipo.equals("tBool") | tipo.equals("tInt") | tipo.equals("idClass") | tipo.equals("tArray")){
+        if (tipo.equals("prPub") | tipo.equals("tStr") | tipo.equals("tBool") | tipo.equals("tInt") | tipo.equals("idClass") | tipo.equals("tArray")){
             atributo();
             // actualizo el tipo
             tipo = token.getTipo();
+            listaAtributos();
         }
     }
 
@@ -124,8 +127,9 @@ public class Sintactico {
     private void listaMiembros() throws ErrorSintactico, ErrorLexico {
         // si lo que viene esta en los primeros de miembro es porque lista miembro no es lambda
         // Prim(E) = { st, . , lambda}
-        while (esPrimeroMiembro(token.getTipo()) | token.getTipo().equals("prFn")){
+        if (esPrimeroMiembro(token.getTipo()) | token.getTipo().equals("prFn")){
             miembro();
+            listaMiembros();
         }
     }
 
@@ -249,16 +253,18 @@ public class Sintactico {
     private void listaDeclaracionVarLocal() throws ErrorSintactico, ErrorLexico {
         // recursiva
         // si lo que viene esta en los primeros de declaracionVarLocal es porque no es lambda
-        while (esPrimeroDeclaracionVarLocal(token.getTipo())){
+        if (esPrimeroDeclaracionVarLocal(token.getTipo())){
             declaracionVarLocal();
+            listaDeclaracionVarLocal();
         }
     }
 
     // ListaSentencia -> Sentencia ListaSentencia | lambda
     private void listaSentencia() throws ErrorSintactico, ErrorLexico {
         // mientras este en los primeros de sentencia vuelvo a entrar
-        while (esPrimeroSentencia(token.getTipo())){
+        if (esPrimeroSentencia(token.getTipo())){
             sentencia();
+            listaSentencia();
         }
     }
 
@@ -487,7 +493,7 @@ public class Sintactico {
     private void listaEncadenadoSimple() throws ErrorSintactico, ErrorLexico {
         // es recursiva por lo tanto cada vez que viene un primero de encadenado simple vuelvo a entrar
         // Prim(EncadenadoSimple) = {.}
-        while (token.getTipo().equals("pto")){
+        if (token.getTipo().equals("pto")){
             encadenadoSimple();
             listaEncadenadoSimple();
         }
@@ -528,7 +534,7 @@ public class Sintactico {
 
     //ExpresionAndRec -> && ExpIgual ExpresionAndRec | lamnda
     private void expresionAndRec() throws ErrorSintactico, ErrorLexico {
-        while (token.getTipo().equals("opAndLog")){
+        if (token.getTipo().equals("opAndLog")){
             match("opAndLog");
             expresionIgual();
             expresionAndRec();
@@ -545,7 +551,7 @@ public class Sintactico {
     private void expresionigualRec() throws ErrorSintactico, ErrorLexico {
         // voy a repetir siempre que vengan los primros de opIgual
         // Prim(OpIgual) = { == , != }
-        while (token.getTipo().equals("opIgualIgual") | token.getTipo().equals("opDiferente")){
+        if (token.getTipo().equals("opIgualIgual") | token.getTipo().equals("opDiferente")){
             opIgual();
             expresionComp();
             expresionigualRec();
@@ -579,7 +585,7 @@ public class Sintactico {
     // ExpresionMulRec -> OpMul ExpresionUnario ExpresionMulRec | lambda
     private void expresionMulRec() throws ErrorSintactico, ErrorLexico {
         // simpre que venga un opMul hago recursividad
-        while (token.getTipo().equals("opPor") | token.getTipo().equals("opdiv")){
+        if (token.getTipo().equals("opPor") | token.getTipo().equals("opdiv")){
             opMul();
             expresionUnario();
             expresionMulRec();
@@ -589,12 +595,10 @@ public class Sintactico {
     // ExpresionUnario -> OpUnario ExpresionUnario | Operando
     private void expresionUnario() throws ErrorSintactico, ErrorLexico {
         // siempre que venga un opUnario vuelvo
-        if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos")){
-            while (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos") |
-                    token.getTipo().equals("opNot") | token.getTipo().equals("parAbre")){
-                opUnario();
-                expresionUnario();
-            }
+        if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos") |
+                token.getTipo().equals("opMasMas") | token.getTipo().equals("opMenosMenos")){
+            opUnario();
+            expresionUnario();
         }
         else { // si no es opMas ni opMenos es un operando
             operando();
@@ -611,7 +615,7 @@ public class Sintactico {
     private void expresionAdRec() throws ErrorSintactico, ErrorLexico {
         // es recursiva cada vez que venga un opAd vuelvo a entrar
         // Prim(OpAd) = {+ , -}
-        while (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos")){
+        if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos")){
             opAd();
             expresionMul();
             expresionAdRec();
