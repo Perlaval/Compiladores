@@ -26,10 +26,11 @@ ret self .x;
 }
 }
 start {
-A a;
-IO io;
-io = new IO();
-a = new A();
-(io.out_str(a.retB(10).y.hola));
+Int a;
+Int c;
+Int b;
+b=3; //deveria largar error sintactico
+a=10;
+c=a+b; //esto NO devuelve error de tipo
+(IO.print_Int(c));
 }
-

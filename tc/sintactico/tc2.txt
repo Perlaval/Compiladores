@@ -1,0 +1,19 @@
+class A {}
+impl A {
+    fn m1() {}
+    fn m2(Int p){}
+}
+
+class B : A {}
+impl B {
+    fn m2(Int x){}
+    fn m3(){}
+}
+class C : B {}
+impl C{
+    fn m3(){}
+    fn m3(){}
+}
+start{
+
+}

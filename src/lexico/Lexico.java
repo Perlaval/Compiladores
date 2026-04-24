@@ -346,8 +346,9 @@ public class Lexico {
                                             case '|':
                                                 if (charSig == '|') {
                                                     avanzar();
+                                                    avanzar();
                                                     //almacenarToken("opOr", "||", contadorLineas, contadorColumnas);
-                                                    new Token("opOr", "||", contadorLineas, contadorColumnas);
+                                                    return new Token("opOr", "||", contadorLineas, contadorColumnas);
 
                                                 } else {
                                                     throw new ErrorLexico(contadorLineas, contadorColumnas,
@@ -552,6 +553,11 @@ public class Lexico {
         } else {
             incrementarColumnas(1);
             charActual = codFuente.charAt(puntero);
+            //if (puntero + 1 < codFuente.length()) {
+            //    charSig = codFuente.charAt(puntero + 1);
+            //} else {
+            //    charSig = '\0';
+            //}
 
         }
     }
@@ -567,7 +573,7 @@ public class Lexico {
         }
     }
 
-    //asigna el valor del primer caracter del codigo fuente a la cariable charActual
+    //asigna el valor del primer caracter del codigo fuente a la variable charActual
     private void inicializarCharActual(){
         if (!esFinArchivo()){
             charActual = codFuente.charAt(puntero);

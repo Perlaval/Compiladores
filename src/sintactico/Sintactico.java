@@ -55,6 +55,7 @@ public class Sintactico {
         if (token.getLexema().equals("start")){
             // deberia matchear idMetVar, porque start al no ser reservada la toma como idMetVar
             match("idMetVar"); //consumo start y voy a bloque
+            System.out.println("Voy a bloque metodo con: "+token.getTipo());
             bloqueMetodo();
         }
         else {
@@ -220,7 +221,7 @@ public class Sintactico {
                 tipoReferencia();
             }
             else {
-                if (token.getTipo().equals("tArray")){
+                if (token.getTipo().equals("prArray")){
                     tipoArreglo();
                 }
             }
@@ -244,7 +245,9 @@ public class Sintactico {
     // BloqueMetodo -> { ListaDeclaracioVarLocal ListaSentencia }
     private void bloqueMetodo() throws ErrorSintactico, ErrorLexico {
         match("llaveAbre");
+        System.out.println("Voy a lista declaracion var local con: "+token.getTipo());
         listaDeclaracionVarLocal();
+        System.out.println("Voy a lista sentencia var local con: "+token.getTipo());
         listaSentencia();
         match("llaveCierra");
         System.out.println("deberia no ver llave cierra, y veo: "+token.getTipo());
@@ -255,8 +258,11 @@ public class Sintactico {
         // recursiva
         // si lo que viene esta en los primeros de declaracionVarLocal es porque no es lambda
         if (esPrimeroDeclaracionVarLocal(token.getTipo())){
+            System.out.println("voy a declaracion var local con: "+token.getTipo());
             declaracionVarLocal();
+            System.out.println("vuelvo a entrar a lista declaracion var local con: "+token.getTipo());
             listaDeclaracionVarLocal();
+
         }
     }
 
@@ -305,6 +311,7 @@ public class Sintactico {
 
     // DeclaracionVarLocal -> Tipo ListaDeclaracionVar ;
     private void declaracionVarLocal() throws ErrorSintactico, ErrorLexico {
+        System.out.println("Estoy en declaracion var local con: "+token.getTipo());
         tipo();
         listaDeclaracionVar();
         match("ptoComa");
@@ -366,6 +373,7 @@ public class Sintactico {
                 if (token.getTipo().equals("prIf")){
                     match(("prIf"));
                     match("parAbre");
+                    System.out.println("Voy a expresion con: "+token.getTipo());
                     expresion(); //devuelvo la condicion
                     match("parCierra");
                     sentenciaRec();
@@ -401,6 +409,7 @@ public class Sintactico {
                                 else {
                                     // con idMetVar o con self voy a asignacion
                                     if (token.getTipo().equals("idMetVar") | token.getTipo().equals("prSelf")){
+                                        System.out.println("Voy a asignacion con: "+token.getTipo());
                                         asignacion();
                                     }
                                 }
@@ -420,13 +429,19 @@ public class Sintactico {
 
     // RecursivoElse -> else Sentencia | lambda
     private void recursivoElse() throws ErrorSintactico, ErrorLexico {
-        match("prElse");
-        sentencia();
+        if (token.getTipo().equals("prElse")){
+            match("prElse");
+            sentencia();
+        }
+        // sino es lambda
     }
 
     // ExpresionOpt -> Expresion | lambda
     private void expresionOpt() throws ErrorSintactico, ErrorLexico {
-        expresion();
+        if (esPrimeroExpresion(token.getTipo())){
+            expresion();
+        }
+
     }
 
     // SentenciaSimple -> ( Expresion )
@@ -533,7 +548,7 @@ public class Sintactico {
         expresionAndRec();
     }
 
-    //ExpresionAndRec -> && ExpIgual ExpresionAndRec | lamnda
+    //ExpresionAndRec -> && ExpIgual ExpresionAndRec | lambda
     private void expresionAndRec() throws ErrorSintactico, ErrorLexico {
         if (token.getTipo().equals("opAndLog")){
             match("opAndLog");
@@ -571,7 +586,6 @@ public class Sintactico {
         // Prim(OpComp) = {<, >, <=, >=}
         if (token.getTipo().equals("opMenor") | token.getTipo().equals("opMenorIgual")  | token.getTipo().equals("opMayor")
                 | token.getTipo().equals("opMayorIgual")){
-
             opComp();
             expresionAd();
         }
@@ -597,12 +611,18 @@ public class Sintactico {
     private void expresionUnario() throws ErrorSintactico, ErrorLexico {
         // siempre que venga un opUnario vuelvo
         if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos") |
-                token.getTipo().equals("opMasMas") | token.getTipo().equals("opMenosMenos")){
+                token.getTipo().equals("opMasMas") | token.getTipo().equals("opMenosMenos") | token.getTipo().equals("opNot")){
             opUnario();
             expresionUnario();
         }
         else { // si no es opMas ni opMenos es un operando
-            operando();
+            // si lo que viene no esta en los prim de operando no voy
+            if (esPrimeroOperando(token.getTipo())) {
+                operando();
+            } else {
+                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un operando y se enontro "+token.getTipo());
+            }
+            //operando();
         }
     }
 
@@ -647,6 +667,7 @@ public class Sintactico {
                 break;
             case "opMenor":
                 match("opMenor");
+                System.out.println("Matheo opMenor y salgo con: "+token.getTipo());
                 break;
             case "opMenorIgual":{
                 match("opMenorIgual");
@@ -667,7 +688,7 @@ public class Sintactico {
         }
     }
 
-    // opUnario -> + | - | ++ | --
+    // opUnario -> + | - | ++ | -- | !
     private void opUnario() throws ErrorSintactico, ErrorLexico {
         String tipo = token.getTipo();
         switch (tipo){
@@ -682,6 +703,9 @@ public class Sintactico {
                 break;
             case "opMenosMenos":
                 match("opMenosMenos");
+                break;
+            case "opNot":
+                match("opNot");
                 break;
         }
     }
@@ -701,6 +725,7 @@ public class Sintactico {
     // Operando -> Literal | Primario EncadenadoOpt
     private void operando() throws ErrorSintactico, ErrorLexico {
         String tipo = token.getTipo();
+        //System.out.println("Estoy en operando con: "+token.getTipo());
         // si viene un literal
         switch (tipo){
             // Prim(Literal) = {nil, true, false, intLiteral, strLiteral}
@@ -709,9 +734,12 @@ public class Sintactico {
                 break;
             // Prim(Primario) = { (, self, id, idclass, new}
             case "parAbre", "prSelf", "idMetVar", "idClass", "prNew":
+                System.out.println("Voy a primario con: "+token.getTipo());
                 primario();
                 encadenadoOpt();
+
         }
+        //System.out.println("salgo de operando con: "+token.getTipo());
     }
 
     // EncadenadoOpt -> Encadenado | lambda
@@ -760,6 +788,7 @@ public class Sintactico {
             // como ambas van a id veo los siguientes
             case "idMetVar":
                 // si me viene un parAbre es porque fue a LlamadaMetodo
+                System.out.println("estoy en primario con: "+token.getTipo());
                 Token next = lookAhead();
                 if (next.getTipo().equals("parAbre")){
                     llamadaMetodo();
@@ -878,7 +907,7 @@ public class Sintactico {
         }
     }
 
-    // Encadenado -> . fec
+    // Encadenado -> . EncadenadoRec
     private void encadenado() throws ErrorSintactico, ErrorLexico {
         match("pto");
         encadenadoRec();
@@ -899,10 +928,22 @@ public class Sintactico {
 
     // Conjuntos de primeros --------------------------------------------------------------------------------
 
+    // COnjunto de primeros Operando
+    // Prim(Operando) = {nil, true, false, intLiteral, strLiteral, (, self, id, idClass, new, ., lambda}
+    private boolean esPrimeroOperando(String tipo){
+        if (tipo == "prNil" | tipo == "prTrue" | tipo == "prFalse" | tipo == "literal_entero" | tipo == "literal_cadena" |
+                tipo == "parAbre" | tipo == "prSelf" | tipo == "idMetVar" | tipo == "idClass" | tipo == "prNew" | tipo == "pto"){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
     // conjunto de primeros expresion
     private boolean esPrimeroExpresion(String tipo){
         // Prim(Expresion) = {+, -, !, ++, --, (, self, id, idclass, new, nil, true, false, intLiteral, strliteral, . ,lambda}
-        if (tipo == "opMas" | tipo == "opMenos"| tipo == "opNot" | tipo == "opMasMAs" | tipo == "opMenosMenos" |
+        if (tipo == "opMas" | tipo == "opMenos"| tipo == "opNot" | tipo == "opMasMas" | tipo == "opMenosMenos" |
                 tipo == "prNil" | tipo == "prTrue" | tipo == "prFalse" | tipo == "literal_entero" | tipo == "literal_cadena" |
                 tipo == "parAbre" | tipo == "prSelf" | tipo == "idMetVar" | tipo == "idClass" | tipo == "prNew" |
                 tipo == "pto"){
@@ -950,7 +991,7 @@ public class Sintactico {
     // conjunto de primeros declaracion variable local
     private boolean esPrimeroDeclaracionVarLocal(String tipo){
         // Prim(DeclaracionVarLocal) = {Str, Bool, Int, idClass, Array, lambda}
-        if (tipo == "tStr" | tipo == "tBool" | tipo == "tInt" | tipo == "idClass" | tipo == "tArray"){
+        if (tipo == "tStr" | tipo == "tBool" | tipo == "tInt" | tipo == "idClass" | tipo == "prArray"){
             return true;
         }
         else {

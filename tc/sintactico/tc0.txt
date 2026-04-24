@@ -1,0 +1,27 @@
+class Calculadora {
+    Int resultado;
+    Bool estado;
+}
+
+impl Calculadora {
+    .() {
+        resultado = 0;
+        estado = true;
+    }
+
+    fn Int calcular(Int x, Int y) {
+        // Prueba de precedencia: (Aritmetica) -> Comp -> Logica
+        if ((x + y) * 2 / -5 > 10 && !estado || x == y) {
+            ret ++x; // Operador unario prefijo
+        } else {
+            ret --y;
+        }
+    }
+}
+
+start {
+    Calculadora c;
+    c = new Calculadora();
+    (IO.out_int(c.calcular(10, 5)));
+
+}

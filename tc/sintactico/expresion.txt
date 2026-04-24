@@ -1,6 +1,0 @@
-
-impl B{
-fn Bool getX() {
-int x = +2;
-}
-start{}

@@ -67,9 +67,9 @@
 60. ExpresionAd -> ExpresionMul ExpresionAdRec
 61. ExpresionAdRec -> OpAd ExpresionMul ExpresionAdRec | lambda
 62. OpIgual -> == | !=
-63. opComp -> < | > | <= | >=
-64. opAd -> + | -
-65. opUnario -> + | - | ++ | -- 
+63. OpComp -> < | > | <= | >=
+64. OpAd -> + | -
+65. OpUnario -> + | - | ++ | -- 
 66. OpMul -> * | /
 67. Operando -> Literal | Primario | EncadenadoOpt
 68. EncadenadoOpt -> Encadenado | lambda

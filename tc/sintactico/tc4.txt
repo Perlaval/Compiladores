@@ -1,0 +1,22 @@
+class Nodo {
+    pub Nodo sig;
+    pub Int val;
+}
+
+impl Nodo { .() {} }
+
+start {
+    Array Int lista;
+    Nodo n;
+    lista = new Int[9];
+    n = new Nodo();
+
+    lista = 100;
+    n.sig = new Nodo();
+    n.sig.val = lista + 1; // Acceso encadenado complejo
+
+    if (n.sig.val != nil && n.val < lista.length()) {
+       // (IO.out_str("Correcto")); // este no larga error
+       (IO.out_int(5, )); // deberia largar error
+    }
+}
