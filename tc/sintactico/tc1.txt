@@ -29,7 +29,7 @@ start {
 Int a;
 Int c;
 Int b;
-b=3; //deveria largar error sintactico
+b=3;
 a=10;
 c=a+b; //esto NO devuelve error de tipo
 (IO.print_Int(c));

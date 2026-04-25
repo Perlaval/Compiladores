@@ -83,7 +83,7 @@ public class Sintactico {
     private void clase() throws ErrorSintactico, ErrorLexico {
         match("prClass");
         match("idClass"); //guardarTS(lexema);
-        herenciaOpt(); //metodo creado a partir del ?, ya que puede o no estar
+        herenciaOpt(); //si esto existe voy a guardar en la hash HeredadDe el lex del idClass, sino pongo HeredaDe: object
         match("llaveAbre");
         listaAtributos(); // si lo que viene es } es porque era lambda
         match("llaveCierra");
@@ -118,7 +118,7 @@ public class Sintactico {
     // Impl -> impl idClass { ListaMiembros }
     private void impl() throws ErrorSintactico, ErrorLexico {
         match("prImpl");
-        match("idClass");
+        match("idClass"); //guardoTs(idClass.lex)
         match("llaveAbre");
         listaMiembros();
         match("llaveCierra");
@@ -148,19 +148,18 @@ public class Sintactico {
             metodo();
         }
         else {
-            System.out.println("voy al constructor");
             constructor();
         }
     }
 
     // Metodo -> FormaMetodoOpt fn TipoMetodoOpt idMetAt ArgumentosFormales BloqueMetodo
     private void metodo() throws ErrorSintactico, ErrorLexico {
-        formaMetodoOpt();
+        formaMetodoOpt(); // si entra aca es un metodo St, sino no
         match("prFn");
-        tipoMetodoOpt();
-        match("idMetVar");
-        argumentosFormales();
-        bloqueMetodo();
+        tipoMetodoOpt(); // va a guardar en la ts el tipo de retorno de la funcion
+        match("idMetVar"); //guardoTS(idMetVar.lex)
+        argumentosFormales(); //voy a guardar en la hash de listaParametros todos los argumentos
+        bloqueMetodo(); // voy a guardar en la listaVariablesLocales todas las var que esten en bloque metodo
     }
 
     // formaMetodoOpt -> formaMetodo | lambda
@@ -196,9 +195,14 @@ public class Sintactico {
 
     // Atributo -> VisibilidadOpt Tipo ListaDeclaracionVar ;
     private void atributo() throws ErrorSintactico, ErrorLexico {
-        visibilidadOpt();
+        // guardo en la TS el atributo con la posicion, visibilidad, tipo, nombre
+        //boolean privado = true;
+        visibilidadOpt(); // si no entra a visibilidad es de tipo priv
         tipo();
         listaDeclaracionVar();
+        // salgo de aca y voy a haber guardado por ej para: Int a,b
+        // pos visibilidad tipo nombre
+        //| 0 | pub | Int a | b |
         match("ptoComa");
     }
 
@@ -207,6 +211,7 @@ public class Sintactico {
         // si lo que viene esta en los primeros de visibilidad entro
         if (token.getTipo().equals("prPub")){
             visibilidad();
+
         }
     }
 
@@ -230,7 +235,7 @@ public class Sintactico {
 
     // ListaDeclaracionVar -> idMetAt ListaDeclaracionesVarRec
     private void listaDeclaracionVar() throws ErrorSintactico, ErrorLexico {
-        match("idMetVar");
+        match("idMetVar"); //guardoTs(idMetVar.lex)
         listaDeclaracionVarRec();
     }
 
@@ -245,12 +250,9 @@ public class Sintactico {
     // BloqueMetodo -> { ListaDeclaracioVarLocal ListaSentencia }
     private void bloqueMetodo() throws ErrorSintactico, ErrorLexico {
         match("llaveAbre");
-        System.out.println("Voy a lista declaracion var local con: "+token.getTipo());
         listaDeclaracionVarLocal();
-        System.out.println("Voy a lista sentencia var local con: "+token.getTipo());
         listaSentencia();
         match("llaveCierra");
-        System.out.println("deberia no ver llave cierra, y veo: "+token.getTipo());
     }
 
     // ListaDeclaracionVarLocal -> DeclaracionVarLocal ListaDeclaracionVarLocal | lambda
@@ -258,9 +260,7 @@ public class Sintactico {
         // recursiva
         // si lo que viene esta en los primeros de declaracionVarLocal es porque no es lambda
         if (esPrimeroDeclaracionVarLocal(token.getTipo())){
-            System.out.println("voy a declaracion var local con: "+token.getTipo());
             declaracionVarLocal();
-            System.out.println("vuelvo a entrar a lista declaracion var local con: "+token.getTipo());
             listaDeclaracionVarLocal();
 
         }
@@ -270,6 +270,7 @@ public class Sintactico {
     private void listaSentencia() throws ErrorSintactico, ErrorLexico {
         // mientras este en los primeros de sentencia vuelvo a entrar
         if (esPrimeroSentencia(token.getTipo())){
+            System.out.println("Entro sentencia?"+token.getTipo());
             sentencia();
             listaSentencia();
         }
@@ -277,31 +278,31 @@ public class Sintactico {
 
     // Visibilidad -> pub
     private void visibilidad() throws ErrorSintactico, ErrorLexico {
-        match("prPub");
+        match("prPub"); //lo manejo con flags para guardar en la TS
     }
 
     // FormaMetodo -> st
     private void formaMetodo() throws ErrorSintactico, ErrorLexico {
-        match("prSt");
+        match("prSt"); // lo manejo con flags para guardar en la TS
     }
 
     // TipoPrimitivo -> Str | Bool | Int
     private void tipoPrimitivo() throws ErrorSintactico, ErrorLexico {
         switch (token.getTipo()){
             case "tStr":
-                match("tStr");
+                match("tStr"); //guardoTS(token.lex)
                 break;
             case "tBool":
-                match("tBool");
+                match("tBool"); //guardoTS(token.lex)
                 break;
             case "tInt":
-                match("tInt");
+                match("tInt"); //guardoTS(token.lex)
                 break;
         }
     }
     // TipoReferencia -> idClass
     private void tipoReferencia() throws ErrorSintactico, ErrorLexico {
-        match("idClass");
+        match("idClass"); //guardoTS(idClass.lex)
     }
     // TipoArray -> Array TipoPrimitivo
     private void tipoArreglo() throws ErrorSintactico, ErrorLexico {
@@ -311,9 +312,10 @@ public class Sintactico {
 
     // DeclaracionVarLocal -> Tipo ListaDeclaracionVar ;
     private void declaracionVarLocal() throws ErrorSintactico, ErrorLexico {
-        System.out.println("Estoy en declaracion var local con: "+token.getTipo());
-        tipo();
-        listaDeclaracionVar();
+        // en la hash de ListaVariablesLocales de un metodo voy a guardar:
+        // la pos
+        tipo(); //guardo el tipo
+        listaDeclaracionVar(); //guardo el o los nombres de la variable
         match("ptoComa");
     }
 
@@ -342,8 +344,12 @@ public class Sintactico {
 
     // ArgumentoFormal -> Tipo idMetAt
     private void argumentoFormal() throws ErrorSintactico, ErrorLexico {
-        tipo();
-        match("idMetVar");
+        // en la hash de listaParametros voy a guardar
+        // guardo la pos
+        tipo();  //guardo el tipo (que eso se hace en cada metodo individual)
+        match("idMetVar");  //guardatTS(idMetVar.lex)
+        // quedaria algo asi: pos tipo nombre
+        // | 0 | Int | a |
     }
      // TipoMetodo -> Tipo | void
     // Prim(Tipo)= {str, bool int, idClass, Array}
@@ -353,7 +359,7 @@ public class Sintactico {
             tipo();
         }
         else {
-            match("prVoid");
+            match("prVoid"); //guardoTS(token.lex)
         }
 
     }
@@ -629,6 +635,7 @@ public class Sintactico {
     // ExpresionAd -> ExpresionMul ExpresionAdRec
     private void expresionAd() throws ErrorSintactico, ErrorLexico {
         expresionMul();
+        System.out.println("Entro a expreionAdRec con ++? "+token.getTipo());
         expresionAdRec();
     }
 
