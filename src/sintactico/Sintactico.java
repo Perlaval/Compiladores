@@ -308,6 +308,7 @@ public class Sintactico {
     private void tipoArreglo() throws ErrorSintactico, ErrorLexico {
         match("prArray");
         tipoPrimitivo();
+        // return true
     }
 
     // DeclaracionVarLocal -> Tipo ListaDeclaracionVar ;

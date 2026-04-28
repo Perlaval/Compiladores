@@ -2,7 +2,7 @@ class A {}
 impl A {
     .() {}
     fn B retB(Int x) {
-        if (x > 2){
+        if ( m1(x)){
         //if (== *5) { // deberia largar error sintactico
         ret new B(0);
         } else {
@@ -16,6 +16,6 @@ class B : A {
 impl B {fn Str f() {}}
 start {
     Int b;
-    b = 4++;
+    b = 4;
     c = b + b;
 }
