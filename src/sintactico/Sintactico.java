@@ -1056,13 +1056,8 @@ public class Sintactico {
     // funcion para pedir el next token cuando matcheo
     private void nextToken() throws ErrorLexico {
         puntero += 1;
-        // verifico que no consumi todos los tokens
-        /*if (puntero < listaTokens.size()){
-            token = listaTokens.get(puntero);
-        }*/
-        if (!lexico.esFinArchivo()){
-            token = lexico.analizador();
-        }
+        token = lexico.analizador();
+
 
 
     }
