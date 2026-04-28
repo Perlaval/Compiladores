@@ -1,6 +1,7 @@
 package lexico;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 //Esta clase corresponde a la etapa del analizador lexico del compilador, en la misma se identifican tanto los lexemas y su token correspondiente como el numero de linea y columna en la que se encuentra cada uno en el codigo fuente,
@@ -35,7 +36,7 @@ public class Lexico {
 
         String lexema;
         String lexemaError;
-        
+
         //1. Analizamos el codigo fuente y evaluamos cada uno de los casos
         //int longitud = codFuente.length();
         int tab = 8; // defino esta variable estableciendo que un tab son 8 posiciones
@@ -52,465 +53,471 @@ public class Lexico {
                     avanzar();
                 }
                 else {
-                        if ((int) charActual == 10) { // \n : salto de linea en Linux
-                            incrementarLineas();
-                            reiniciarColumnas();
-                            avanzar();
+                    if ((int) charActual == 10) { // \n : salto de linea en Linux
+                        incrementarLineas();
+                        reiniciarColumnas();
+                        avanzar();
+                    }
+                    else {
+                        // REVISAR ------------------------------------------
+                        if ((int) charActual == 9) { // \t : tab (8 posiciones)
+                            //aumentamos un tab
+                            int incrementoCol = (tab - (this.contadorColumnas % tab));
+                            incrementarColumnas(incrementoCol);
+
                         }
                         else {
-                                // REVISAR ------------------------------------------
-                                if ((int) charActual == 9) { // \t : tab (8 posiciones)
-                                    //aumentamos un tab
-                                    int incrementoCol = (tab - (this.contadorColumnas % tab));
-                                    incrementarColumnas(incrementoCol);
-
-                                }
-                                else {
-                                        // \r: va combinado con \n para hacer el salto de linea en WIndows, no incrementa columnas
-                                        if ((int) charActual == 13) {
-                                            avanzar();
-                                        }
-                                }
+                            // \r: va combinado con \n para hacer el salto de linea en WIndows, no incrementa columnas
+                            if ((int) charActual == 13) {
+                                avanzar();
+                            }
                         }
+                    }
                 }
             }
             //  COMENTARIOS --------------------------------------------------------------------------------------------
             else {
-                    if (charActual == '/') {
-                        actualizarCharSig();
+                if (charActual == '/') {
+                    actualizarCharSig();
 
-                        // 1. COMENTARIO SIMPLE
-                        if (charSig == '/'){
-                            avanzar(); // incremento puntero, incremento columnas, cambio charActual
+                    // 1. COMENTARIO SIMPLE
+                    if (charSig == '/'){
+                        avanzar(); // incremento puntero, incremento columnas, cambio charActual
+                        avanzar();
+                        //actualizarCharSig();
+                        System.out.println("LINEA: " + contadorLineas);
+                        System.out.println("COLUMNA: " + contadorColumnas);
+                        while (!esFinArchivo(puntero) && (int) charActual != 10 && (int) charActual != 13){
+                            avanzar();
                             //actualizarCharSig();
-                            while (!esFinArchivo(puntero) && (int) charActual != 10 && (int) charActual != 13){
-                                avanzar();
-                                //actualizarCharSig();
-                            }
-
-
                         }
-                        // 2. COMENTARIO MULTIPLE
-                        else {
-                                if (charSig == '*') { // /*
-                                    avanzar(); // charActual = '*'
-                                    avanzar();
-                                    actualizarCharSig();
-                                    while (!esFinArchivo(puntero) && charActual != '*' && charSig != '/') {
-                                        if ((int) charActual == 13 && (int) charSig == 10) {
-                                            //hay un salto de lineas: incremento lineas y reinicio columnas
-                                            avanzar(); // (int) charActual = 10
-                                            incrementarLineas();
-                                            reiniciarColumnas();
-                                        }
-                                        else {
-                                                if (charActual == 10) {
-                                                    incrementarLineas();
-                                                    reiniciarColumnas();
-                                                }
-                                        }
-
-                                        avanzar();
-                                        actualizarCharSig();
-                                    }
-
-                                    if (esFinArchivo(puntero)) {
-                                        throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRO EL COMENTARIO MULTIPLE");
-                                    }
-                                    else {
-                                        // charActual = '*' y charSig = '/'
-                                        avanzar(); // charActual = '/'
-
-                                    }
+                        //avanzar();
 
 
-                                }
-                                // OPERADOR /= -----------------------------------------------------------------------------------------
-                                else {
-                                        if (charSig == '=') {
-                                            avanzar();
-                                            //almacenarToken("opdivIgual", "/=", contadorLineas, contadorColumnas);
-                                            return new Token("opdivIgual", "/=", contadorLineas, contadorColumnas);
-
-                                        }
-                                        // OPERADOR / ------------------------------------------------------------------------------------------
-                                        else {
-                                            avanzar();
-                                            //almacenarToken("opdiv", "/", contadorLineas, contadorColumnas);
-                                            return new Token("opdiv", "/", contadorLineas, contadorColumnas);
-
-                                        }
-                                }
-                        }
                     }
-                    // CADENAS DE TEXTO ----------------------------------------------------------------------------------------
+                    // 2. COMENTARIO MULTIPLE
                     else {
-                            if ((int) charActual == 34) {
-
-                                // Comillas dobles, almacena strings
-                                lexema = "" + charActual;
+                        if (charSig == '*') { // /*
+                            avanzar(); // charActual = '*'
+                            avanzar();
+                            actualizarCharSig();
+                            while (!esFinArchivo(puntero) && charActual != '*' && charSig != '/') {
+                                if ((int) charActual == 13 && (int) charSig == 10) {
+                                    //hay un salto de lineas: incremento lineas y reinicio columnas
+                                    avanzar(); // (int) charActual = 10
+                                    incrementarLineas();
+                                    reiniciarColumnas();
+                                } else {
+                                    if (charActual == 10) {
+                                        incrementarLineas();
+                                        reiniciarColumnas();
+                                    }
+                                }
 
                                 avanzar();
                                 actualizarCharSig();
+                            }
 
-                                while (!esFinArchivo(puntero) && (int) charActual != 34) {
+                            if (esFinArchivo(puntero)) {
+                                throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRO EL COMENTARIO MULTIPLE");
+                            } else {
+                                // charActual = '*' y charSig = '/'
+                                avanzar(); // charActual = '/'
 
-                                    if (((int) charActual == 13 && (int) charSig == 10) | (int) charActual == 10) {
-                                        //hay un salto de lineas: incremento lineas y reinicio columnas
-                                        avanzar();
-                                        lexema += " ";
-                                        incrementarLineas();
-                                        reiniciarColumnas();
+                            }
+                        }
 
-                                    }
-                                    else {
-                                        if ((int) charActual == 10) {
-                                            lexema += " ";
-                                            incrementarLineas();
-                                            reiniciarColumnas();
+                        // OPERADOR /= -----------------------------------------------------------------------------------------
+                        else {
+                            if (charSig == '=') {
+                                avanzar();
+                                avanzar();
+                                //almacenarToken("opdivIgual", "/=", contadorLineas, contadorColumnas);
+                                return new Token("opdivIgual", "/=", contadorLineas, contadorColumnas-1);
 
-                                        }
-                                        else {
-                                            lexema += charActual; // se puede o no agregar el salto a la cadena (no lo agrego)
-                                        }
+                            }
+                            // OPERADOR / ------------------------------------------------------------------------------------------
+                            else {
+                                avanzar();
+                                avanzar();
+                                //almacenarToken("opdiv", "/", contadorLineas, contadorColumnas);
+                                return new Token("opdiv", "/", contadorLineas, contadorColumnas-1);
 
-                                    }
+                            }
+                        }
+                    }
+                }
+                // CADENAS DE TEXTO ----------------------------------------------------------------------------------------
+                else {
+                    if ((int) charActual == 34) {
 
-                                    avanzar();
-                                    actualizarCharSig();
-                                }
+                        // Comillas dobles, almacena strings
+                        lexema = "" + charActual;
 
-                                if (esFinArchivo(puntero)) {
-                                    throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRO LA CADENA DE CARACTERES");
-                                    // ERROR LEXICO: NO SE CERRO LA CADENA DE CARACTERES
+                        avanzar();
+                        actualizarCharSig();
+
+                        while (!esFinArchivo(puntero) && (int) charActual != 34) {
+
+                            if (((int) charActual == 13 && (int) charSig == 10) | (int) charActual == 10) {
+                                //hay un salto de lineas: incremento lineas y reinicio columnas
+                                avanzar();
+                                lexema += " ";
+                                incrementarLineas();
+                                reiniciarColumnas();
+
+                            }
+                            else {
+                                if ((int) charActual == 10) {
+                                    lexema += " ";
+                                    incrementarLineas();
+                                    reiniciarColumnas();
+
                                 }
                                 else {
+                                    lexema += charActual; // se puede o no agregar el salto a la cadena (no lo agrego)
+                                }
+
+                            }
+
+                            avanzar();
+                            actualizarCharSig();
+                        }
+
+                        if (esFinArchivo(puntero)) {
+                            throw new ErrorLexico(contadorLineas, contadorColumnas, "NO SE CERRO LA CADENA DE CARACTERES");
+                            // ERROR LEXICO: NO SE CERRO LA CADENA DE CARACTERES
+                        }
+                        else {
+                            lexema += charActual;
+                            avanzar();
+                            //almacenarToken("literal_cadena", lexema, contadorLineas, contadorColumnas);
+                            return new Token("literal_cadena", lexema, contadorLineas, contadorColumnas-1);
+
+                        }
+                    }
+                    // OPERADORES ARITMÉTICOS Y DE DECREMENTO ------------------------------------------------------------------
+                    else {
+                        if (esOperador(charActual)) {
+
+                            actualizarCharSig();
+
+                            switch (charActual) {
+                                case '+':
+                                    if (charSig == '=') {
+                                        avanzar();
+                                        avanzar();
+                                        //almacenarToken("opMasIgual", "+=", contadorLineas, contadorColumnas);
+                                        return new Token("opMasIgual", "+=", contadorLineas, contadorColumnas-1);
+
+                                    } else {
+                                        // para los casos de opUniario que tiene ++ y --
+                                        if (charSig == '+'){
+                                            avanzar();
+                                            avanzar();
+                                            //almacenarToken("opMasMas", "++", contadorLineas, contadorColumnas);
+                                            return new Token("opMasMas", "++", contadorLineas, contadorColumnas-1);
+
+                                        } else {
+                                            avanzar();
+                                            //almacenarToken("opMas", "+", contadorLineas, contadorColumnas);
+                                            return new Token("opMas", "+", contadorLineas, contadorColumnas-1);
+                                        }
+                                    }
+
+                                case '-':
+                                    if (charSig == '=') {
+                                        avanzar();
+                                        avanzar();
+                                        //almacenarToken("opMenosIgual", "-=", contadorLineas, contadorColumnas);
+                                        return new Token("opMenosIgual", "-=", contadorLineas, contadorColumnas-1);
+
+                                    } else {
+                                        if (charSig == '-'){
+                                            avanzar();
+                                            avanzar();
+                                            //almacenarToken("opMenosMenos", "--", contadorLineas, contadorColumnas);
+                                            return new Token("opMenosMenos", "--", contadorLineas, contadorColumnas-1);
+
+                                        } else {
+                                            avanzar();
+                                            //almacenarToken("opMenos", "-", contadorLineas, contadorColumnas);
+                                            return new Token("opMenos", "-", contadorLineas, contadorColumnas-1);
+                                        }
+                                    }
+
+                                case '*':
+                                    if (charSig == '=') {
+                                        avanzar();
+                                        avanzar();
+                                        //almacenarToken("opPorIgual", "*=", contadorLineas, contadorColumnas);
+                                        return new Token("opPorIgual", "*=", contadorLineas, contadorColumnas-1);
+
+                                    } else {
+                                        avanzar();
+                                        //almacenarToken("opPor", "*", contadorLineas, contadorColumnas);
+                                        return new Token("opPor", "*", contadorLineas, contadorColumnas-1);
+
+                                    }
+
+                                case '%':
+                                    if (charSig == '=') {
+                                        avanzar();
+                                        avanzar();
+                                        //almacenarToken("opModIgual", "%=", contadorLineas, contadorColumnas);
+                                        return new Token("opModIgual", "%=", contadorLineas, contadorColumnas-1);
+
+                                    } else {
+                                        avanzar();
+                                        //almacenarToken("opMod", "%", contadorLineas, contadorColumnas);
+                                        return new Token("opMod", "%", contadorLineas, contadorColumnas-1);
+
+                                    }
+
+                                case '<':
+                                    if (charSig == '=') {
+                                        avanzar();
+                                        avanzar();
+                                        //almacenarToken("opMenorIgual", "<=", contadorLineas, contadorColumnas);
+                                        return new Token("opMenorIgual", "<=", contadorLineas, contadorColumnas-1);
+
+                                    } else {
+                                        avanzar();
+                                        //almacenarToken("opMenor", "<", contadorLineas, contadorColumnas);
+                                        return new Token("opMenor", "<", contadorLineas, contadorColumnas-1);
+
+                                    }
+
+
+                                case '>':
+                                    if (charSig == '=') {
+                                        avanzar();
+                                        avanzar();
+                                        //almacenarToken("opMayorIgual", ">=", contadorLineas, contadorColumnas);
+                                        return new Token("opMayorIgual", ">=", contadorLineas, contadorColumnas-1);
+
+                                    } else {
+                                        avanzar();
+                                        //almacenarToken("opMayor", ">", contadorLineas, contadorColumnas);
+                                        return new Token("opMayor", ">", contadorLineas, contadorColumnas-1);
+
+                                    }
+
+
+                                case '=':
+                                    if (charSig == '=') {
+                                        avanzar();
+                                        avanzar();
+                                        //almacenarToken("opIgualIgual", "==", contadorLineas, contadorColumnas);
+                                        return new Token("opIgualIgual", "==", contadorLineas, contadorColumnas-1);
+
+                                    } else {
+                                        avanzar();
+                                        //almacenarToken("opIgual", "=", contadorLineas, contadorColumnas);
+                                        return new Token("opIgual", "=", contadorLineas, contadorColumnas-1);
+
+                                    }
+
+
+                                case '!':
+                                    if (charSig == '=') {
+                                        avanzar();
+                                        avanzar();
+                                        //almacenarToken("opDiferente", "!=", contadorLineas, contadorColumnas);
+                                        return new Token("opDiferente", "!=", contadorLineas, contadorColumnas-1);
+
+                                    } else {
+                                        avanzar();
+                                        //almacenarToken("opNot", "!", contadorLineas, contadorColumnas);
+                                        return new Token("opNot", "!", contadorLineas, contadorColumnas-1);
+
+                                    }
+
+                                case '&':
+                                    if (charSig == '&') {
+                                        avanzar();
+                                        avanzar();
+                                        //almacenarToken("opAndLog", "&&", contadorLineas, contadorColumnas);
+                                        return new Token("opAndLog", "&&", contadorLineas, contadorColumnas-1);
+
+                                    } else {
+                                        avanzar();
+                                        //almacenarToken("opAndBit", "&", contadorLineas, contadorColumnas);
+                                        return new Token("opAndBit", "&", contadorLineas, contadorColumnas-1);
+
+                                    }
+
+                                case '|':
+                                    if (charSig == '|') {
+                                        avanzar();
+                                        avanzar();
+                                        //almacenarToken("opOr", "||", contadorLineas, contadorColumnas);
+                                        return new Token("opOr", "||", contadorLineas, contadorColumnas-1);
+
+                                    } else {
+                                        throw new ErrorLexico(contadorLineas, contadorColumnas,
+                                                "OPERADOR INVALIDO: |");
+                                    }
+
+                            }
+
+                            //avanzar();
+                        }
+                        // IDENTIFICADORES: PRESERVADAS, METVAR --------------------------------------------------------------------
+                        else {
+                            if (Character.isLetter(charActual) | charActual == '_') {
+                                // ID METODO O VARIABLE, PALABRA RESERVADA: nombre, _nombre, Nombre
+
+                                lexema = "";
+
+                                while (Character.isLetter(charActual) | Character.isDigit(charActual) | charActual == '_') {
                                     lexema += charActual;
                                     avanzar();
-                                    //almacenarToken("literal_cadena", lexema, contadorLineas, contadorColumnas);
-                                    return new Token("literal_cadena", lexema, contadorLineas, contadorColumnas);
+                                }
+
+
+                                if (!esFinArchivo(puntero) && !Character.isWhitespace(charActual) && !esDelimitador(charActual) && !esOperador(charActual)) {
+
+                                    lexemaError = lexema;
+
+                                    while (!esFinArchivo(puntero) && !Character.isWhitespace(charActual)) {
+                                        lexemaError += charActual;
+                                        avanzar();
+                                    }
+
+                                    // REPORTAR ERROR LEXICO: IDENTIFICADOR INCORRECTO: nombre_Edad*.4
+                                    throw new ErrorLexico(contadorLineas, contadorColumnas, "IDENTIFICADOR INCORRECTO: " + lexemaError);
 
                                 }
-                            }
-                            // OPERADORES ARITMÉTICOS Y DE DECREMENTO ------------------------------------------------------------------
-                            else {
-                                    if (esOperador(charActual)) {
+                                else {
+                                    // 1. Verifico si es palabra reservada
+                                    if (Keywords.esPr(lexema)) {
+                                        // devuelvo la pr con + info
+                                        String tokenPr = Keywords.getToken(lexema);
+                                        if (tokenPr != null) {
+                                            //almacenarToken(tokenPr, lexema, contadorLineas, contadorColumnas-1);
+                                            return new Token(tokenPr, lexema, contadorLineas, contadorColumnas-1);
+                                        }
 
-                                        actualizarCharSig();
+
+                                    } else {
+
+                                        // 2. Si empieza por mayúscula es identificador de clase
+                                        if (Character.isUpperCase(lexema.charAt(0))) {
+                                            //avanzar();
+                                            //almacenarToken("idClass", lexema, contadorLineas, contadorColumnas-1);
+                                            return new Token("idClass", lexema, contadorLineas, contadorColumnas-1);
+
+                                            //3. Sino es identificador de metodo o variable
+                                        } else {
+                                            //avanzar();
+                                            //almacenarToken("idMetVar", lexema, contadorLineas, contadorColumnas-1);
+                                            return new Token("idMetVar", lexema, contadorLineas, contadorColumnas-1);
+
+                                        }
+                                    }
+                                }
+                            }
+                            else {
+                                if (Character.isDigit(charActual)) {
+
+                                    lexema = "";
+
+                                    while (Character.isDigit(charActual)) {
+                                        // es un decimal
+                                        lexema += charActual;
+                                        avanzar();
+
+                                    }
+
+                                    if (!esFinArchivo(puntero) && charActual == '.' | (!Character.isWhitespace(charActual) && !esDelimitador(charActual) && !esOperador(charActual))) {
+                                        lexemaError = lexema;
+                                        while (!esFinArchivo(puntero) && !Character.isWhitespace(charActual)) {
+                                            lexemaError += charActual;
+                                            avanzar();
+                                        }
+
+                                        throw new ErrorLexico(contadorLineas, contadorColumnas - 1, "IDENTIFICADOR INCORRECTO: " + lexemaError);
+
+                                    } else {
+                                        //avanzar();
+                                        //almacenarToken("literal_entero", lexema, contadorLineas, contadorColumnas-1);
+                                        return new Token("literal_entero", lexema, contadorLineas, contadorColumnas-1);
+
+                                    }
+                                }
+                                // DELIMITADORES ---------------------------------------------------------------------------------------
+                                else {
+                                    if (esDelimitador(charActual)) {
 
                                         switch (charActual) {
-                                            case '+':
-                                                if (charSig == '=') {
-                                                    avanzar();
-                                                    avanzar();
-                                                    //almacenarToken("opMasIgual", "+=", contadorLineas, contadorColumnas);
-                                                    return new Token("opMasIgual", "+=", contadorLineas, contadorColumnas);
+                                            case '(':
+                                                avanzar();
+                                                //almacenarToken("parAbre", "(", contadorLineas, contadorColumnas);
+                                                return new Token("parAbre", "(", contadorLineas, contadorColumnas-1);
 
-                                                } else {
-                                                    // para los casos de opUniario que tiene ++ y --
-                                                    if (charSig == '+'){
-                                                        avanzar();
-                                                        avanzar();
-                                                        //almacenarToken("opMasMas", "++", contadorLineas, contadorColumnas);
-                                                        return new Token("opMasMas", "++", contadorLineas, contadorColumnas);
+                                            case ')':
+                                                avanzar();
+                                                //almacenarToken("parCierra", ")", contadorLineas, contadorColumnas);
+                                                return new Token("parCierra", ")", contadorLineas, contadorColumnas-1);
 
-                                                    } else {
-                                                        avanzar();
-                                                        //almacenarToken("opMas", "+", contadorLineas, contadorColumnas);
-                                                        return new Token("opMas", "+", contadorLineas, contadorColumnas);
-                                                    }
-                                                }
+                                            case '[':
+                                                avanzar();
+                                                //almacenarToken("corcheteAbre", "[", contadorLineas, contadorColumnas);
+                                                return new Token("corcheteAbre", "[", contadorLineas, contadorColumnas-1);
 
-                                            case '-':
-                                                if (charSig == '=') {
-                                                    avanzar();
-                                                    avanzar();
-                                                    //almacenarToken("opMenosIgual", "-=", contadorLineas, contadorColumnas);
-                                                    return new Token("opMenosIgual", "-=", contadorLineas, contadorColumnas);
+                                            case ']':
+                                                avanzar();
+                                                //almacenarToken("corcheteCierra", "]", contadorLineas, contadorColumnas);
+                                                return new Token("corcheteCierra", "]", contadorLineas, contadorColumnas-1);
 
-                                                } else {
-                                                    if (charSig == '-'){
-                                                        avanzar();
-                                                        avanzar();
-                                                        //almacenarToken("opMenosMenos", "--", contadorLineas, contadorColumnas);
-                                                        return new Token("opMenosMenos", "--", contadorLineas, contadorColumnas);
+                                            case '{':
+                                                avanzar();
+                                                //almacenarToken("llaveAbre", "{", contadorLineas, contadorColumnas);
+                                                return new Token("llaveAbre", "{", contadorLineas, contadorColumnas-1);
 
-                                                    } else {
-                                                        avanzar();
-                                                        //almacenarToken("opMenos", "-", contadorLineas, contadorColumnas);
-                                                        return new Token("opMenos", "-", contadorLineas, contadorColumnas);
-                                                    }
-                                                }
+                                            case '}':
+                                                avanzar();
+                                                //almacenarToken("llaveCierra", "}", contadorLineas, contadorColumnas);
+                                                return new Token("llaveCierra", "}", contadorLineas, contadorColumnas-1);
 
-                                            case '*':
-                                                if (charSig == '=') {
-                                                    avanzar();
-                                                    avanzar();
-                                                    //almacenarToken("opPorIgual", "*=", contadorLineas, contadorColumnas);
-                                                    return new Token("opPorIgual", "*=", contadorLineas, contadorColumnas);
+                                            case ';':
+                                                avanzar();
+                                                //almacenarToken("ptoComa", ";", contadorLineas, contadorColumnas);
+                                                return new Token("ptoComa", ";", contadorLineas, contadorColumnas-1);
 
-                                                } else {
-                                                    avanzar();
-                                                    //almacenarToken("opPor", "*", contadorLineas, contadorColumnas);
-                                                    return new Token("opPor", "*", contadorLineas, contadorColumnas);
+                                            case ',':
+                                                avanzar();
+                                                //almacenarToken("coma", ",", contadorLineas, contadorColumnas);
+                                                return new Token("coma", ",", contadorLineas, contadorColumnas-1);
 
-                                                }
+                                            case ':':
+                                                avanzar();
+                                                //almacenarToken("dosPuntos", ":", contadorLineas, contadorColumnas);
+                                                return new Token("dosPuntos", ":", contadorLineas, contadorColumnas-1);
 
-                                            case '%':
-                                                if (charSig == '=') {
-                                                    avanzar();
-                                                    avanzar();
-                                                    //almacenarToken("opModIgual", "%=", contadorLineas, contadorColumnas);
-                                                    return new Token("opModIgual", "%=", contadorLineas, contadorColumnas);
-
-                                                } else {
-                                                    avanzar();
-                                                    //almacenarToken("opMod", "%", contadorLineas, contadorColumnas);
-                                                    return new Token("opMod", "%", contadorLineas, contadorColumnas);
-
-                                                }
-
-                                            case '<':
-                                                if (charSig == '=') {
-                                                    avanzar();
-                                                    avanzar();
-                                                    //almacenarToken("opMenorIgual", "<=", contadorLineas, contadorColumnas);
-                                                    return new Token("opMenorIgual", "<=", contadorLineas, contadorColumnas);
-
-                                                } else {
-                                                    avanzar();
-                                                    //almacenarToken("opMenor", "<", contadorLineas, contadorColumnas);
-                                                    return new Token("opMenor", "<", contadorLineas, contadorColumnas);
-
-                                                }
-
-
-                                            case '>':
-                                                if (charSig == '=') {
-                                                    avanzar();
-                                                    avanzar();
-                                                    //almacenarToken("opMayorIgual", ">=", contadorLineas, contadorColumnas);
-                                                    return new Token("opMayorIgual", ">=", contadorLineas, contadorColumnas);
-
-                                                } else {
-                                                    avanzar();
-                                                    //almacenarToken("opMayor", ">", contadorLineas, contadorColumnas);
-                                                    return new Token("opMayor", ">", contadorLineas, contadorColumnas-1);
-
-                                                }
-
-
-                                            case '=':
-                                                if (charSig == '=') {
-                                                    avanzar();
-                                                    avanzar();
-                                                    //almacenarToken("opIgualIgual", "==", contadorLineas, contadorColumnas);
-                                                    return new Token("opIgualIgual", "==", contadorLineas, contadorColumnas);
-
-                                                } else {
-                                                    avanzar();
-                                                    //almacenarToken("opIgual", "=", contadorLineas, contadorColumnas);
-                                                    return new Token("opIgual", "=", contadorLineas, contadorColumnas);
-
-                                                }
-
-
-                                            case '!':
-                                                if (charSig == '=') {
-                                                    avanzar();
-                                                    avanzar();
-                                                    //almacenarToken("opDiferente", "!=", contadorLineas, contadorColumnas);
-                                                    return new Token("opDiferente", "!=", contadorLineas, contadorColumnas);
-
-                                                } else {
-                                                    avanzar();
-                                                    //almacenarToken("opNot", "!", contadorLineas, contadorColumnas);
-                                                    return new Token("opNot", "!", contadorLineas, contadorColumnas);
-
-                                                }
-
-                                            case '&':
-                                                if (charSig == '&') {
-                                                    avanzar();
-                                                    avanzar();
-                                                    //almacenarToken("opAndLog", "&&", contadorLineas, contadorColumnas);
-                                                    return new Token("opAndLog", "&&", contadorLineas, contadorColumnas);
-
-                                                } else {
-                                                    avanzar();
-                                                    //almacenarToken("opAndBit", "&", contadorLineas, contadorColumnas);
-                                                    return new Token("opAndBit", "&", contadorLineas, contadorColumnas);
-
-                                                }
-
-                                            case '|':
-                                                if (charSig == '|') {
-                                                    avanzar();
-                                                    //almacenarToken("opOr", "||", contadorLineas, contadorColumnas);
-                                                    new Token("opOr", "||", contadorLineas, contadorColumnas);
-
-                                                } else {
-                                                    throw new ErrorLexico(contadorLineas, contadorColumnas,
-                                                            "OPERADOR INVALIDO: |");
-                                                }
+                                            case '.':
+                                                avanzar();
+                                                //almacenarToken("pto", ".", contadorLineas, contadorColumnas);
+                                                return new Token("pto", ".", contadorLineas, contadorColumnas-1);
 
                                         }
 
-                                        //avanzar();
                                     }
-                                    // IDENTIFICADORES: PRESERVADAS, METVAR --------------------------------------------------------------------
                                     else {
-                                            if (Character.isLetter(charActual) | charActual == '_') {
-                                                // ID METODO O VARIABLE, PALABRA RESERVADA: nombre, _nombre, Nombre
 
-                                                lexema = "";
+                                        if (charActual == '\0') {
+                                            return new Token("EOF", "", contadorLineas, contadorColumnas);
+                                        } else {
+                                            throw new ErrorLexico(contadorLineas, contadorColumnas, "CARACTER DESCONOCIDO: " + charActual);
+                                        }
 
-                                                while (Character.isLetter(charActual) | Character.isDigit(charActual) | charActual == '_') {
-                                                    lexema += charActual;
-                                                    avanzar();
-                                                }
-
-                                                if (!esFinArchivo(puntero) && !Character.isWhitespace(charActual) && !esDelimitador(charActual) && !esOperador(charActual)) {
-
-                                                    lexemaError = lexema;
-
-                                                    while (!esFinArchivo(puntero) && !Character.isWhitespace(charActual)) {
-                                                        lexemaError += charActual;
-                                                        avanzar();
-                                                    }
-
-                                                    // REPORTAR ERROR LEXICO: IDENTIFICADOR INCORRECTO: nombre_Edad*.4
-                                                    throw new ErrorLexico(contadorLineas, contadorColumnas, "IDENTIFICADOR INCORRECTO: " + lexemaError);
-
-                                                }
-                                                else {
-                                                    // 1. Verifico si es palabra reservada
-                                                    if (Keywords.esPr(lexema)) {
-                                                        // devuelvo la pr con + info
-                                                        String tokenPr = Keywords.getToken(lexema);
-                                                        if (tokenPr != null) {
-                                                            //almacenarToken(tokenPr, lexema, contadorLineas, contadorColumnas-1);
-                                                            return new Token(tokenPr, lexema, contadorLineas, contadorColumnas-1);
-                                                        }
-
-
-                                                    } else {
-
-                                                        // 2. Si empieza por mayúscula es identificador de clase
-                                                        if (Character.isUpperCase(lexema.charAt(0))) {
-                                                            //avanzar();
-                                                            //almacenarToken("idClass", lexema, contadorLineas, contadorColumnas-1);
-                                                            return new Token("idClass", lexema, contadorLineas, contadorColumnas-1);
-
-                                                            //3. Sino es identificador de metodo o variable
-                                                        } else {
-                                                            //avanzar();
-                                                            //almacenarToken("idMetVar", lexema, contadorLineas, contadorColumnas-1);
-                                                            return new Token("idMetVar", lexema, contadorLineas, contadorColumnas-1);
-
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            else {
-                                                    if (Character.isDigit(charActual)) {
-
-                                                        lexema = "";
-
-                                                        while (Character.isDigit(charActual)) {
-                                                            // es un decimal
-                                                            lexema += charActual;
-                                                            avanzar();
-
-                                                        }
-
-                                                        if (!esFinArchivo(puntero) && charActual == '.' | (!Character.isWhitespace(charActual) && !esDelimitador(charActual) && !esOperador(charActual))) {
-                                                            lexemaError = lexema;
-                                                            while (!esFinArchivo(puntero) && !Character.isWhitespace(charActual)) {
-                                                                lexemaError += charActual;
-                                                                avanzar();
-                                                            }
-
-                                                            throw new ErrorLexico(contadorLineas, contadorColumnas - 1, "IDENTIFICADOR INCORRECTO: " + lexemaError);
-
-                                                        } else {
-                                                            //avanzar();
-                                                            //almacenarToken("literal_entero", lexema, contadorLineas, contadorColumnas-1);
-                                                            return new Token("literal_entero", lexema, contadorLineas, contadorColumnas-1);
-
-                                                        }
-                                                    }
-                                                    // DELIMITADORES ---------------------------------------------------------------------------------------
-                                                    else {
-                                                            if (esDelimitador(charActual)) {
-
-                                                                switch (charActual) {
-                                                                    case '(':
-                                                                        avanzar();
-                                                                        //almacenarToken("parAbre", "(", contadorLineas, contadorColumnas);
-                                                                        return new Token("parAbre", "(", contadorLineas, contadorColumnas);
-
-                                                                    case ')':
-                                                                        avanzar();
-                                                                        //almacenarToken("parCierra", ")", contadorLineas, contadorColumnas);
-                                                                        return new Token("parCierra", ")", contadorLineas, contadorColumnas);
-
-                                                                    case '[':
-                                                                        avanzar();
-                                                                        //almacenarToken("corcheteAbre", "[", contadorLineas, contadorColumnas);
-                                                                        return new Token("corcheteAbre", "[", contadorLineas, contadorColumnas);
-
-                                                                    case ']':
-                                                                        avanzar();
-                                                                        //almacenarToken("corcheteCierra", "]", contadorLineas, contadorColumnas);
-                                                                        return new Token("corcheteCierra", "]", contadorLineas, contadorColumnas);
-
-                                                                    case '{':
-                                                                        avanzar();
-                                                                        //almacenarToken("llaveAbre", "{", contadorLineas, contadorColumnas);
-                                                                        return new Token("llaveAbre", "{", contadorLineas, contadorColumnas);
-
-                                                                    case '}':
-                                                                        avanzar();
-                                                                        //almacenarToken("llaveCierra", "}", contadorLineas, contadorColumnas);
-                                                                        return new Token("llaveCierra", "}", contadorLineas, contadorColumnas);
-
-                                                                    case ';':
-                                                                        avanzar();
-                                                                        //almacenarToken("ptoComa", ";", contadorLineas, contadorColumnas);
-                                                                        return new Token("ptoComa", ";", contadorLineas, contadorColumnas);
-
-                                                                    case ',':
-                                                                        avanzar();
-                                                                        //almacenarToken("coma", ",", contadorLineas, contadorColumnas);
-                                                                        return new Token("coma", ",", contadorLineas, contadorColumnas);
-
-                                                                    case ':':
-                                                                        avanzar();
-                                                                        //almacenarToken("dosPuntos", ":", contadorLineas, contadorColumnas);
-                                                                        return new Token("dosPuntos", ":", contadorLineas, contadorColumnas);
-
-                                                                    case '.':
-                                                                        avanzar();
-                                                                        //almacenarToken("pto", ".", contadorLineas, contadorColumnas);
-                                                                        return new Token("pto", ".", contadorLineas, contadorColumnas);
-
-                                                                }
-
-                                                            }
-                                                            else {
-                                                                if (charActual == '\0') {
-                                                                    return new Token("EOF", "", contadorLineas, contadorColumnas);
-                                                                } else {
-                                                                    throw new ErrorLexico(contadorLineas, contadorColumnas, "CARACTER DESCONOCIDO: " + charActual);
-                                                                }
-
-                                                            }
-                                                    }
-                                            }
                                     }
+                                }
                             }
+                        }
                     }
+                }
             }
         }
     }
@@ -544,16 +551,14 @@ public class Lexico {
 
     //incrementa el puntero y actualiza el caracter actual en casa de que no se haya consumido completamente el codigo fuente
     private void avanzar(){
-
         puntero += 1;
+        incrementarColumnas(1);
+
         if (esFinArchivo(puntero)){
             charActual = '\0';
             charSig = '\0';
         } else {
-            incrementarColumnas(1);
-            charActual = codFuente.charAt(puntero);
-
-        }
+            charActual = codFuente.charAt(puntero);}
     }
 
     // Actualiza el caracter siguiente en caso de que no haya llegado al final del codigo fuente
@@ -567,9 +572,10 @@ public class Lexico {
         }
     }
 
-    //asigna el valor del primer caracter del codigo fuente a la cariable charActual
+    //asigna el valor del primer caracter del codigo fuente a la variable charActual
     private void inicializarCharActual(){
-        if (!esFinArchivo()){
+
+        if (!esFinArchivo(puntero)){
             charActual = codFuente.charAt(puntero);
         } else {
             charActual = '\0';
@@ -597,28 +603,23 @@ public class Lexico {
 
     //identifica si se ha consumido por completo el codigo fuente
     private boolean esFinArchivo(int punt){
-        if (punt >= codFuente.length()){
-            return true;
-        }
-        return false;
+        return punt >= codFuente.length();
     }
 
     public boolean esFinArchivo() {
-        if (this.puntero >= codFuente.length()) {
-            return true;
-        }
-        return false;
+        return this.puntero >= codFuente.length();
     }
 
     //Solicita el next token al analizador y genera e imprime por pantalla una lista con cada uno de los lexemas identificados
     // en el codigo fuente asi como también el token, número de linea y numero de columna correspondiente a cada lexema
     public void ejecutador() throws ErrorLexico {
 
-        while (!esFinArchivo(puntero)){
-            Token token = this.analizador();
-            almacenarToken(token);
+        Token token;
 
-        }
+        do{
+            token = this.analizador();
+            almacenarToken(token);
+        } while (!Objects.equals(token.getTipo(), "EOF"));
 
         System.out.print("CORRECTO: ANALISIS LEXICO\n" +
                 "| TOKEN | LEXEMA | NUMERO DE LINEA (NUMERO DE COLUMNA) |\n");
@@ -628,12 +629,4 @@ public class Lexico {
                     " | LINEA " + t.getFila() + " (COLUMNA " + t.getColumna() + ") |");
         }
     }
-
-
-
-    /*public List<Token> getTokens() {
-        return listaTokens;
-    }*/
-
-
 }
