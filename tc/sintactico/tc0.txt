@@ -16,7 +16,9 @@ impl Calculadora {
         //} else {
         //    ret --y;
         //}
-        if(x>2) while(x<2);
+        if(x>2) while(x<2){
+            ret true;
+        }
 
     }
 }

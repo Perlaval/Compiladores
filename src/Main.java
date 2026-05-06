@@ -9,6 +9,7 @@ import lexico.ErrorLexico;
 import lexico.Token;
 import sintactico.Sintactico;
 import sintactico.ErrorSintactico;
+import semantico.ErrorSemantico;
 
 public class Main {
     public static void main(String[] args) {
@@ -54,7 +55,7 @@ public class Main {
 
         } catch (IOException e) {
             System.out.println("Error al leer el archivo " + e.getMessage());
-        } catch (ErrorLexico | ErrorSintactico e) {
+        } catch (ErrorLexico | ErrorSintactico | ErrorSemantico e) {
             System.out.println(e.getMessage());
         }
     }

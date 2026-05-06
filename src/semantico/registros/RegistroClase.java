@@ -1,0 +1,48 @@
+package src.semantico.registros;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class RegistroClase {
+    //nombre de la clase
+    public String nombre;
+
+    // herencia voy a guardar el idClass de la clase a la que hereda
+    public String heredaDe;
+
+    // metodos de la clase
+    // voy a guardar el nombre de la clase y sus metodos
+    public Map<String, RegistroMetodo> listaMetodos;
+
+    // atributos de la clase
+    public Map<String, RegistroAtributo> listaAtributos;
+
+    // constructor de la clase
+    // es un metodo porque tmb va a tener parametros y var locales, y el tipo de retorno va a ser void
+    public Constructor constructor;
+
+
+    public RegistroClase(String nombre) {
+        this.nombre = nombre;
+        this.heredaDe = heredaDe;
+        this.listaMetodos = new HashMap<>();
+        this.listaAtributos = new HashMap<>();
+        this.constructor = constructor;
+
+    }
+
+    public String getNombre() {
+        return this.nombre;
+    }
+
+    public void setHeredaDe(String superClase) {
+        this.heredaDe = superClase;
+    }
+
+    public String getHeredaDe() {
+        return heredaDe;
+    }
+
+    public void setNombre(String nombre) {
+    }
+}

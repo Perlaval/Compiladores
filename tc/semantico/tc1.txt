@@ -1,0 +1,14 @@
+// atributos
+
+class A {
+    pub Int x,y;
+    Str a;
+    pub Otra k;
+
+}
+class Otra {
+
+}
+start{
+
+}

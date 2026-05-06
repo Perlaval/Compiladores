@@ -5,6 +5,15 @@ import java.util.ArrayList;
 import lexico.ErrorLexico;
 import lexico.Token;
 import lexico.Lexico;
+import sintactico.ErrorSintactico;
+import semantico.ErrorSemantico;
+import src.semantico.TablaSimbolos;
+import src.semantico.registros.RegistroAtributo;
+import src.semantico.registros.RegistroClase;
+import src.semantico.registros.RegistroStart;
+import src.semantico.tipos.Tipo;
+import src.semantico.tipos.TipoPrimitivo;
+import src.semantico.tipos.TipoReferencia;
 
 
 // analizador sintactico
@@ -15,6 +24,7 @@ public class Sintactico {
     private Token token;
     private Token next;
     private boolean lookahead = false;
+    TablaSimbolos ts = new TablaSimbolos();
 
     //constructor
     /*public Sintactico(List<Token> listaTokens){
@@ -28,7 +38,7 @@ public class Sintactico {
     }
 
     //clase
-    public void analizador() throws ErrorSintactico, ErrorLexico {
+    public void analizador() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         this.token = lexico.analizador();
         // Program -> ListaDefiniciones Start
         program();
@@ -40,22 +50,23 @@ public class Sintactico {
     // Gramatica ----------------------------------------------------------------------------------------------
 
     //Program -> ListaDefiniciones Start
-    private void program() throws ErrorSintactico, ErrorLexico {
+    private void program() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         listaDefiniciones();
         // si es lambda va directo a start
+        RegistroStart metodoStart = new RegistroStart();
         start();
         System.out.println("token final: "+ token.getTipo());
         match("EOF"); // ver si tiene que ser $ o EOF
     }
 
     // Start -> start BloqueMetodo
-    private void start() throws ErrorSintactico, ErrorLexico {
+    private void start() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // matcheo start asi avanza
         //match("prStart"); // esto tmb verificar porque nose si start era una palabra reservada (pregintar a profe)
         if (token.getLexema().equals("start")){
             // deberia matchear idMetVar, porque start al no ser reservada la toma como idMetVar
             match("idMetVar"); //consumo start y voy a bloque
-            System.out.println("Voy a bloque metodo con: "+token.getTipo());
+            // ahora mi clase actual es el metodo start
             bloqueMetodo();
         }
         else {
@@ -65,7 +76,7 @@ public class Sintactico {
     }
 
     // ListaDefiniciones -> Clase ListaDefiniciones | Implementacion ListaDefiniciones | lambda
-    private void listaDefiniciones() throws ErrorSintactico, ErrorLexico {
+    private void listaDefiniciones() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // es recursiva, por lo que voy a agregar un while, mientras lea la palabra reservada class o impl, tiene que volver a entrar
         if (token.getTipo().equals("prClass") || token.getTipo().equals("prImpl")){
             if (token.getTipo().equals("prClass")){
@@ -80,34 +91,89 @@ public class Sintactico {
     }
 
     // Class -> class idClass HerenciaOpt { listaAtributos }
-    private void clase() throws ErrorSintactico, ErrorLexico {
+    private void clase() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prClass");
-        match("idClass"); //guardarTS(lexema);
-        herenciaOpt(); //si esto existe voy a guardar en la hash HeredadDe el lex del idClass, sino pongo HeredaDe: object
-        match("llaveAbre");
-        listaAtributos(); // si lo que viene es } es porque era lambda
-        match("llaveCierra");
+        if (token.getTipo().equals("idClass")){
+            Token id = token; // guardo el token para guardarlo en la ts, porque cuando matcheo avanzo entonces lo pierdo
+            match("idClass");
+            RegistroClase claseE;
 
+            if (ts.tablaClases.containsKey(id.getLexema())){
+                // verifico la herencia que debe ser la misma
+                claseE = ts.getClase(id.getLexema());
+                if (token.getTipo().equals("dosPuntos")){ // tiene herencia
+                    String superClase = herenciaOpt(); // obtengo esa herencia y la comparo con la que ya tengo en mi ts
+                    if (!claseE.heredaDe.equals(superClase)){ // si son iguales esta todo correcto
+                        throw new ErrorSemantico(token.getFila(), token.getColumna(), "Redefinicion herencia inconsistente");
+                    }
+                }
+            }
+            else {
+                claseE = new RegistroClase(id.getLexema());
+                claseE.setNombre(id.getLexema());
+                ts.tablaClases.put(claseE.getNombre(), claseE);
+                if (token.getTipo().equals("dosPuntos")){
+                    // obtengo la superClase
+                    String superClase = herenciaOpt();
+                    // verifico que no este haciendo esto A : A
+                    if (claseE.getNombre().equals(superClase)){
+                        throw new ErrorSemantico(token.getFila(), token.getColumna(), "No puede heredar de la misma clase");
+                    }
+                    else {
+                        // verifico herencia circular
+                        if (ts.tablaClases.containsKey(superClase)){
+                            // obtengo esa clase y me fijo su herencia
+                            RegistroClase claseHerencia = ts.getClase(superClase);
+                            if (claseHerencia.getHeredaDe().equals(claseE.getNombre())){
+                                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Error, herencia circular");
+                            }
+                        }
+                        else {
+                            // todo okey, seteo la herencia
+                            claseE.setHeredaDe(superClase);
+                        }
+                    }
+                }
+                // si no me vienen : es porque no tiene herencia y hereda de object
+                else {
+                    claseE.setHeredaDe("Object");
+                }
+                System.out.println("Nombre clase: "+claseE.getNombre());
+                System.out.println("hereda de: "+ claseE.getHeredaDe());
+            }
+            // contexto para atributos
+            ts.claseActual = claseE;
+            match("llaveAbre");
+            listaAtributos(); // si lo que viene es } es porque era lambda
+            // imprimo los atributos de esa clase
+            System.out.println(ts.claseActual.listaAtributos.toString());
+            match("llaveCierra");
+
+            // salgo de la clase actual
+            ts.claseActual = null;
+        }
     }
 
     // HerenciaOpt -> Herencia | lambda
     // aca como puede ser opcional si va a herencia o no, necesito los primeros y siguientes
-    private void herenciaOpt() throws ErrorSintactico, ErrorLexico {
+    private String herenciaOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico{
         // Sig(HerenciaOpt) = { { }
         // si el token que viene no esta en los primeros de herencia es porque o vino {, entonces aca no hace nada, o vino algo mal
         // entonces verifico con los primeros
+        String heredaDe = null;
         if (token.getTipo().equals("dosPuntos")) {
-            herencia();
+             heredaDe = herencia();
         }
+        return heredaDe;
     }
 
     // ListaAtributos -> Atributo ListaAtributos | lambda
-    private void listaAtributos() throws ErrorSintactico, ErrorLexico {
+    private void listaAtributos() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         String tipo = token.getTipo();
         // si lo que viene no esta en los primeros de Atributo es porque listaAtributos es lambda entonces aca no hace nada
         // es recursiva, por lo tanto siempre que venga alguno de los primeros de A vuelvo a entrar
         // como puede no tener prPub, tambien puedo ir directamente a Tipo
-        if (tipo.equals("prPub") | tipo.equals("tStr") | tipo.equals("tBool") | tipo.equals("tInt") | tipo.equals("idClass") | tipo.equals("tArray")){
+        if (tipo.equals("prPub") | tipo.equals("tStr") | tipo.equals("tBool") | tipo.equals("tInt") | tipo.equals("idClass") | tipo.equals("prArray")){
             atributo();
             // actualizo el tipo
             tipo = token.getTipo();
@@ -116,7 +182,7 @@ public class Sintactico {
     }
 
     // Impl -> impl idClass { ListaMiembros }
-    private void impl() throws ErrorSintactico, ErrorLexico {
+    private void impl() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prImpl");
         match("idClass"); //guardoTs(idClass.lex)
         match("llaveAbre");
@@ -125,7 +191,7 @@ public class Sintactico {
     }
 
     // ListaMiembros -> Miembro ListaMiembros | lambda
-    private void listaMiembros() throws ErrorSintactico, ErrorLexico {
+    private void listaMiembros() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si lo que viene esta en los primeros de miembro es porque lista miembro no es lambda
         // Prim(E) = { st, . , lambda}
         if (esPrimeroMiembro(token.getTipo()) | token.getTipo().equals("prFn")){
@@ -135,13 +201,24 @@ public class Sintactico {
     }
 
     // Herencia -> : Tipo
-    private void herencia() throws ErrorSintactico, ErrorLexico {
+    private String herencia() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("dosPuntos");
-        tipo();
+        String superClase;
+        Tipo tipoSuperClase;
+        // verifica si o si que lo que se recibe es un idClass
+        if (token.getTipo().equals("idClass") && !token.getLexema().equals("Array")){ // ver tmb para los otros casos (Int, Bool, Iterator, etc)
+            tipoSuperClase = tipo(); // como es idClass va a ir a TipoReferencia
+            superClase = tipoSuperClase.getNombre();
+        }
+        else {
+            throw new ErrorSemantico(token.getFila(), token.getColumna(), "Se esperaba un id de clase y se encontro: "+token.getLexema());
+        }
+        //tipo();
+        return superClase;
     }
 
     // Miembro -> Metodo | Constructor
-    private void miembro() throws ErrorSintactico, ErrorLexico {
+    private void miembro() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // tengo dos opciones o voy a metodo o voy a constructor
         // cuando no tengo st puede venir fn
         if (token.getTipo().equals("prSt") | token.getTipo().equals("prFn")){
@@ -153,7 +230,7 @@ public class Sintactico {
     }
 
     // Metodo -> FormaMetodoOpt fn TipoMetodoOpt idMetAt ArgumentosFormales BloqueMetodo
-    private void metodo() throws ErrorSintactico, ErrorLexico {
+    private void metodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         formaMetodoOpt(); // si entra aca es un metodo St, sino no
         match("prFn");
         tipoMetodoOpt(); // va a guardar en la ts el tipo de retorno de la funcion
@@ -187,19 +264,20 @@ public class Sintactico {
     }
 
     // Constructor -> . ArgumentosFormales BloqueMetodo
-    private void constructor() throws ErrorSintactico, ErrorLexico {
+    private void constructor() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("pto");
         argumentosFormales();
         bloqueMetodo();
     }
 
     // Atributo -> VisibilidadOpt Tipo ListaDeclaracionVar ;
-    private void atributo() throws ErrorSintactico, ErrorLexico {
+    private void atributo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // guardo en la TS el atributo con la posicion, visibilidad, tipo, nombre
-        //boolean privado = true;
-        visibilidadOpt(); // si no entra a visibilidad es de tipo priv
-        tipo();
-        listaDeclaracionVar();
+        boolean vis;
+        Tipo tipo;
+        vis = visibilidadOpt(); // si no entra a visibilidad es de tipo priv
+        tipo = tipo();
+        listaDeclaracionVar(vis, tipo);
         // salgo de aca y voy a haber guardado por ej para: Int a,b
         // pos visibilidad tipo nombre
         //| 0 | pub | Int a | b |
@@ -207,48 +285,71 @@ public class Sintactico {
     }
 
     // VisibilidadOpt -> Visibilidad | lambda
-    private void visibilidadOpt() throws ErrorSintactico, ErrorLexico {
+    private boolean visibilidadOpt() throws ErrorSintactico, ErrorLexico {
         // si lo que viene esta en los primeros de visibilidad entro
+        boolean vis = false;
         if (token.getTipo().equals("prPub")){
-            visibilidad();
-
+            return visibilidad();
         }
+        return vis;
     }
 
     // Tipo -> TipoPrimitivo | TipoReferencia | TipoArreglo
-    private void tipo() throws ErrorSintactico, ErrorLexico {
+    private Tipo tipo() throws ErrorSintactico, ErrorLexico {
         // si lo que viene esta en los primeros de tipo primitivo entro ahi
+        //String hereda = null;
+        //String tipo;
+        Tipo tipo = null;
         if (esPrimeroTipoPrimitivo(token.getTipo())){
-            tipoPrimitivo();
+            return tipoPrimitivo();
         }
         else {
             if (token.getTipo().equals("idClass")){
-                tipoReferencia();
+                return tipoReferencia();
             }
-            else {
-                if (token.getTipo().equals("prArray")){
-                    tipoArreglo();
-                }
-            }
+            //else {
+                //if (token.getTipo().equals("prArray")){
+                //    return tipoArreglo();
+                //}
+            //}
         }
+        //return hereda;
+        return tipo;
     }
 
     // ListaDeclaracionVar -> idMetAt ListaDeclaracionesVarRec
-    private void listaDeclaracionVar() throws ErrorSintactico, ErrorLexico {
-        match("idMetVar"); //guardoTs(idMetVar.lex)
-        listaDeclaracionVarRec();
+    private void listaDeclaracionVar(boolean vis, Tipo tipo) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        RegistroAtributo atributo;
+        if (token.getTipo().equals("idMetVar")){
+            // verifico que no este guardado ya en la lista de atributos
+            if (ts.claseActual.listaAtributos.containsKey(token.getLexema())){
+                // si ya esta, lanzo error semantico
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Atributo: '"+token.getLexema()+"' repetido");
+            }
+            else {
+                atributo = new RegistroAtributo();
+                atributo.setNombre(token.getLexema());
+                atributo.setTipo(tipo);
+                atributo.setVisibilidad(vis);
+                atributo.asignarPos();
+                ts.claseActual.listaAtributos.put(atributo.getNombre(), atributo);
+                match("idMetVar");
+            }
+        }
+        //match("idMetVar"); //guardoTs(idMetVar.lex)
+        listaDeclaracionVarRec(vis, tipo);
     }
 
     // ListaDeclaracionVarRec -> , ListaDeclaracionVar | lambda
-    private void listaDeclaracionVarRec() throws ErrorSintactico, ErrorLexico {
+    private void listaDeclaracionVarRec(boolean vis, Tipo tipo) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("coma")){
             match("coma");
-            listaDeclaracionVar();
+            listaDeclaracionVar(vis, tipo);
         }
     }
 
     // BloqueMetodo -> { ListaDeclaracioVarLocal ListaSentencia }
-    private void bloqueMetodo() throws ErrorSintactico, ErrorLexico {
+    private void bloqueMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("llaveAbre");
         listaDeclaracionVarLocal();
         listaSentencia();
@@ -256,7 +357,7 @@ public class Sintactico {
     }
 
     // ListaDeclaracionVarLocal -> DeclaracionVarLocal ListaDeclaracionVarLocal | lambda
-    private void listaDeclaracionVarLocal() throws ErrorSintactico, ErrorLexico {
+    private void listaDeclaracionVarLocal() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // recursiva
         // si lo que viene esta en los primeros de declaracionVarLocal es porque no es lambda
         if (esPrimeroDeclaracionVarLocal(token.getTipo())){
@@ -277,8 +378,9 @@ public class Sintactico {
     }
 
     // Visibilidad -> pub
-    private void visibilidad() throws ErrorSintactico, ErrorLexico {
+    private boolean visibilidad() throws ErrorSintactico, ErrorLexico {
         match("prPub"); //lo manejo con flags para guardar en la TS
+        return true;
     }
 
     // FormaMetodo -> st
@@ -287,22 +389,28 @@ public class Sintactico {
     }
 
     // TipoPrimitivo -> Str | Bool | Int
-    private void tipoPrimitivo() throws ErrorSintactico, ErrorLexico {
+    private Tipo tipoPrimitivo() throws ErrorSintactico, ErrorLexico {
         switch (token.getTipo()){
             case "tStr":
-                match("tStr"); //guardoTS(token.lex)
-                break;
+                match("tStr");
+                return new TipoPrimitivo("tStr");
             case "tBool":
-                match("tBool"); //guardoTS(token.lex)
-                break;
+                match("tBool");
+                return new TipoPrimitivo("tBool");
             case "tInt":
-                match("tInt"); //guardoTS(token.lex)
-                break;
+                match("tInt");
+                return new TipoPrimitivo("tInt");
+            default:
+                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un tipo primitivo");
         }
+
     }
     // TipoReferencia -> idClass
-    private void tipoReferencia() throws ErrorSintactico, ErrorLexico {
-        match("idClass"); //guardoTS(idClass.lex)
+    private Tipo tipoReferencia() throws ErrorSintactico, ErrorLexico {
+        String nombre = token.getLexema();
+        match("idClass");
+        //return hereda;
+        return new TipoReferencia(nombre);
     }
     // TipoArray -> Array TipoPrimitivo
     private void tipoArreglo() throws ErrorSintactico, ErrorLexico {
@@ -312,11 +420,13 @@ public class Sintactico {
     }
 
     // DeclaracionVarLocal -> Tipo ListaDeclaracionVar ;
-    private void declaracionVarLocal() throws ErrorSintactico, ErrorLexico {
+    private void declaracionVarLocal() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // en la hash de ListaVariablesLocales de un metodo voy a guardar:
         // la pos
-        tipo(); //guardo el tipo
-        listaDeclaracionVar(); //guardo el o los nombres de la variable
+        Tipo tipo = tipo(); //guardo el tipo
+        // agrego vis pero porque lo uso para atributo, ver bien como seria en los metodos
+        boolean vis = false;
+        listaDeclaracionVar(vis, tipo); //guardo el o los nombres de la variable
         match("ptoComa");
     }
 
@@ -368,6 +478,7 @@ public class Sintactico {
     // Sentencia -> ; | Asignacion | SentenciaSimple ; | if ( Expresion ) SentenciaRec | while ( Expresion ) Sentencia |
     // for ( TipoPrimitivo idMetAt in idMetAt) Sentencia | Bloque | ret ExpresionOpt
     private void sentencia() throws ErrorSintactico, ErrorLexico {
+
         if (token.getTipo().equals("ptoComa")){
             match("ptoComa");
         }
@@ -383,7 +494,9 @@ public class Sintactico {
                     System.out.println("Voy a expresion con: "+token.getTipo());
                     expresion(); //devuelvo la condicion
                     match("parCierra");
-                    sentenciaRec();
+                    //bloque();
+                    sentenciaRec(); // como parametro
+                    // devolver flag para avisar que viene de un if para qeu vaya a bloque si o si
                 }
                 else {
                     if (token.getTipo().equals("prWhile")){
@@ -392,6 +505,8 @@ public class Sintactico {
                         expresion();
                         match("parCierra");
                         sentencia();
+                        //bloque();
+                        // poner que vaya a bloque
                     }
                     else {
                         if (token.getTipo().equals("prFor")){
@@ -431,6 +546,7 @@ public class Sintactico {
     // SentenciaRec -> Sentencia RecursivoElse
     private void sentenciaRec() throws ErrorSintactico, ErrorLexico {
         sentencia();
+        // aca tengo que ir a bloque si o si
         recursivoElse();
     }
 
@@ -520,6 +636,9 @@ public class Sintactico {
             encadenadoSimple();
             listaEncadenadoSimple();
         }
+       // else {
+            //sueldo
+       // }
     }
 
     // AccesoSelfSimple -> self ListaEncadenadoSimple
@@ -531,7 +650,7 @@ public class Sintactico {
     // EncadenadoSimple -> . id
     private void encadenadoSimple() throws ErrorSintactico, ErrorLexico {
         match("pto");
-        match("idMetVar");
+        match("idMetVar"); //sueldo
     }
 
     // ExpresionOr -> ExpresionAnd ExpresionOrRec
@@ -1033,10 +1152,10 @@ public class Sintactico {
     // si eso pasa pido next token
     void match(String tipoEsperado) throws ErrorSintactico, ErrorLexico {
         if (token.getTipo().equals(tipoEsperado)){
-            System.out.println("Esperado: " + tipoEsperado +
-                    " | Actual: " + token.getTipo());
+            //System.out.println("Esperado: " + tipoEsperado +
+                    //" | Actual: " + token.getTipo());
             // solo avanzo si matcheo, en ninguna otra parte del codigo deberia avanzar
-            System.out.println("Hice match de: "+token.getTipo());
+            //System.out.println("Hice match de: "+token.getTipo());
             //si ya mire hacia adelante no necesito volver a pedir nextoken porque sino voy a perder el simbolo
             if (lookahead){
                 this.token = this.next;
