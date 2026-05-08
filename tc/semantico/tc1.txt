@@ -1,6 +1,6 @@
 // atributos
 
-class A {
+class A: B {
     pub Int x,y;
     Str a;
     pub Otra k;
@@ -9,6 +9,7 @@ class A {
 class Otra {
 
 }
+impl B{}
 start{
 
 }

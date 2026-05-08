@@ -8,12 +8,11 @@ import lexico.Lexico;
 import sintactico.ErrorSintactico;
 import semantico.ErrorSemantico;
 import src.semantico.TablaSimbolos;
-import src.semantico.registros.RegistroAtributo;
-import src.semantico.registros.RegistroClase;
-import src.semantico.registros.RegistroStart;
+import src.semantico.registros.*;
 import src.semantico.tipos.Tipo;
 import src.semantico.tipos.TipoPrimitivo;
 import src.semantico.tipos.TipoReferencia;
+import src.semantico.tipos.TipoVoid;
 
 
 // analizador sintactico
@@ -52,6 +51,8 @@ public class Sintactico {
     //Program -> ListaDefiniciones Start
     private void program() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         listaDefiniciones();
+        //salgo de LS, voy a imprimir las clases:
+        ts.imprimirClases();
         // si es lambda va directo a start
         RegistroStart metodoStart = new RegistroStart();
         start();
@@ -146,7 +147,7 @@ public class Sintactico {
             match("llaveAbre");
             listaAtributos(); // si lo que viene es } es porque era lambda
             // imprimo los atributos de esa clase
-            System.out.println(ts.claseActual.listaAtributos.toString());
+            System.out.println("Atributos de la clase: "+ ts.claseActual.listaAtributos.toString());
             match("llaveCierra");
 
             // salgo de la clase actual
@@ -184,10 +185,29 @@ public class Sintactico {
     // Impl -> impl idClass { ListaMiembros }
     private void impl() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prImpl");
-        match("idClass"); //guardoTs(idClass.lex)
+        if (token.getTipo().equals("idClass")){
+            if (!ts.tablaClases.containsKey(token.getLexema())){
+                // no esta esa clase, la agrego
+                RegistroClase clase = new RegistroClase(token.getLexema());
+                clase.setNombre(token.getLexema());
+                ts.tablaClases.put(clase.getNombre(), clase);
+                ts.claseActual = clase;
+            }
+            // obtengo la clase actrual para guardarle los metodos
+            RegistroClase clase = ts.getClase(token.getLexema());
+            ts.claseActual = clase;
+            match("idClass");
+        }
+        else {
+            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idClass");
+        }
+        // entonces ahora voy a ir a lista miembros con la clase actual
         match("llaveAbre");
         listaMiembros();
         match("llaveCierra");
+
+        // salgo de este impl, vuelvo la clase actual a null
+        ts.claseActual = null;
     }
 
     // ListaMiembros -> Miembro ListaMiembros | lambda
@@ -225,39 +245,67 @@ public class Sintactico {
             metodo();
         }
         else {
+            // si va a constructor verifico si esa clase ya tiene constructor, si es asi largo error
             constructor();
         }
     }
 
     // Metodo -> FormaMetodoOpt fn TipoMetodoOpt idMetAt ArgumentosFormales BloqueMetodo
     private void metodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        formaMetodoOpt(); // si entra aca es un metodo St, sino no
+        boolean estatico = formaMetodoOpt(); // true = estatico, false = no estatico
         match("prFn");
-        tipoMetodoOpt(); // va a guardar en la ts el tipo de retorno de la funcion
-        match("idMetVar"); //guardoTS(idMetVar.lex)
+        // si el tipo de retorno es vacio es porque es void
+        Tipo tipo = tipoMetodoOpt(); // va a guardar en la ts el tipo de retorno de la funcion
+        // aca es donde guardo el metodo con forma, tipo nombre
+        if (token.getTipo().equals("idMetVar")){
+            // analizar los casos de redefinicion, de metodos heredados
+            // en la misma clase no puedo tener dos metodos con el mismo nombre
+            if (ts.claseActual.listaMetodos.containsKey(token.getLexema())){
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Ya existe un metodo con el nombre: "
+                        +token.getLexema()+" en el impl de la clase: "+ts.claseActual.getNombre());
+            }
+            // caso base agregar el metodo a la lista de metodos de la clase
+            RegistroMetodo metodo = new RegistroMetodo();
+            metodo.setFormaMetodo(estatico);
+            metodo.setTipoRetorno(tipo);
+            metodo.setNombre(token.getLexema());
+            match("idMetVar");
+            ts.claseActual.listaMetodos.put(metodo.getNombre(), metodo);
+            // seteo el metodo actual para los parametros y varlocales
+            ts.metodoActual = metodo;
+            //System.out.println("Metodo: "+metodo.getNombre());
+        }
+        // ya guarde el metodo en la ts.claseactual.listametodos, ahora voy a sus parametros y varlocales
+        // voy a argumentos formales con el metodoactual
         argumentosFormales(); //voy a guardar en la hash de listaParametros todos los argumentos
-        bloqueMetodo(); // voy a guardar en la listaVariablesLocales todas las var que esten en bloque metodo
+        // salgo de argumentos imprimo a ver que guardo
+        ts.metodoActual.imprimirMetodo(ts.metodoActual);
+
+        // voy a ir a bloque metodo con el metodoactual
+        bloqueMetodo();
     }
 
     // formaMetodoOpt -> formaMetodo | lambda
-    private void formaMetodoOpt() throws ErrorSintactico, ErrorLexico {
+    private boolean formaMetodoOpt() throws ErrorSintactico, ErrorLexico {
         // si el token que viene esta en los primeros de formaMetodo tengo que entrar
         // si viene otra cosa no hace nada y si no viene nada no entra y es valido
         if (token.getTipo().equals("prSt")){
-            formaMetodo();
+            return formaMetodo();
         }
+        return false; // si no entra es porque no es estatico, devuelo false
     }
 
     // TipoMetodoOpt -> TipoMetodo | lambda
-    private void tipoMetodoOpt() throws ErrorSintactico, ErrorLexico {
+    private Tipo tipoMetodoOpt() throws ErrorSintactico, ErrorLexico {
         // si el tokoen esta en los primeros de tipoMetodo entro
         if (esPrimeroTipoMetodo(token.getTipo())){
-            tipoMetodo();
+            return tipoMetodo();
         }
+        return new TipoVoid();
     }
 
     // ArgumentosFormales -> ( ListaArgumentosFormalesOpt )
-    private void argumentosFormales() throws ErrorSintactico, ErrorLexico {
+    private void argumentosFormales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("parAbre");
         listaArgumentosFormalesOpt();
         match("parCierra");
@@ -384,8 +432,9 @@ public class Sintactico {
     }
 
     // FormaMetodo -> st
-    private void formaMetodo() throws ErrorSintactico, ErrorLexico {
+    private boolean formaMetodo() throws ErrorSintactico, ErrorLexico {
         match("prSt"); // lo manejo con flags para guardar en la TS
+        return true; // es estatico
     }
 
     // TipoPrimitivo -> Str | Bool | Int
@@ -431,7 +480,7 @@ public class Sintactico {
     }
 
     // ListaArgumentosFormalesOpt -> ListaArgumentosFormales | lambda
-    private void listaArgumentosFormalesOpt() throws ErrorSintactico, ErrorLexico {
+    private void listaArgumentosFormalesOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // Prim(ListaArgumentosFormales) = {str, Bool, Int, idClass, Array}
         String tipo = token.getTipo();
         if (tipo == "tStr" | tipo == "tBool" | tipo == "tInt" | tipo == "idClass" | tipo == "tArray"){
@@ -440,13 +489,13 @@ public class Sintactico {
     }
 
     // ListaArgumentosFormales -> ArgumentoFormal ListaArgumentosFormalesRec
-    private void listaArgumentosFormales() throws ErrorSintactico, ErrorLexico {
-        argumentoFormal();
+    private void listaArgumentosFormales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        argumentoFormal(); // en argumentoformal va a a agregar a la ts de ese metodo el argumento
         listaArgumentosFormalesRec();
     }
 
     // ListaArgumentosFormalesRec -> , ListaArgumentosFormales | lambda
-    private void listaArgumentosFormalesRec() throws ErrorSintactico, ErrorLexico {
+    private void listaArgumentosFormalesRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("coma")){
             match("coma");
             listaArgumentosFormales();
@@ -454,23 +503,41 @@ public class Sintactico {
     }
 
     // ArgumentoFormal -> Tipo idMetAt
-    private void argumentoFormal() throws ErrorSintactico, ErrorLexico {
+    private void argumentoFormal() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // en la hash de listaParametros voy a guardar
-        // guardo la pos
-        tipo();  //guardo el tipo (que eso se hace en cada metodo individual)
-        match("idMetVar");  //guardatTS(idMetVar.lex)
-        // quedaria algo asi: pos tipo nombre
-        // | 0 | Int | a |
+        Tipo tipo = tipo();
+        if (tipo == null){
+            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un tipo para el parametro: "+token.getLexema());
+        }
+        if (token.getTipo().equals("idMetVar")){
+            // creo un argumento formal
+            RegistroParametro parametro = new RegistroParametro();
+            // no pueden haber dos parametros que se llamen igual para el mismo metodo
+            if (ts.metodoActual.listaParametros.containsKey(token.getLexema())){
+                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Ya existe un parametro con ese nombre");
+            }
+            else {
+                // no esta ese parametro lo agrego
+                parametro.setNombre(token.getLexema());
+                parametro.asignarPos();
+                parametro.setTipoParametro(tipo);
+                ts.metodoActual.listaParametros.put(parametro.getNombre(), parametro);
+                match("idMetVar");
+            }
+        }
+
+
     }
      // TipoMetodo -> Tipo | void
     // Prim(Tipo)= {str, bool int, idClass, Array}
-    private void tipoMetodo() throws ErrorSintactico, ErrorLexico {
+    private Tipo tipoMetodo() throws ErrorSintactico, ErrorLexico {
         if (token.getTipo().equals("tStr") || token.getTipo().equals("tBool") || token.getTipo().equals("tInt") ||
                 token.getTipo().equals("idClass") || token.getTipo().equals("tArray")) {
-            tipo();
+            return tipo();
         }
         else {
-            match("prVoid"); //guardoTS(token.lex)
+            match("prVoid");
+            return new TipoVoid();
         }
 
     }

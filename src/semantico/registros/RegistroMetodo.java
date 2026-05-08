@@ -2,6 +2,7 @@ package src.semantico.registros;
 
 import src.semantico.tipos.Tipo;
 
+import java.util.HashMap;
 import java.util.Map;
 
 // Hash con todos los metodos de una clase
@@ -10,9 +11,9 @@ public class RegistroMetodo{
     public String nombre;
 
     // forma del metodo puede ser st o no
-    // 0 estatico (st)
-    // 1 no estatico
-    public boolean formaMetodo;
+    // true estatico (st)
+    // false no estatico
+    public boolean forma;
 
     // cada metodo tiene una lista de parametros (que serian los argumentos formales)
     public Map<String, RegistroParametro> listaParametros;
@@ -23,5 +24,54 @@ public class RegistroMetodo{
     // tipo de retorno del metodo
     public Tipo tipoRetorno;
 
+    public RegistroMetodo(){
+        this.forma = false; // por default no es estatico
+        this.tipoRetorno = null; // por default le ponemos retorno null, que seria void
+        this.listaParametros = new HashMap<>();
+        this.listaVarLocales = new HashMap<>();
+    }
 
+    public void setFormaMetodo(boolean estatico){
+        this.forma = estatico;
+    }
+    public void setTipoRetorno(Tipo t){
+        this.tipoRetorno = t;
+    }
+    public void setNombre(String n){
+        this.nombre =  n;
+    }
+    public String getNombre(){
+        return this.nombre;
+    }
+    public Tipo getTipoRetorno(){
+        return this.tipoRetorno;
+    }
+    public boolean getFormaMetodo(){
+        return this.forma;
+    }
+
+    // funcion que me imprime el metodo y sus parametros
+    public void imprimirMetodo(RegistroMetodo metodo){
+        System.out.println("");
+        System.out.println("Metodo:  "+metodo.getNombre());
+        System.out.println("Tipo de retorno del metodo: "+metodo.getTipoRetorno().getNombre());
+        System.out.println("Estatico: "+metodo.getFormaMetodo());
+        // imprimo los parametros de ese metodo
+        if (listaParametros != null && !listaParametros.isEmpty()){
+            System.out.println("");
+            System.out.println("Parametros: ");
+            System.out.println("");
+            for (RegistroParametro p : listaParametros.values()) {
+                System.out.println("Posicion: "+p.getPos());
+                System.out.println("Tipo: "+p.getTipoParametro().getNombre());
+                System.out.println("Nombre: "+p.getNombre());
+
+                System.out.println("----");
+            }
+        }
+        else {
+            System.out.println("Sin parametros");
+        }
+
+    }
 }

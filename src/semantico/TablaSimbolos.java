@@ -34,6 +34,14 @@ public class TablaSimbolos{
         return tablaClases.get(nombre);
     }
 
+    public void imprimirClases(){
+        System.out.println("Clases guardadas en la lista de clases de la TS: ");
+        for (RegistroClase c : tablaClases.values()) {
+            System.out.println(c.getNombre());
+        }
+    }
+
+
 }
 
 // cada una de las clases Entrada... hacen referencia a la tabla con informacion de eso, por ejemplo la clase

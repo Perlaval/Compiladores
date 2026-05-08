@@ -24,10 +24,10 @@ public class RegistroClase {
 
     public RegistroClase(String nombre) {
         this.nombre = nombre;
-        this.heredaDe = heredaDe;
+        this.heredaDe = "Object"; // por default
         this.listaMetodos = new HashMap<>();
         this.listaAtributos = new HashMap<>();
-        this.constructor = constructor;
+        this.constructor = null;
 
     }
 

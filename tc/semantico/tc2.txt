@@ -1,0 +1,14 @@
+// en este verifico los metodos de las clases para la TS
+
+class A{
+    Int x;
+    Bool y;
+}
+impl A {
+    st fn Int m2(Int x, Str y){}
+    st fn m3(Int x, Str y){} //metodo que retorna void
+    fn A m4(){} //metodo que retoirna un objeto de la clase A
+
+
+}
+start{}

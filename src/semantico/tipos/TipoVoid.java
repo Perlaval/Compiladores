@@ -1,9 +1,8 @@
 package src.semantico.tipos;
 
-public class TipoArreglo extends Tipo{
-
+public class TipoVoid extends Tipo{
     @Override
     public String getNombre() {
-        return "";
+        return "void";
     }
 }
