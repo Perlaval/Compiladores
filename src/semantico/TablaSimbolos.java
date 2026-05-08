@@ -1,8 +1,8 @@
-package src.semantico;
+package semantico;
 
-import src.semantico.registros.RegistroStart;
-import src.semantico.registros.RegistroClase;
-import src.semantico.registros.RegistroMetodo;
+import semantico.registros.RegistroStart;
+import semantico.registros.RegistroClase;
+import semantico.registros.RegistroMetodo;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class TablaSimbolos{
     // start
     public RegistroStart bloqueStart;
 
-    // clases predefinidas (IO, Object, STR, Bool, Int, Iterator)
+    // clases predefinidas (IO, Object, Str, Bool, Int, Iterator)
 
 
     public TablaSimbolos() {

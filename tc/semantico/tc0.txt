@@ -7,4 +7,5 @@ class A : B {
 // herencia circular debe dar error
 class B : A{
 }
+
 start{}

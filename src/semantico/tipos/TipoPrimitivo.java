@@ -1,4 +1,4 @@
-package src.semantico.tipos;
+package semantico.tipos;
 
 public class TipoPrimitivo extends Tipo{
     private String nombre; // con nombre me refiero a Str, Bool, Int
@@ -6,6 +6,7 @@ public class TipoPrimitivo extends Tipo{
     public TipoPrimitivo(String t) {
         this.nombre = t;
     }
+
 
     @Override
     public String getNombre() {
