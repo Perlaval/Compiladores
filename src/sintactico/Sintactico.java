@@ -278,10 +278,11 @@ public class Sintactico {
         // voy a argumentos formales con el metodoactual
         argumentosFormales(); //voy a guardar en la hash de listaParametros todos los argumentos
         // salgo de argumentos imprimo a ver que guardo
-        ts.metodoActual.imprimirMetodo(ts.metodoActual);
+
 
         // voy a ir a bloque metodo con el metodoactual
         bloqueMetodo();
+        ts.metodoActual.imprimirMetodo(ts.metodoActual, ts.claseActual);
     }
 
     // formaMetodoOpt -> formaMetodo | lambda
@@ -365,24 +366,52 @@ public class Sintactico {
     }
 
     // ListaDeclaracionVar -> idMetAt ListaDeclaracionesVarRec
+    // misma funcion para guardar las variables de los atributos y las variables locales de un metodo
     private void listaDeclaracionVar(boolean vis, Tipo tipo) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        RegistroAtributo atributo;
+        //System.out.println("Metodo actual: "+ts.metodoActual.getNombre());
+        // obtengo el metodo actual, si no es null es porque estoy en las variables locales de un metodo
+        // por lo tanto no pueden repetirse los nombres de los parametros con los de las variables
+
         if (token.getTipo().equals("idMetVar")){
-            // verifico que no este guardado ya en la lista de atributos
-            if (ts.claseActual.listaAtributos.containsKey(token.getLexema())){
-                // si ya esta, lanzo error semantico
-                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Atributo: '"+token.getLexema()+"' repetido");
+            // variable del metodo
+            if (ts.metodoActual != null){
+                // estoy en metodo
+                // busco el idmetvar que voy a agregar en la lista de los parametros y si existe largo error, no pueden llamarse igual
+                if (ts.metodoActual.listaParametros.containsKey(token.getLexema())){
+                    throw new ErrorSemantico(token.getFila(), token.getColumna(),
+                            "El nombre de la variable: "+token.getLexema()+ " ya fue asignado para un parametro");
+                }
+                else{
+                    // no existe ese nombre en la lista de parametros por lo tanto creo una nueva variable del metodo
+                    RegistroVariable varLocal;
+                    varLocal = new RegistroVariable(token.getLexema());
+                    varLocal.setTipo(tipo);
+                    varLocal.setPos(ts.metodoActual.getProxPosVarLocal());
+                    ts.metodoActual.listaVarLocales.put(varLocal.getNombre(), varLocal);
+                    //System.out.println("Guardo en la lista de variables del metodo: "+ts.metodoActual.getNombre()+ " la variable: "+varLocal.getNombre());
+                }
             }
+            // si viene aca es porque estoy en un tipo class, por lo tanto estoy viendo los atributos de la clase
             else {
-                atributo = new RegistroAtributo(token.getLexema());
-                atributo.setTipo(tipo);
-                atributo.setVisibilidad(vis);
-                atributo.asignarPos();
-                ts.claseActual.listaAtributos.put(atributo.getNombre(), atributo);
-                match("idMetVar");
+                RegistroAtributo atributo;
+                // atributo de clase
+                // verifico que no este guardado ya en la lista de atributos
+                if (ts.claseActual.listaAtributos.containsKey(token.getLexema())){
+                    // si ya esta, lanzo error semantico
+                    throw new ErrorSemantico(token.getFila(), token.getColumna(), "Atributo: '"+token.getLexema()+"' repetido");
+                }
+                else {
+                    atributo = new RegistroAtributo(token.getLexema());
+                    atributo.setTipo(tipo);
+                    atributo.setVisibilidad(vis);
+                    atributo.setPos(ts.claseActual.getProxPosAtributo());
+                    ts.claseActual.listaAtributos.put(atributo.getNombre(), atributo);
+
+                }
             }
+            match("idMetVar");
+
         }
-        //match("idMetVar"); //guardoTs(idMetVar.lex)
         listaDeclaracionVarRec(vis, tipo);
     }
 
@@ -397,7 +426,10 @@ public class Sintactico {
     // BloqueMetodo -> { ListaDeclaracioVarLocal ListaSentencia }
     private void bloqueMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("llaveAbre");
+        // voy a lista declaracion var local con el metodo actual
         listaDeclaracionVarLocal();
+        // voy a hacer un print de las variables locales de un metodo para ver que me devuelve
+        //System.out.println(ts.metodoActual.listaVarLocales.toString());
         listaSentencia();
         match("llaveCierra");
     }
@@ -407,7 +439,7 @@ public class Sintactico {
         // recursiva
         // si lo que viene esta en los primeros de declaracionVarLocal es porque no es lambda
         if (esPrimeroDeclaracionVarLocal(token.getTipo())){
-            declaracionVarLocal();
+            declaracionVarLocal(); // en declaracion variables las voy a guardar en la TS
             listaDeclaracionVarLocal();
 
         }
@@ -512,11 +544,11 @@ public class Sintactico {
             RegistroParametro parametro = new RegistroParametro(token.getLexema());
             // no pueden haber dos parametros que se llamen igual para el mismo metodo
             if (ts.metodoActual.listaParametros.containsKey(token.getLexema())){
-                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Ya existe un parametro con ese nombre");
+                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Ya existe un parametro con nombre");
             }
             else {
                 // no esta ese parametro lo agrego
-                parametro.asignarPos();
+                parametro.setPos(ts.metodoActual.getProxPosParametro());
                 parametro.setTipo(tipo);
                 ts.metodoActual.listaParametros.put(parametro.getNombre(), parametro);
                 match("idMetVar");

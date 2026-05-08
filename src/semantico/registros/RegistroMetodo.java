@@ -7,13 +7,14 @@ import java.util.Map;
 
 // Hash con todos los metodos de una clase
 public class RegistroMetodo{
-    // nombre del metodo
-    public String nombre;
+
+    private int proxPosVarLocal = 0; // contador de las variables del metodo
+    private int proxPosParametro = 0; // contador de los parametros del metodo
+
+    public String nombre; // nombre del metodo
 
     // forma del metodo puede ser st o no
-    // true estatico (st)
-    // false no estatico
-    public boolean esEstatico;
+    public boolean esEstatico; // true: estatico
 
     // cada metodo tiene una lista de parametros (que serian los argumentos formales)
     public Map<String, RegistroParametro> listaParametros;
@@ -32,14 +33,17 @@ public class RegistroMetodo{
         this.listaVarLocales = new HashMap<>();
     }
 
+    public int getProxPosVarLocal(){
+        return proxPosVarLocal++;
+    }
+    public int getProxPosParametro(){
+        return proxPosParametro++;
+    }
     public void setFormaMetodo(boolean estatico){
         this.esEstatico = estatico;
     }
     public void setTipoRetorno(Tipo t){
         this.tipoRetorno = t;
-    }
-    public void setNombre(String n){
-        this.nombre =  n;
     }
     public String getNombre(){
         return this.nombre;
@@ -52,27 +56,30 @@ public class RegistroMetodo{
     }
 
     // funcion que me imprime el metodo y sus parametros
-    public void imprimirMetodo(RegistroMetodo metodo){
+    public void imprimirMetodo(RegistroMetodo metodo, RegistroClase claseActual){
         System.out.println("");
-        System.out.println("Metodo:  "+metodo.getNombre());
-        System.out.println("Tipo de retorno del metodo: "+metodo.getTipoRetorno().getNombre());
-        System.out.println("Estatico: "+metodo.getFormaMetodo());
+        System.out.println("Metodo:  "+metodo.getNombre()+", de la clase: "+claseActual.getNombre()+", Tipo retorno: "+metodo.getTipoRetorno().getNombre()+", Estatico: "+metodo.getFormaMetodo());
         // imprimo los parametros de ese metodo
         if (listaParametros != null && !listaParametros.isEmpty()){
-            System.out.println("");
             System.out.println("Parametros: ");
-            System.out.println("");
             for (RegistroParametro p : listaParametros.values()) {
-                System.out.println("Posicion: "+p.getPos());
-                System.out.println("Tipo: "+p.getTipo().getNombre());
-                System.out.println("Nombre: "+p.getNombre());
-
+                System.out.println("Posicion: "+p.getPos()+", tipo: "+p.getTipo().getNombre()+", Nombre: "+p.getNombre());
                 System.out.println("----");
             }
         }
         else {
             System.out.println("Sin parametros");
         }
-
+        // imprimo las variables locales del metodo
+        if (listaVarLocales != null && !listaVarLocales.isEmpty()){
+            System.out.println("Variables locales");
+            for (RegistroVariable v : listaVarLocales.values()){
+                System.out.println("Posicion "+v.getPos()+", tipo: "+v.getTipo().getNombre()+ ", Nombre: "+v.getNombre());
+                System.out.println("----");
+            }
+        }
+        else {
+            System.out.println("Sin variables locales");
+        }
     }
 }

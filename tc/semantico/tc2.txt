@@ -4,11 +4,21 @@ class A{
     Int x;
     Bool y;
 }
+
 impl A {
-    st fn Int m2(Int x, Str y){}
+    st fn Int m2(Int c, Str y){
+        // defino variables locales para probar
+        Bool c;
+        Int v;
+    }
     st fn m3(Int x, Str y){} //metodo que retorna void
     fn A m4(){} //metodo que retoirna un objeto de la clase A
 
 
+}
+impl B{
+    st fn Int m2(){
+        Bool a;
+    }
 }
 start{}
