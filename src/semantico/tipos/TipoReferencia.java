@@ -1,4 +1,4 @@
-package src.semantico.tipos;
+package semantico.tipos;
 
 public class TipoReferencia extends Tipo{
     private String nombreClase; // para manejar la herencia

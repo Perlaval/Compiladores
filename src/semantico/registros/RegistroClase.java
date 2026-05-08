@@ -1,4 +1,4 @@
-package src.semantico.registros;
+package semantico.registros;
 
 import java.util.HashMap;
 import java.util.Map;

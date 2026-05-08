@@ -1,4 +1,4 @@
-package src.semantico.tipos;
+package semantico.tipos;
 
 public class TipoVoid extends Tipo{
     @Override

@@ -1,6 +1,6 @@
-package src.semantico.registros;
+package semantico.registros;
 
-import src.semantico.tipos.Tipo;
+import semantico.tipos.Tipo;
 
 public class RegistroAtributo {
 

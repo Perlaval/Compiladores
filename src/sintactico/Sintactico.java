@@ -7,12 +7,12 @@ import lexico.Token;
 import lexico.Lexico;
 import sintactico.ErrorSintactico;
 import semantico.ErrorSemantico;
-import src.semantico.TablaSimbolos;
-import src.semantico.registros.*;
-import src.semantico.tipos.Tipo;
-import src.semantico.tipos.TipoPrimitivo;
-import src.semantico.tipos.TipoReferencia;
-import src.semantico.tipos.TipoVoid;
+import semantico.TablaSimbolos;
+import semantico.registros.*;
+import semantico.tipos.Tipo;
+import semantico.tipos.TipoPrimitivo;
+import semantico.tipos.TipoReferencia;
+import semantico.tipos.TipoVoid;
 
 
 // analizador sintactico

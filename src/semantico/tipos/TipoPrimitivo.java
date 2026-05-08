@@ -1,4 +1,4 @@
-package src.semantico.tipos;
+package semantico.tipos;
 
 public class TipoPrimitivo extends Tipo{
     private String nombre; // con nombre me refiero a Str, Bool, Int

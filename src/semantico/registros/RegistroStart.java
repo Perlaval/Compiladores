@@ -1,5 +1,6 @@
-package src.semantico.registros;
+package semantico.registros;
 
+import semantico.registros.RegistroVariable;
 import java.util.Map;
 
 public class RegistroStart {
