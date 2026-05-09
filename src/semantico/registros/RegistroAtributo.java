@@ -8,6 +8,10 @@ public class RegistroAtributo extends RegistroVariable {
     // false priv
     public boolean visibilidad;
 
+    public void setVisibilidad(boolean vis) {
+        this.visibilidad = vis;
+    }
+
     public RegistroAtributo(String nombre) {
         super(nombre);
         this.visibilidad = false; //por defecto es privado, a no ser que se indique lo contrari
@@ -23,9 +27,7 @@ public class RegistroAtributo extends RegistroVariable {
                 '}';
     }
 
-    public void setVisibilidad(boolean vis) {
-        this.visibilidad = vis;
-    }
+
 }
 
 

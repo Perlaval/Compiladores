@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RegistroClase {
+
+    private int proxPosAtributo = 0;
+
     //nombre de la clase
     public String nombre;
 
@@ -22,7 +25,6 @@ public class RegistroClase {
     // es un metodo porque tmb va a tener parametros y var locales, y el tipo de retorno va a ser void
     public Constructor constructor;
 
-
     public RegistroClase(String nombre) {
         this.nombre = nombre;
         this.heredaDe = "Object"; // por default
@@ -30,6 +32,10 @@ public class RegistroClase {
         this.listaAtributos = new HashMap<>();
         this.constructor = null;
 
+    }
+
+    public int getProxPosAtributo(){
+        return proxPosAtributo++;
     }
 
     public String getNombre() {
