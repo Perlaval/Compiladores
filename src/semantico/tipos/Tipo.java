@@ -1,5 +1,9 @@
 package semantico.tipos;
 
 public abstract class Tipo {
-    public abstract String getNombre();
+
+    public String tipo;
+
+    public abstract String getNombreTipo();
+    public abstract boolean esTipoEspecial();
 }

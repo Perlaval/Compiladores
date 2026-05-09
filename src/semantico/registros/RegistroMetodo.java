@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 // Hash con todos los metodos de una clase
-public class RegistroMetodo{
+public class RegistroMetodo {
 
     private int proxPosVarLocal = 0; // contador de las variables del metodo
     private int proxPosParametro = 0; // contador de los parametros del metodo
@@ -58,12 +58,12 @@ public class RegistroMetodo{
     // funcion que me imprime el metodo y sus parametros
     public void imprimirMetodo(RegistroMetodo metodo, RegistroClase claseActual){
         System.out.println("");
-        System.out.println("Metodo:  "+metodo.getNombre()+", de la clase: "+claseActual.getNombre()+", Tipo retorno: "+metodo.getTipoRetorno().getNombre()+", Estatico: "+metodo.getFormaMetodo());
+        System.out.println("Metodo:  "+metodo.getNombre()+", de la clase: "+claseActual.getNombre()+", Tipo retorno: "+metodo.getTipoRetorno().getNombreTipo()+", Estatico: "+metodo.getFormaMetodo());
         // imprimo los parametros de ese metodo
         if (listaParametros != null && !listaParametros.isEmpty()){
             System.out.println("Parametros: ");
             for (RegistroParametro p : listaParametros.values()) {
-                System.out.println("Posicion: "+p.getPos()+", tipo: "+p.getTipo().getNombre()+", Nombre: "+p.getNombre());
+                System.out.println("Posicion: "+p.getPos()+", tipo: "+p.getTipo().getNombreTipo()+", Nombre: "+p.getNombre());
                 System.out.println("----");
             }
         }
@@ -74,7 +74,7 @@ public class RegistroMetodo{
         if (listaVarLocales != null && !listaVarLocales.isEmpty()){
             System.out.println("Variables locales");
             for (RegistroVariable v : listaVarLocales.values()){
-                System.out.println("Posicion "+v.getPos()+", tipo: "+v.getTipo().getNombre()+ ", Nombre: "+v.getNombre());
+                System.out.println("Posicion "+v.getPos()+", tipo: "+v.getTipo().getNombreTipo()+ ", Nombre: "+v.getNombre());
                 System.out.println("----");
             }
         }

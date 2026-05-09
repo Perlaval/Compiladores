@@ -21,7 +21,7 @@ public class RegistroAtributo extends RegistroVariable {
     public String toString() {
         return "Atributo{" +
                 "nombre='" + nombre + '\'' +
-                ", tipo=" + (tipo != null ? tipo.getNombre() : "null") +
+                ", tipo=" + (tipo != null ? tipo.getNombreTipo() : "null") +
                 ", pos=" + pos +
                 ", pub=" + visibilidad +
                 '}';

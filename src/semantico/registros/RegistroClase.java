@@ -50,6 +50,7 @@ public class RegistroClase {
         return heredaDe;
     }
 
-    public void setNombre(String nombre) {
-    }
+    /*public void setNombre(String nombre) {
+    }*/
+
 }

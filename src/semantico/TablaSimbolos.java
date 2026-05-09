@@ -7,8 +7,10 @@ import semantico.registros.RegistroMetodo;
 import java.util.HashMap;
 import java.util.Map;
 
+import static semantico.ValidarDeclaracion.Definicion.*;
 
-public class TablaSimbolos{
+
+public class TablaSimbolos implements ValidarDeclaracion{
     // Hash con las clases
     public Map<String, RegistroClase> tablaClases;
 
@@ -42,6 +44,25 @@ public class TablaSimbolos{
     }
 
 
+    @Override
+    public boolean validarNombre(Definicion def, String nombre) {
+        if (def == METODO | def == VAR) {
+            return !isNombreTipoEspecial(nombre);
+        } else {
+            return !isNombreClasePredefinida(nombre);
+        }
+    }
+
+    @Override
+    public boolean isNombreTipoEspecial(String nombre) {
+        return nombre == "void" | nombre == "self";
+    }
+
+    @Override
+    public boolean isNombreClasePredefinida(String nombre) {
+        return nombre == "IO" | nombre == "Iterator" | nombre == "Array" | nombre == "Object";
+        //en caso de que sea Int, Bool o Str no es necesario pq el lexico lo envia al sintactico como tInt, tBool y tStr
+    }
 }
 
 // cada una de las clases Entrada... hacen referencia a la tabla con informacion de eso, por ejemplo la clase

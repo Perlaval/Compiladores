@@ -25,8 +25,8 @@ public class Keywords {
         tabla.put("for", "prFor");
         tabla.put("in", "prIn");
         tabla.put("do", "prDo");
-        tabla.put("void", "prVoid");
-        tabla.put("Array", "prArray");
+        tabla.put("void", "prVoid"); //no es una pr
+        //tabla.put("Array", "prArray"); //no es una pr
 
 
         // tipos

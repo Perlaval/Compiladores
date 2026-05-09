@@ -1,9 +1,14 @@
 package semantico.tipos;
 
-public class TipoVoid extends Tipo{
+public class TipoSelf extends Tipo{
+
+    public TipoSelf() {
+        this.tipo = tipo;
+    }
+
     @Override
     public String getNombreTipo() {
-        return tipo;
+        return this.tipo;
     }
 
     @Override

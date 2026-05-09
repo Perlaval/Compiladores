@@ -3,7 +3,7 @@ package semantico.registros;
 import semantico.tipos.Tipo;
 
 // con una variable guardo lo mismo que con un parametro mas la posicion
-public class RegistroVariable  {
+public class RegistroVariable{
 
     public int pos; // posicion del atributo
     public String nombre; // nombre
@@ -31,7 +31,7 @@ public class RegistroVariable  {
     public String toString() {
         return "Variable Local{" +
                 "nombre='" + nombre + '\'' +
-                ", tipo=" + (tipo != null ? tipo.getNombre() : "null") +
+                ", tipo=" + (tipo != null ? tipo.getNombreTipo() : "null") +
                 ", pos=" + pos +
                 '}';
     }

@@ -1,18 +1,23 @@
 package semantico.tipos;
 
 public class TipoReferencia extends Tipo{
-    private String nombreClase; // para manejar la herencia
+    //private String nombreClase; // para manejar la herencia
 
-    public TipoReferencia(String nombreClase) {
-        this.nombreClase = nombreClase;
+    public TipoReferencia(String tipo) {
+        this.tipo = tipo;
     }
 
-    public String getNombreClase(){
-        return nombreClase;
+    /*public String getNombreClase(){
+        return nombre;
+    }*/
+
+    @Override
+    public String getNombreTipo() {
+        return tipo;
     }
 
     @Override
-    public String getNombre() {
-        return nombreClase;
+    public boolean esTipoEspecial() {
+        return false;
     }
 }

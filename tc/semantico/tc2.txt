@@ -1,19 +1,20 @@
 // en este verifico los metodos de las clases para la TS
 
-class A{
-    Int x;
+class Array {
+    Int;
     Bool y;
+    Array Int a;
 }
 
 impl A {
-    st fn Int m2(Int c, Str y){
+    st fn Int m2(Int c, Str y, Array Str hola, A a1){
         // defino variables locales para probar
-        Bool c;
+        Bool d;
         Int v;
     }
     st fn m3(Int x, Str y){} //metodo que retorna void
-    fn A m4(){} //metodo que retoirna un objeto de la clase A
-
+    fn A m4(){} //metodo que retorna un objeto de la clase A
+    fn A m5(){}
 
 }
 impl B{
@@ -21,4 +22,5 @@ impl B{
         Bool a;
     }
 }
+class B {}
 start{}

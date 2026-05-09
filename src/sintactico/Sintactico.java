@@ -5,14 +5,12 @@ import java.util.ArrayList;
 import lexico.ErrorLexico;
 import lexico.Token;
 import lexico.Lexico;
+import semantico.ValidarDeclaracion;
+import semantico.tipos.*;
 import sintactico.ErrorSintactico;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.registros.*;
-import semantico.tipos.Tipo;
-import semantico.tipos.TipoPrimitivo;
-import semantico.tipos.TipoReferencia;
-import semantico.tipos.TipoVoid;
 
 
 // analizador sintactico
@@ -153,6 +151,8 @@ public class Sintactico {
             // salgo de la clase actual
             ts.claseActual = null;
         }
+        // chequear cuando se intenta declarar una clase cuyo nombre es un tipo primitivo
+
     }
 
     // HerenciaOpt -> Herencia | lambda
@@ -174,10 +174,10 @@ public class Sintactico {
         // si lo que viene no esta en los primeros de Atributo es porque listaAtributos es lambda entonces aca no hace nada
         // es recursiva, por lo tanto siempre que venga alguno de los primeros de A vuelvo a entrar
         // como puede no tener prPub, tambien puedo ir directamente a Tipo
-        if (tipo.equals("prPub") | tipo.equals("tStr") | tipo.equals("tBool") | tipo.equals("tInt") | tipo.equals("idClass") | tipo.equals("prArray")){
+        if (tipo.equals("prPub") | tipo.equals("tStr") | tipo.equals("tBool") | tipo.equals("tInt") | tipo.equals("idClass")) { //| tipo.equals("Array")
             atributo();
             // actualizo el tipo
-            tipo = token.getTipo();
+            //tipo = token.getTipo();
             listaAtributos();
         }
     }
@@ -189,7 +189,6 @@ public class Sintactico {
             if (!ts.tablaClases.containsKey(token.getLexema())){
                 // no esta esa clase, la agrego
                 RegistroClase clase = new RegistroClase(token.getLexema());
-                clase.setNombre(token.getLexema());
                 ts.tablaClases.put(clase.getNombre(), clase);
                 ts.claseActual = clase;
             }
@@ -228,7 +227,7 @@ public class Sintactico {
         // verifica si o si que lo que se recibe es un idClass
         if (token.getTipo().equals("idClass") && !token.getLexema().equals("Array")){ // ver tmb para los otros casos (Int, Bool, Iterator, etc)
             tipoSuperClase = tipo(); // como es idClass va a ir a TipoReferencia
-            superClase = tipoSuperClase.getNombre();
+            superClase = tipoSuperClase.getNombreTipo();
         }
         else {
             throw new ErrorSemantico(token.getFila(), token.getColumna(), "Se esperaba un id de clase y se encontro: "+token.getLexema());
@@ -257,7 +256,14 @@ public class Sintactico {
         // si el tipo de retorno es vacio es porque es void
         Tipo tipo = tipoMetodoOpt(); // va a guardar en la ts el tipo de retorno de la funcion
         // aca es donde guardo el metodo con forma, tipo nombre
+
         if (token.getTipo().equals("idMetVar")){
+
+            if (!ts.validarNombre(ValidarDeclaracion.Definicion.METODO, token.getLexema())){
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "El nombre: "
+                        +token.getLexema()+" no es válido ya que representa un tipo especial");
+            }
+
             // analizar los casos de redefinicion, de metodos heredados
             // en la misma clase no puedo tener dos metodos con el mismo nombre
             if (ts.claseActual.listaMetodos.containsKey(token.getLexema())){
@@ -321,10 +327,8 @@ public class Sintactico {
     // Atributo -> VisibilidadOpt Tipo ListaDeclaracionVar ;
     private void atributo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // guardo en la TS el atributo con la posicion, visibilidad, tipo, nombre
-        boolean vis;
-        Tipo tipo;
-        vis = visibilidadOpt(); // si no entra a visibilidad es de tipo priv
-        tipo = tipo();
+        boolean vis = visibilidadOpt(); // si no entra a visibilidad es de tipo priv
+        Tipo tipo = tipo();
         listaDeclaracionVar(vis, tipo);
         // salgo de aca y voy a haber guardado por ej para: Int a,b
         // pos visibilidad tipo nombre
@@ -353,7 +357,13 @@ public class Sintactico {
         }
         else {
             if (token.getTipo().equals("idClass")){
-                return tipoReferencia();
+                if (token.getLexema().equals("Array")){
+                    return tipoArreglo();
+                }
+                else{
+                    return tipoReferencia();
+                }
+
             }
             //else {
                 //if (token.getTipo().equals("prArray")){
@@ -492,9 +502,9 @@ public class Sintactico {
         return new TipoReferencia(nombre);
     }
     // TipoArray -> Array TipoPrimitivo
-    private void tipoArreglo() throws ErrorSintactico, ErrorLexico {
-        match("prArray");
-        tipoPrimitivo();
+    private Tipo tipoArreglo() throws ErrorSintactico, ErrorLexico {
+        match("idClass");
+        return new TipoArreglo(tipoPrimitivo());
         // return true
     }
 
