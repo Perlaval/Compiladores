@@ -85,8 +85,8 @@ public class Lexico {
                         avanzar(); // incremento puntero, incremento columnas, cambio charActual
                         avanzar();
                         //actualizarCharSig();
-                        System.out.println("LINEA: " + contadorLineas);
-                        System.out.println("COLUMNA: " + contadorColumnas);
+                        //System.out.println("LINEA: " + contadorLineas);
+                        //System.out.println("COLUMNA: " + contadorColumnas);
                         while (!esFinArchivo(puntero) && (int) charActual != 10 && (int) charActual != 13){
                             avanzar();
                             //actualizarCharSig();

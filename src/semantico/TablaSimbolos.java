@@ -21,7 +21,7 @@ public class TablaSimbolos{
     // start
     public RegistroStart bloqueStart;
 
-    // clases predefinidas (IO, Object, STR, Bool, Int, Iterator)
+    // clases predefinidas (IO, Object, Str, Bool, Int, Iterator)
 
 
     public TablaSimbolos() {

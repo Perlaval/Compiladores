@@ -97,27 +97,27 @@ public class Sintactico {
         if (token.getTipo().equals("idClass")){
             Token id = token; // guardo el token para guardarlo en la ts, porque cuando matcheo avanzo entonces lo pierdo
             match("idClass");
-            RegistroClase claseE;
+            RegistroClase clase;
 
             if (ts.tablaClases.containsKey(id.getLexema())){
                 // verifico la herencia que debe ser la misma
-                claseE = ts.getClase(id.getLexema());
+                clase = ts.getClase(id.getLexema());
                 if (token.getTipo().equals("dosPuntos")){ // tiene herencia
                     String superClase = herenciaOpt(); // obtengo esa herencia y la comparo con la que ya tengo en mi ts
-                    if (!claseE.heredaDe.equals(superClase)){ // si son iguales esta todo correcto
+                    if (!clase.heredaDe.equals(superClase)){ // si son iguales esta todo correcto
                         throw new ErrorSemantico(token.getFila(), token.getColumna(), "Redefinicion herencia inconsistente");
                     }
                 }
             }
             else {
-                claseE = new RegistroClase(id.getLexema());
-                claseE.setNombre(id.getLexema());
-                ts.tablaClases.put(claseE.getNombre(), claseE);
+                clase = new RegistroClase(id.getLexema());
+                //clase.setNombre(id.getLexema());
+                ts.tablaClases.put(clase.getNombre(), clase);
                 if (token.getTipo().equals("dosPuntos")){
                     // obtengo la superClase
                     String superClase = herenciaOpt();
                     // verifico que no este haciendo esto A : A
-                    if (claseE.getNombre().equals(superClase)){
+                    if (clase.getNombre().equals(superClase)){
                         throw new ErrorSemantico(token.getFila(), token.getColumna(), "No puede heredar de la misma clase");
                     }
                     else {
@@ -125,25 +125,25 @@ public class Sintactico {
                         if (ts.tablaClases.containsKey(superClase)){
                             // obtengo esa clase y me fijo su herencia
                             RegistroClase claseHerencia = ts.getClase(superClase);
-                            if (claseHerencia.getHeredaDe().equals(claseE.getNombre())){
+                            if (claseHerencia.getHeredaDe().equals(clase.getNombre())){
                                 throw new ErrorSemantico(token.getFila(), token.getColumna(), "Error, herencia circular");
                             }
                         }
                         else {
                             // todo okey, seteo la herencia
-                            claseE.setHeredaDe(superClase);
+                            clase.setHeredaDe(superClase);
                         }
                     }
                 }
                 // si no me vienen : es porque no tiene herencia y hereda de object
                 else {
-                    claseE.setHeredaDe("Object");
+                    clase.setHeredaDe("Object");
                 }
-                System.out.println("Nombre clase: "+claseE.getNombre());
-                System.out.println("hereda de: "+ claseE.getHeredaDe());
+                System.out.println("Nombre clase: "+clase.getNombre());
+                System.out.println("hereda de: "+ clase.getHeredaDe());
             }
             // contexto para atributos
-            ts.claseActual = claseE;
+            ts.claseActual = clase;
             match("llaveAbre");
             listaAtributos(); // si lo que viene es } es porque era lambda
             // imprimo los atributos de esa clase
@@ -265,10 +265,9 @@ public class Sintactico {
                         +token.getLexema()+" en el impl de la clase: "+ts.claseActual.getNombre());
             }
             // caso base agregar el metodo a la lista de metodos de la clase
-            RegistroMetodo metodo = new RegistroMetodo();
+            RegistroMetodo metodo = new RegistroMetodo(token.getLexema());
             metodo.setFormaMetodo(estatico);
             metodo.setTipoRetorno(tipo);
-            metodo.setNombre(token.getLexema());
             match("idMetVar");
             ts.claseActual.listaMetodos.put(metodo.getNombre(), metodo);
             // seteo el metodo actual para los parametros y varlocales
@@ -375,8 +374,7 @@ public class Sintactico {
                 throw new ErrorSemantico(token.getFila(), token.getColumna(), "Atributo: '"+token.getLexema()+"' repetido");
             }
             else {
-                atributo = new RegistroAtributo();
-                atributo.setNombre(token.getLexema());
+                atributo = new RegistroAtributo(token.getLexema());
                 atributo.setTipo(tipo);
                 atributo.setVisibilidad(vis);
                 atributo.asignarPos();
@@ -511,16 +509,15 @@ public class Sintactico {
         }
         if (token.getTipo().equals("idMetVar")){
             // creo un argumento formal
-            RegistroParametro parametro = new RegistroParametro();
+            RegistroParametro parametro = new RegistroParametro(token.getLexema());
             // no pueden haber dos parametros que se llamen igual para el mismo metodo
             if (ts.metodoActual.listaParametros.containsKey(token.getLexema())){
                 throw new ErrorSintactico(token.getFila(), token.getColumna(), "Ya existe un parametro con ese nombre");
             }
             else {
                 // no esta ese parametro lo agrego
-                parametro.setNombre(token.getLexema());
                 parametro.asignarPos();
-                parametro.setTipoParametro(tipo);
+                parametro.setTipo(tipo);
                 ts.metodoActual.listaParametros.put(parametro.getNombre(), parametro);
                 match("idMetVar");
             }

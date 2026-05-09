@@ -8,6 +8,7 @@ public class RegistroClase {
     public String nombre;
 
     // herencia voy a guardar el idClass de la clase a la que hereda
+    // nose si nos conviene aca tener el objeto clase mas que el string
     public String heredaDe;
 
     // metodos de la clase

@@ -7,6 +7,7 @@ public class TipoPrimitivo extends Tipo{
         this.nombre = t;
     }
 
+
     @Override
     public String getNombre() {
         return this.nombre;

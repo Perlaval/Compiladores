@@ -13,7 +13,7 @@ public class RegistroMetodo{
     // forma del metodo puede ser st o no
     // true estatico (st)
     // false no estatico
-    public boolean forma;
+    public boolean esEstatico;
 
     // cada metodo tiene una lista de parametros (que serian los argumentos formales)
     public Map<String, RegistroParametro> listaParametros;
@@ -24,15 +24,16 @@ public class RegistroMetodo{
     // tipo de retorno del metodo
     public Tipo tipoRetorno;
 
-    public RegistroMetodo(){
-        this.forma = false; // por default no es estatico
+    public RegistroMetodo(String nombre){
+        this.nombre = nombre;
+        this.esEstatico = false; // por default no es estatico
         this.tipoRetorno = null; // por default le ponemos retorno null, que seria void
         this.listaParametros = new HashMap<>();
         this.listaVarLocales = new HashMap<>();
     }
 
     public void setFormaMetodo(boolean estatico){
-        this.forma = estatico;
+        this.esEstatico = estatico;
     }
     public void setTipoRetorno(Tipo t){
         this.tipoRetorno = t;
@@ -47,7 +48,7 @@ public class RegistroMetodo{
         return this.tipoRetorno;
     }
     public boolean getFormaMetodo(){
-        return this.forma;
+        return this.esEstatico;
     }
 
     // funcion que me imprime el metodo y sus parametros
@@ -63,7 +64,7 @@ public class RegistroMetodo{
             System.out.println("");
             for (RegistroParametro p : listaParametros.values()) {
                 System.out.println("Posicion: "+p.getPos());
-                System.out.println("Tipo: "+p.getTipoParametro().getNombre());
+                System.out.println("Tipo: "+p.getTipo().getNombre());
                 System.out.println("Nombre: "+p.getNombre());
 
                 System.out.println("----");
