@@ -1,13 +1,20 @@
 // en este verifico los metodos de las clases para la TS
 
 class Array {
-    Int;
+    Int z;
     Bool y;
     Array Int a;
 }
 
 impl A {
-    st fn Int m2(Int c, Str y, Array Str hola, A a1){
+    .(Int b, Bool z){
+        //.(){} probar despues de arreglar el sintactico
+        Array Int x;
+        z = 1;
+
+    }
+
+    st fn Int m2(Int c, Str y, Array Str hola, A m2){
         // defino variables locales para probar
         Bool d;
         Int v;
@@ -17,6 +24,11 @@ impl A {
     fn A m5(){}
 
 }
+
+impl A {
+    .(){}
+}
+
 impl B{
     st fn Int m2(){
         Bool a;

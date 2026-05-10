@@ -36,6 +36,8 @@ public class TablaSimbolos implements ValidarDeclaracion{
         return tablaClases.get(nombre);
     }
 
+    public RegistroClase getClaseActual() { return this.claseActual;}
+
     public void imprimirClases(){
         System.out.println("Clases guardadas en la lista de clases de la TS: ");
         for (RegistroClase c : tablaClases.values()) {

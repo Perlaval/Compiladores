@@ -25,8 +25,18 @@ public class RegistroMetodo {
     // tipo de retorno del metodo
     public Tipo tipoRetorno;
 
+    private boolean isConstructor;
+
     public RegistroMetodo(String nombre){
         this.nombre = nombre;
+        this.esEstatico = false; // por default no es estatico
+        this.tipoRetorno = null; // por default le ponemos retorno null, que seria void
+        this.listaParametros = new HashMap<>();
+        this.listaVarLocales = new HashMap<>();
+    }
+
+    //Constructor vacio para crear un metodo constructor
+    public RegistroMetodo() {
         this.esEstatico = false; // por default no es estatico
         this.tipoRetorno = null; // por default le ponemos retorno null, que seria void
         this.listaParametros = new HashMap<>();

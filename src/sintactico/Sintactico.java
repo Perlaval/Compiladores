@@ -245,7 +245,11 @@ public class Sintactico {
         }
         else {
             // si va a constructor verifico si esa clase ya tiene constructor, si es asi largo error
+            if (ts.claseActual.constructor != null){
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "El constructor de la clase: " + ts.claseActual.nombre + " ya ha sido declarado");
+            }
             constructor();
+
         }
     }
 
@@ -320,8 +324,14 @@ public class Sintactico {
     // Constructor -> . ArgumentosFormales BloqueMetodo
     private void constructor() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("pto");
+        //ts.claseActual.inConstructor = true;
+        ts.claseActual.constructor = new Constructor();
+        ts.metodoActual = ts.claseActual.constructor;
         argumentosFormales();
         bloqueMetodo();
+        ts.metodoActual.imprimirMetodo(ts.metodoActual, ts.claseActual);
+        //ts.claseActual.constructor.active = true;
+        //ts.claseActual.inConstructor = false;
     }
 
     // Atributo -> VisibilidadOpt Tipo ListaDeclaracionVar ;
@@ -549,12 +559,14 @@ public class Sintactico {
         if (tipo == null){
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un tipo para el parametro: "+token.getLexema());
         }
+
         if (token.getTipo().equals("idMetVar")){
             // creo un argumento formal
             RegistroParametro parametro = new RegistroParametro(token.getLexema());
             // no pueden haber dos parametros que se llamen igual para el mismo metodo
+
             if (ts.metodoActual.listaParametros.containsKey(token.getLexema())){
-                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Ya existe un parametro con nombre");
+                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Ya existe un parametro con nombre: " + token.getLexema());
             }
             else {
                 // no esta ese parametro lo agrego

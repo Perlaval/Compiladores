@@ -25,12 +25,14 @@ public class RegistroClase {
     // es un metodo porque tmb va a tener parametros y var locales, y el tipo de retorno va a ser void
     public Constructor constructor;
 
+    public boolean inConstructor = false;
+
     public RegistroClase(String nombre) {
         this.nombre = nombre;
         this.heredaDe = "Object"; // por default
         this.listaMetodos = new HashMap<>();
         this.listaAtributos = new HashMap<>();
-        this.constructor = null;
+        //this.constructor = null;
 
     }
 
