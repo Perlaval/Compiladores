@@ -101,7 +101,8 @@ public class Lexico {
                             avanzar(); // charActual = '*'
                             avanzar();
                             actualizarCharSig();
-                            while (!esFinArchivo(puntero) && charActual != '*' && charSig != '/') {
+                            while (!esFinArchivo(puntero) && !(charActual == '*' && charSig == '/')) {
+                            //while (!esFinArchivo(puntero) && charActual != '*' && charSig != '/') {
                                 if ((int) charActual == 13 && (int) charSig == 10) {
                                     //hay un salto de lineas: incremento lineas y reinicio columnas
                                     avanzar(); // (int) charActual = 10
@@ -123,6 +124,8 @@ public class Lexico {
                             } else {
                                 // charActual = '*' y charSig = '/'
                                 avanzar(); // charActual = '/'
+                                avanzar();
+                                actualizarCharSig();
 
                             }
                         }

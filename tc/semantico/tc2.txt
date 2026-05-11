@@ -1,17 +1,19 @@
 // en este verifico los metodos de las clases para la TS
 
-class Array {
-    Int z;
+class A {
+    Int a;
     Bool y;
-    Array Int a;
+    Array Int b;
 }
-
+//.(){} probar despues de arreglar el sintactico
+        //Array Int x;
 impl A {
-    .(Int b, Bool z){
-        //.(){} probar despues de arreglar el sintactico
-        Array Int x;
-        z = 1;
 
+    .(Int a, Bool z){
+        z = 1;
+        x = 2;
+        Bool a; //aca larga error que esta bien, pero dice se esperaba } y llego bool, cuando en realidad el error esta en poner bool en una asignacion
+                // podriamos devolver mejor el error
     }
 
     st fn Int m2(Int c, Str y, Array Str hola, A m2){
@@ -19,14 +21,17 @@ impl A {
         Bool d;
         Int v;
     }
-    st fn m3(Int x, Str y){} //metodo que retorna void
+    st fn m3(Int x, Str y){
+        } //metodo que retorna void
     fn A m4(){} //metodo que retorna un objeto de la clase A
     fn A m5(){}
 
 }
 
 impl A {
-    .(){}
+   .(){
+    Bool x;
+   }
 }
 
 impl B{

@@ -151,6 +151,9 @@ public class Sintactico {
             // salgo de la clase actual
             ts.claseActual = null;
         }
+        else {
+            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idClass y se recibio: "+token.getTipo());
+        }
         // chequear cuando se intenta declarar una clase cuyo nombre es un tipo primitivo
 
     }
@@ -284,6 +287,9 @@ public class Sintactico {
             ts.metodoActual = metodo;
             //System.out.println("Metodo: "+metodo.getNombre());
         }
+        else {
+            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idMetVar y se recibio: "+token.getTipo());
+        }
         // ya guarde el metodo en la ts.claseactual.listametodos, ahora voy a sus parametros y varlocales
         // voy a argumentos formales con el metodoactual
         argumentosFormales(); //voy a guardar en la hash de listaParametros todos los argumentos
@@ -327,7 +333,9 @@ public class Sintactico {
         //ts.claseActual.inConstructor = true;
         ts.claseActual.constructor = new Constructor();
         ts.metodoActual = ts.claseActual.constructor;
+        //System.out.println("Voy a arg formales con el constructor: "+ts.metodoActual);
         argumentosFormales();
+        //System.out.println("Voy al bloque metodo del constructor de la clase: "+ts.claseActual.constructor.getNombre()+" con el token: "+token.getTipo());
         bloqueMetodo();
         ts.metodoActual.imprimirMetodo(ts.metodoActual, ts.claseActual);
         //ts.claseActual.constructor.active = true;
@@ -432,6 +440,9 @@ public class Sintactico {
             match("idMetVar");
 
         }
+        else {
+            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idMetVar y se recibio: "+token.getTipo());
+        }
         listaDeclaracionVarRec(vis, tipo);
     }
 
@@ -469,7 +480,6 @@ public class Sintactico {
     private void listaSentencia() throws ErrorSintactico, ErrorLexico {
         // mientras este en los primeros de sentencia vuelvo a entrar
         if (esPrimeroSentencia(token.getTipo())){
-            System.out.println("Entro sentencia?"+token.getTipo());
             sentencia();
             listaSentencia();
         }
@@ -576,6 +586,9 @@ public class Sintactico {
                 match("idMetVar");
             }
         }
+        else {
+            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idMetVar y se recibio"+token.getTipo());
+        }
 
 
     }
@@ -609,12 +622,9 @@ public class Sintactico {
                 if (token.getTipo().equals("prIf")){
                     match(("prIf"));
                     match("parAbre");
-                    System.out.println("Voy a expresion con: "+token.getTipo());
                     expresion(); //devuelvo la condicion
                     match("parCierra");
-                    //bloque();
                     sentenciaRec(); // como parametro
-                    // devolver flag para avisar que viene de un if para qeu vaya a bloque si o si
                 }
                 else {
                     if (token.getTipo().equals("prWhile")){
@@ -623,8 +633,6 @@ public class Sintactico {
                         expresion();
                         match("parCierra");
                         sentencia();
-                        //bloque();
-                        // poner que vaya a bloque
                     }
                     else {
                         if (token.getTipo().equals("prFor")){
@@ -649,7 +657,6 @@ public class Sintactico {
                                 else {
                                     // con idMetVar o con self voy a asignacion
                                     if (token.getTipo().equals("idMetVar") | token.getTipo().equals("prSelf")){
-                                        System.out.println("Voy a asignacion con: "+token.getTipo());
                                         asignacion();
                                     }
                                 }
@@ -873,7 +880,6 @@ public class Sintactico {
     // ExpresionAd -> ExpresionMul ExpresionAdRec
     private void expresionAd() throws ErrorSintactico, ErrorLexico {
         expresionMul();
-        System.out.println("Entro a expreionAdRec con ++? "+token.getTipo());
         expresionAdRec();
     }
 

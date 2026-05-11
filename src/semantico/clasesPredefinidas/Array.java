@@ -1,4 +1,4 @@
-package src.semantico.clasesPredefinidas;
+package semantico.clasesPredefinidas;
 
 public class Array {
 }
