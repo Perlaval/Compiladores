@@ -1,16 +1,19 @@
 // en este verifico los metodos de las clases para la TS
 
-class Array {
-    Int z;
-    Bool y;
+
+class A {
+    Int m2;
+    Bool z;
     Array Int a;
 }
+
+class A {}
 
 impl A {
     .(Int b, Bool z){
         //.(){} probar despues de arreglar el sintactico
         Array Int x;
-        Str b;
+        z = 1;
 
     }
 
@@ -28,11 +31,13 @@ impl A {
 impl A {
     //.(){}
 }
-
 impl B{
-    st fn Int m2(){
+    .(){}
+    st fn Int m2(Int x){
         Bool a;
     }
 }
-class B {}
+class B : C{
+    Int x;
+}
 start{}

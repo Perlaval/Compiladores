@@ -1,16 +1,19 @@
 // en este verifico los metodos de las clases para la TS
 
-class Array {
-    Int z;
-    Bool y;
+
+class A {
+    Int m2;
+    Bool z;
     Array Int a;
 }
+
+class A {}
 
 impl A {
     .(Int b, Bool z){
         //.(){} probar despues de arreglar el sintactico
         Array Int x;
-        Str b;
+        z = 1;
 
     }
 
@@ -23,16 +26,26 @@ impl A {
     fn A m4(){} //metodo que retorna un objeto de la clase A
     fn A m5(){}
 
+    fn Int getM2(){
+        ret self.m2
+    }
+
+    fn Int getZ(){
+            ret z;
+    }
+
 }
 
 impl A {
     //.(){}
 }
-
 impl B{
-    st fn Int m2(){
+    .(){}
+    st fn Int m6(Int x){
         Bool a;
     }
 }
-class B {}
+class B : A{
+    Int x;
+}
 start{}

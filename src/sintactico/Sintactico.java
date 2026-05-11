@@ -391,8 +391,9 @@ public class Sintactico {
         //System.out.println("Metodo actual: "+ts.metodoActual.getNombre());
         // obtengo el metodo actual, si no es null es porque estoy en las variables locales de un metodo
         // por lo tanto no pueden repetirse los nombres de los parametros con los de las variables
-
+        System.out.println("ESTOY EN LDV");
         if (token.getTipo().equals("idMetVar")){
+            System.out.println("TOKEN ACTUAL: " + token.getLexema());
             // variable del metodo
             if (ts.metodoActual != null){
                 // estoy en metodo
@@ -408,7 +409,7 @@ public class Sintactico {
                     varLocal.setTipo(tipo);
                     varLocal.setPos(ts.metodoActual.getProxPosVarLocal());
                     ts.metodoActual.listaVarLocales.put(varLocal.getNombre(), varLocal);
-                    //System.out.println("Guardo en la lista de variables del metodo: "+ts.metodoActual.getNombre()+ " la variable: "+varLocal.getNombre());
+                    System.out.println("Guardo en la lista de variables del metodo: "+ts.metodoActual.getNombre()+ " la variable: "+varLocal.getNombre());
                 }
             }
             // si viene aca es porque estoy en un tipo class, por lo tanto estoy viendo los atributos de la clase
@@ -470,6 +471,7 @@ public class Sintactico {
         // mientras este en los primeros de sentencia vuelvo a entrar
         if (esPrimeroSentencia(token.getTipo())){
             System.out.println("Entro sentencia?"+token.getTipo());
+            System.out.print("En lista sentencia: " + token.getLexema());
             sentencia();
             listaSentencia();
         }
