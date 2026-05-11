@@ -29,7 +29,7 @@ public class RegistroClase {
 
     public RegistroClase(String nombre) {
         this.nombre = nombre;
-        this.heredaDe = "Object"; // por default
+        //this.heredaDe = "Object"; // por default
         this.listaMetodos = new HashMap<>();
         this.listaAtributos = new HashMap<>();
         //this.constructor = null;

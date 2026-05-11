@@ -96,7 +96,7 @@ public class Sintactico {
             Token id = token; // guardo el token para guardarlo en la ts, porque cuando matcheo avanzo entonces lo pierdo
             match("idClass");
             RegistroClase clase;
-
+            /*
             if (ts.tablaClases.containsKey(id.getLexema())){
                 // verifico la herencia que debe ser la misma
                 clase = ts.getClase(id.getLexema());
@@ -107,7 +107,7 @@ public class Sintactico {
                     }
                 }
             }
-            else {
+            else { */
                 clase = new RegistroClase(id.getLexema());
                 //clase.setNombre(id.getLexema());
                 ts.tablaClases.put(clase.getNombre(), clase);
@@ -134,12 +134,12 @@ public class Sintactico {
                     }
                 }
                 // si no me vienen : es porque no tiene herencia y hereda de object
-                else {
+                /*else {
                     clase.setHeredaDe("Object");
-                }
+                }*/
                 System.out.println("Nombre clase: "+clase.getNombre());
                 System.out.println("hereda de: "+ clase.getHeredaDe());
-            }
+            //}
             // contexto para atributos
             ts.claseActual = clase;
             match("llaveAbre");
@@ -195,7 +195,7 @@ public class Sintactico {
                 ts.tablaClases.put(clase.getNombre(), clase);
                 ts.claseActual = clase;
             }
-            // obtengo la clase actrual para guardarle los metodos
+            // obtengo la clase actual para guardarle los metodos
             RegistroClase clase = ts.getClase(token.getLexema());
             ts.claseActual = clase;
             match("idClass");

@@ -10,10 +10,10 @@ class A {
 impl A {
 
     .(Int a, Bool z){
+        Bool v;
         z = 1;
         x = 2;
-        Bool a; //aca larga error que esta bien, pero dice se esperaba } y llego bool, cuando en realidad el error esta en poner bool en una asignacion
-                // podriamos devolver mejor el error
+
     }
 
     st fn Int m2(Int c, Str y, Array Str hola, A m2){
@@ -29,9 +29,9 @@ impl A {
 }
 
 impl A {
-   .(){
+/*   .(){
     Bool x;
-   }
+   }*/
 }
 
 impl B{
@@ -39,5 +39,5 @@ impl B{
         Bool a;
     }
 }
-class B {}
+class B : C {}
 start{}
