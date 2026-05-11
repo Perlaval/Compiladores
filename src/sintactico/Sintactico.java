@@ -622,6 +622,7 @@ public class Sintactico {
                 if (token.getTipo().equals("prIf")){
                     match(("prIf"));
                     match("parAbre");
+                    System.out.println("Voy a expresion con: "+token.getTipo());
                     expresion(); //devuelvo la condicion
                     match("parCierra");
                     sentenciaRec(); // como parametro

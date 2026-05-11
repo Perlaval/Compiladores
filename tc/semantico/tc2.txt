@@ -3,17 +3,18 @@
 class A {
     Int a;
     Bool y;
-    Array Int b;
+    Array Int a;
 }
 //.(){} probar despues de arreglar el sintactico
         //Array Int x;
 impl A {
 
     .(Int a, Bool z){
-        Bool v;
+        Bool a;
         z = 1;
         x = 2;
-
+        Bool a; //aca larga error que esta bien, pero dice se esperaba } y llego bool, cuando en realidad el error esta en poner bool en una asignacion
+                // podriamos devolver mejor el error
     }
 
     st fn Int m2(Int c, Str y, Array Str hola, A m2){
