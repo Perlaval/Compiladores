@@ -1,11 +1,17 @@
 class Calculadora {
 
 }
-class A : B {
-
+class Calculadora {
+    pub Int x;
 }
-// herencia circular debe dar error
-class B : A{
+
+class Calculadora {
+    pub Str y;
+}
+impl Calculadora{
+    st fn Int m2(Str b){
+            Bool a;
+        }
 }
 
 start{}

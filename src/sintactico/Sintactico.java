@@ -96,7 +96,47 @@ public class Sintactico {
             Token id = token; // guardo el token para guardarlo en la ts, porque cuando matcheo avanzo entonces lo pierdo
             match("idClass");
             RegistroClase clase;
+            if (ts.noEstaTs(id.getLexema())){
+                // no esta guardada la clase en la TS
+                if (token.getTipo().equals("dosPuntos")){ // tiene herencia
+                    String superClase = herenciaOpt();
+                    clase = ts.crearRegClase(id.getLexema(), superClase);
+                }
+                else {
+                    clase = ts.crearRegClase(id.getLexema(), ""); // si no tiene herencia dejamos la cadena vacia, para no poner null y que se rompa
+                }
+                ts.tablaClases.put(clase.getNombre(), clase);
+            }
+            else { // si ya esta en la TS verifico que no haya redefinicion de herencia
+                // veo si tiene herencia, si tiene debe ser la misma
+                clase = ts.getClase(id.getLexema());
+                System.out.println("Entre aca con: "+clase.getNombre());
+                if (token.getTipo().equals("dosPuntos")){
+                    String superClase = herenciaOpt();
+                    if (!clase.heredaDe.equals(superClase)){
+                        throw new ErrorSemantico(token.getFila(), token.getColumna(), "Redefinicion de herencia para la clase: "+clase.getNombre());
+                    }
+                }
+
+            }
+            // contexto para atributos
+            ts.claseActual = clase;
+            match("llaveAbre");
+            listaAtributos(); // si lo que viene es } es porque era lambda
+            // imprimo los atributos de esa clase
+            System.out.println("Atributos de la clase: "+ ts.claseActual.listaAtributos.toString());
+            match("llaveCierra");
+
+            // salgo de la clase actual
+            ts.claseActual = null;
+        }
+        else {
+            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idClass y se recibio: "+token.getTipo());
+        }
             /*
+            match("idClass");
+            RegistroClase clase;
+
             if (ts.tablaClases.containsKey(id.getLexema())){
                 // verifico la herencia que debe ser la misma
                 clase = ts.getClase(id.getLexema());
@@ -107,7 +147,7 @@ public class Sintactico {
                     }
                 }
             }
-            else { */
+            else {
                 clase = new RegistroClase(id.getLexema());
                 //clase.setNombre(id.getLexema());
                 ts.tablaClases.put(clase.getNombre(), clase);
@@ -128,15 +168,15 @@ public class Sintactico {
                             }
                         }
                         else {
-                            // todo okey, seteo la herencia
+
                             clase.setHeredaDe(superClase);
                         }
                     }
                 }
                 // si no me vienen : es porque no tiene herencia y hereda de object
-                /*else {
+                else {
                     clase.setHeredaDe("Object");
-                }*/
+                }
                 System.out.println("Nombre clase: "+clase.getNombre());
                 System.out.println("hereda de: "+ clase.getHeredaDe());
             //}
@@ -153,7 +193,7 @@ public class Sintactico {
         }
         else {
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idClass y se recibio: "+token.getTipo());
-        }
+        } */
         // chequear cuando se intenta declarar una clase cuyo nombre es un tipo primitivo
 
     }
@@ -189,7 +229,7 @@ public class Sintactico {
     private void impl() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prImpl");
         if (token.getTipo().equals("idClass")){
-            if (!ts.tablaClases.containsKey(token.getLexema())){
+            if (ts.noEstaTs(token.getLexema())){
                 // no esta esa clase, la agrego
                 RegistroClase clase = new RegistroClase(token.getLexema());
                 ts.tablaClases.put(clase.getNombre(), clase);
@@ -228,13 +268,25 @@ public class Sintactico {
         String superClase;
         Tipo tipoSuperClase;
         // verifica si o si que lo que se recibe es un idClass
-        if (token.getTipo().equals("idClass") && !token.getLexema().equals("Array")){ // ver tmb para los otros casos (Int, Bool, Iterator, etc)
-            tipoSuperClase = tipo(); // como es idClass va a ir a TipoReferencia
-            superClase = tipoSuperClase.getNombreTipo();
+        // es un error heredar o redefinir: Int, Str, Bool
+        if (token.getTipo().equals("idClass")){
+            if (ts.herenciaValida(token.getLexema())){
+                tipoSuperClase = tipo(); // como es idClass va a ir a TipoReferencia
+                superClase = tipoSuperClase.getNombreTipo();
+            }
+            else {
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Es un error heredar de la clase: "+token.getLexema());
+            }
         }
         else {
             throw new ErrorSemantico(token.getFila(), token.getColumna(), "Se esperaba un id de clase y se encontro: "+token.getLexema());
         }
+        /*
+        ts.herenciaValida(token.getLexema())){ // ver tmb para los otros casos (Int, Bool, Iterator, etc)
+            tipoSuperClase = tipo(); // como es idClass va a ir a TipoReferencia
+            superClase = tipoSuperClase.getNombreTipo();
+        }*/
+
         //tipo();
         return superClase;
     }
@@ -278,9 +330,7 @@ public class Sintactico {
                         +token.getLexema()+" en el impl de la clase: "+ts.claseActual.getNombre());
             }
             // caso base agregar el metodo a la lista de metodos de la clase
-            RegistroMetodo metodo = new RegistroMetodo(token.getLexema());
-            metodo.setFormaMetodo(estatico);
-            metodo.setTipoRetorno(tipo);
+            RegistroMetodo metodo = ts.crearRegMetodo(token.getLexema(),estatico,tipo);
             match("idMetVar");
             ts.claseActual.listaMetodos.put(metodo.getNombre(), metodo);
             // seteo el metodo actual para los parametros y varlocales
@@ -294,7 +344,6 @@ public class Sintactico {
         // voy a argumentos formales con el metodoactual
         argumentosFormales(); //voy a guardar en la hash de listaParametros todos los argumentos
         // salgo de argumentos imprimo a ver que guardo
-
 
         // voy a ir a bloque metodo con el metodoactual
         bloqueMetodo();
@@ -461,7 +510,10 @@ public class Sintactico {
         listaDeclaracionVarLocal();
         // voy a hacer un print de las variables locales de un metodo para ver que me devuelve
         //System.out.println(ts.metodoActual.listaVarLocales.toString());
-        listaSentencia();
+        // tengo que ir a lista sentencia con el retorno del metodo
+        //System.out.println("El retorno del metodo: "+ts.metodoActual.getNombre()+" es: "+ts.metodoActual.tipoRetorno.getNombreTipo());
+        //Tipo tipoRetorno = ts.metodoActual.tipoRetorno; // si es null es de retorno void
+        listaSentencia(); // le tengo que pasar el tipo
         match("llaveCierra");
     }
 
@@ -672,7 +724,6 @@ public class Sintactico {
     // SentenciaRec -> Sentencia RecursivoElse
     private void sentenciaRec() throws ErrorSintactico, ErrorLexico {
         sentencia();
-        // aca tengo que ir a bloque si o si
         recursivoElse();
     }
 

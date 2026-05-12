@@ -3,19 +3,17 @@
 class A {
     Int a;
     Bool y;
-    Array Int a;
+    Array Int n;
 }
 //.(){} probar despues de arreglar el sintactico
         //Array Int x;
 impl A {
 
-    .(Int a, Bool z){
-        Bool a;
+    /*.(Int a, Bool z){
+        Bool m;
         z = 1;
         x = 2;
-        Bool a; //aca larga error que esta bien, pero dice se esperaba } y llego bool, cuando en realidad el error esta en poner bool en una asignacion
-                // podriamos devolver mejor el error
-    }
+    }*/
 
     st fn Int m2(Int c, Str y, Array Str hola, A m2){
         // defino variables locales para probar
@@ -38,6 +36,7 @@ impl A {
 impl B{
     st fn Int m2(){
         Bool a;
+        if (a>0) ;
     }
 }
 class B : C {}
