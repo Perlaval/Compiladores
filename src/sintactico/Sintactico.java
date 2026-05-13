@@ -92,13 +92,12 @@ public class Sintactico {
     // Class -> class idClass HerenciaOpt { listaAtributos }
     private void clase() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prClass");
+        // si el id esta en las clases predefinidas -> error
+        if (ts.isNombreClasePredefinida(token.getLexema())){
+            throw new ErrorSemantico(token.getFila(), token.getColumna(), "La clase: "+token.getLexema()+" No se puede redefinir, es una clase predefinida");
+        }
         if (token.getTipo().equals("idClass")){
             Token id = token; // guardo el token para guardarlo en la ts, porque cuando matcheo avanzo entonces lo pierdo
-            // si el id esta en las clases predefinidas -> error
-            String lex = id.getLexema();
-            if (lex.equals("Iterator") || lex.equals("IO") || lex.equals("Int") || lex.equals("Str") || lex.equals("Object") || lex.equals("Array")){
-                throw new ErrorSemantico(token.getFila(), token.getColumna(), "La clase: "+token.getLexema()+" No se puede redefinir, es una clase predefinida");
-            }
             match("idClass");
             RegistroClase clase;
             if (ts.noEstaTs(id.getLexema())){
@@ -233,6 +232,9 @@ public class Sintactico {
     // Impl -> impl idClass { ListaMiembros }
     private void impl() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prImpl");
+        if (ts.isNombreClasePredefinida(token.getLexema())){
+            throw new ErrorSemantico(token.getFila(), token.getColumna(), "La clase: "+token.getLexema()+" No se puede redefinir, es una clase predefinida");
+        }
         if (token.getTipo().equals("idClass")){
             if (ts.noEstaTs(token.getLexema())){
                 // no esta esa clase, la agrego
@@ -274,6 +276,8 @@ public class Sintactico {
         Tipo tipoSuperClase;
         // verifica si o si que lo que se recibe es un idClass
         // es un error heredar o redefinir: Int, Str, Bool
+        
+        // ordenar eso
         if (token.getTipo().equals("idClass") || token.getLexema().equals("Int") || token.getLexema().equals("Str") || token.getLexema().equals("Bool")
             || token.getTipo().equals("Iterator") || token.getTipo().equals("IO") || token.getTipo().equals("Array")){
             if (ts.herenciaValida(token.getLexema())){
@@ -752,7 +756,6 @@ public class Sintactico {
         if (esPrimeroExpresion(token.getTipo())){
             expresion();
         }
-
     }
 
     // SentenciaSimple -> ( Expresion )

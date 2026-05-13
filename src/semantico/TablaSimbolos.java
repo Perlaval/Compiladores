@@ -68,7 +68,8 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
     @Override
     public boolean isNombreClasePredefinida(String nombre) {
-        return nombre == "IO" | nombre == "Iterator" | nombre == "Array" | nombre == "Object";
+        return nombre.equals("IO") | nombre.equals("Iterator") | nombre.equals("Array") | nombre.equals("Object") |
+                nombre.equals("Str") | nombre.equals("Int") | nombre.equals("Bool");
         //en caso de que sea Int, Bool o Str no es necesario pq el lexico lo envia al sintactico como tInt, tBool y tStr
     }
 

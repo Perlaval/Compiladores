@@ -2,13 +2,14 @@
 class A {
     pub Int x;
 }
+
 /*
 class Calculadora {
     pub Str y;
     Array Int a;
 }
 */
-impl Calculadora{
+impl Int{
     st fn Int m2(Str b){
             Bool a;
         }
