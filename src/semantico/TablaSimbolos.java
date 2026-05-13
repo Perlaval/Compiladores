@@ -82,7 +82,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
     // metodo para validar herencia
     public boolean herenciaValida(String id){
-        if (id == "tInt" || id == "tStr" || id == "tBool"){
+        if (id.equals("Int") || id.equals("tStr") || id.equals("tBool") || id.equals("IO") || id.equals("Iterator") || id.equals("Array")){
             return false;
         }
         return true;

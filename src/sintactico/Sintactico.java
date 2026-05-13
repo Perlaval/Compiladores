@@ -94,6 +94,11 @@ public class Sintactico {
         match("prClass");
         if (token.getTipo().equals("idClass")){
             Token id = token; // guardo el token para guardarlo en la ts, porque cuando matcheo avanzo entonces lo pierdo
+            // si el id esta en las clases predefinidas -> error
+            String lex = id.getLexema();
+            if (lex.equals("Iterator") || lex.equals("IO") || lex.equals("Int") || lex.equals("Str") || lex.equals("Object") || lex.equals("Array")){
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "La clase: "+token.getLexema()+" No se puede redefinir, es una clase predefinida");
+            }
             match("idClass");
             RegistroClase clase;
             if (ts.noEstaTs(id.getLexema())){
@@ -269,7 +274,8 @@ public class Sintactico {
         Tipo tipoSuperClase;
         // verifica si o si que lo que se recibe es un idClass
         // es un error heredar o redefinir: Int, Str, Bool
-        if (token.getTipo().equals("idClass")){
+        if (token.getTipo().equals("idClass") || token.getLexema().equals("Int") || token.getLexema().equals("Str") || token.getLexema().equals("Bool")
+            || token.getTipo().equals("Iterator") || token.getTipo().equals("IO") || token.getTipo().equals("Array")){
             if (ts.herenciaValida(token.getLexema())){
                 tipoSuperClase = tipo(); // como es idClass va a ir a TipoReferencia
                 superClase = tipoSuperClase.getNombreTipo();
@@ -529,7 +535,7 @@ public class Sintactico {
     }
 
     // ListaSentencia -> Sentencia ListaSentencia | lambda
-    private void listaSentencia() throws ErrorSintactico, ErrorLexico {
+    private void listaSentencia() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // mientras este en los primeros de sentencia vuelvo a entrar
         if (esPrimeroSentencia(token.getTipo())){
             sentencia();
@@ -660,7 +666,7 @@ public class Sintactico {
 
     // Sentencia -> ; | Asignacion | SentenciaSimple ; | if ( Expresion ) SentenciaRec | while ( Expresion ) Sentencia |
     // for ( TipoPrimitivo idMetAt in idMetAt) Sentencia | Bloque | ret ExpresionOpt
-    private void sentencia() throws ErrorSintactico, ErrorLexico {
+    private void sentencia(/*Tipo tipo*/) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
 
         if (token.getTipo().equals("ptoComa")){
             match("ptoComa");
@@ -703,7 +709,12 @@ public class Sintactico {
                                 bloque();
                             }
                             else {
+
                                 if (token.getTipo().equals("prRet")){
+                                    // aca rompo si el tipo del metodo es void
+                                    //if (tipo.getNombreTipo().equals("Void")){
+                                    //    throw new ErrorSemantico(token.getFila(), token.getColumna(), "El tipo de retorno del metodo es void, no puede haber un ret");
+                                    //}
                                     match("prRet");
                                     expresionOpt();
                                 }
@@ -722,13 +733,13 @@ public class Sintactico {
     }
 
     // SentenciaRec -> Sentencia RecursivoElse
-    private void sentenciaRec() throws ErrorSintactico, ErrorLexico {
+    private void sentenciaRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         sentencia();
         recursivoElse();
     }
 
     // RecursivoElse -> else Sentencia | lambda
-    private void recursivoElse() throws ErrorSintactico, ErrorLexico {
+    private void recursivoElse() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("prElse")){
             match("prElse");
             sentencia();
@@ -757,7 +768,7 @@ public class Sintactico {
     }
 
     //BLoque -> { ListaSentencia }
-    private void bloque() throws ErrorSintactico, ErrorLexico {
+    private void bloque() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("llaveAbre");
         listaSentencia();
         match("llaveCierra");
