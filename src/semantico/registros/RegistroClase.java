@@ -1,6 +1,9 @@
 package semantico.registros;
 
+import semantico.tipos.Tipo;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RegistroClase {
@@ -29,7 +32,7 @@ public class RegistroClase {
 
     public RegistroClase(String nombre) {
         this.nombre = nombre;
-        this.heredaDe = "Object"; // por default
+        //this.heredaDe = "Object"; // por default
         this.listaMetodos = new HashMap<>();
         this.listaAtributos = new HashMap<>();
         //this.constructor = null;
@@ -48,11 +51,15 @@ public class RegistroClase {
         this.heredaDe = superClase;
     }
 
+    // metodo utilizado paea las clases predefinidas
+    public void setListaMetodos(Map<String, RegistroMetodo> metodos){
+        this.listaMetodos = metodos;
+    }
+
     public String getHeredaDe() {
         return heredaDe;
     }
 
-    /*public void setNombre(String nombre) {
-    }*/
+
 
 }

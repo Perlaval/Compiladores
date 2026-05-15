@@ -69,7 +69,8 @@ public class RegistroMetodo {
     // funcion que me imprime el metodo y sus parametros
     public void imprimirMetodo(RegistroMetodo metodo, RegistroClase claseActual){
         System.out.println("");
-        System.out.println("Metodo:  "+metodo.getNombre()+", de la clase: "+claseActual.getNombre()+", Tipo retorno: "+metodo.getTipoRetorno().getNombreTipo()+", Estatico: "+metodo.getFormaMetodo());
+        System.out.println("Metodo:  "+metodo.getNombre()+", de la clase: "+claseActual.getNombre()+
+                ", Tipo retorno: "+metodo.getTipoRetorno().getNombreTipo()+", Estatico: "+metodo.getFormaMetodo());
         // imprimo los parametros de ese metodo
         if (listaParametros != null && !listaParametros.isEmpty()){
             System.out.println("Parametros: ");
@@ -105,4 +106,13 @@ public class RegistroMetodo {
             System.out.println("Sin variables locales");
         }
     }
+
+    // funcion que me devuelve si un metodo ya esta definido con ese nombre para esa clase
+    public boolean noEstaMetodo(RegistroClase clase, String nombreMetodo){
+        if (clase.listaMetodos.containsKey(nombreMetodo)){
+            return false; // ya esta el metodo
+        }
+        return true;
+    }
+
 }

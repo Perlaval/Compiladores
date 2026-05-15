@@ -1,19 +1,22 @@
 // en este verifico los metodos de las clases para la TS
 
-class Array {
-    Int z;
+class A {
+    Int a;
     Bool y;
-    Array Int a;
+    Array Int n;
 }
 //.(){} probar despues de arreglar el sintactico
         //Array Int x;
 impl A {
 
+    /*.(Int a, Bool z){
+        Bool m;
     .(Int h, Bool z){
         Bool a;
         z = 1;
         Int x; // no permite hacer esto. Lo que hace es leer 1ro las declaraciones y luego las sentencias
         x = 2;
+    }*/
 
     }
 
@@ -39,7 +42,8 @@ impl A {
 impl B{
     st fn Int m2(){
         Bool a;
+        if (a>0) ;
     }
 }
-class B {}
+class B : C {}
 start{}
