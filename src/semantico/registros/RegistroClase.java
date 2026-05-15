@@ -60,6 +60,9 @@ public class RegistroClase {
         return heredaDe;
     }
 
+    public Map<String, RegistroAtributo> getListaAtributos() {
+        return listaAtributos;
+    }
 
 
 }

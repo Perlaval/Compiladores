@@ -1,6 +1,7 @@
 package semantico.registros;
 
 import semantico.tipos.Tipo;
+import semantico.tipos.TipoArreglo;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,6 +66,14 @@ public class RegistroMetodo {
         return this.esEstatico;
     }
 
+    public Map<String, RegistroVariable> getListaVarLocales() {
+        return listaVarLocales;
+    }
+
+    public Map<String, RegistroParametro> getListaParametros() {
+        return listaParametros;
+    }
+
     // funcion que me imprime el metodo y sus parametros
     public void imprimirMetodo(RegistroMetodo metodo, RegistroClase claseActual){
         System.out.println("");
@@ -74,7 +83,13 @@ public class RegistroMetodo {
         if (listaParametros != null && !listaParametros.isEmpty()){
             System.out.println("Parametros: ");
             for (RegistroParametro p : listaParametros.values()) {
-                System.out.println("Posicion: "+p.getPos()+", tipo: "+p.getTipo().getNombreTipo()+", Nombre: "+p.getNombre());
+                if (p.getTipo().getNombreTipo().equals("tArray")){
+                    TipoArreglo tipoArray= (TipoArreglo) p.getTipo();
+                    System.out.println("Posicion: "+p.getPos()+", tipo: "+ tipoArray.getNombreTipo()+ ", tipoInterno: "+ tipoArray.getTipoInterno().getNombreTipo() + ", Nombre: "+p.getNombre());
+                } else {
+                    System.out.println("Posicion: "+p.getPos()+", tipo: "+p.getTipo().getNombreTipo()+", Nombre: "+p.getNombre());
+                }
+
                 System.out.println("----");
             }
         }
@@ -85,7 +100,13 @@ public class RegistroMetodo {
         if (listaVarLocales != null && !listaVarLocales.isEmpty()){
             System.out.println("Variables locales");
             for (RegistroVariable v : listaVarLocales.values()){
-                System.out.println("Posicion "+v.getPos()+", tipo: "+v.getTipo().getNombreTipo()+ ", Nombre: "+v.getNombre());
+                if (v.getTipo().getNombreTipo().equals("tArray")){
+                    TipoArreglo tipoArray= (TipoArreglo) v.getTipo();
+                    System.out.println("Posicion: "+v.getPos()+", tipo: "+ tipoArray.getNombreTipo()+ ", tipoInterno: "+ tipoArray.getTipoInterno().getNombreTipo() + ", Nombre: "+v.getNombre());
+                } else {
+                    System.out.println("Posicion: "+v.getPos()+", tipo: "+v.getTipo().getNombreTipo()+", Nombre: "+v.getNombre());
+                }
+
                 System.out.println("----");
             }
         }

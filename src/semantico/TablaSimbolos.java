@@ -1,9 +1,6 @@
 package semantico;
 
-import semantico.registros.RegistroParametro;
-import semantico.registros.RegistroStart;
-import semantico.registros.RegistroClase;
-import semantico.registros.RegistroMetodo;
+import semantico.registros.*;
 import semantico.tipos.*;
 
 import java.util.HashMap;
@@ -75,10 +72,28 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
     // metodo para verificar que una clase no esta
     public boolean noEstaTs(String id){
-        if (this.tablaClases.containsKey(id)){
-            return false;
+
+        if (this.claseActual.listaAtributos.containsKey(id)){
+            RegistroAtributo atr = this.claseActual.listaAtributos.get(id);
+            return !atr.isVisibilidad();
+
         }
-        return true;
+        return !(this.tablaClases.containsKey(id) | this.metodoActual.listaParametros.containsKey(id) | this.metodoActual.listaVarLocales.containsKey(id));
+
+    }
+
+    public RegistroVariable getVariable(String id){
+
+        if (this.claseActual.listaAtributos.containsKey(id)){
+            return this.claseActual.listaAtributos.get(id);
+        }
+        if (this.metodoActual.listaParametros.containsKey(id)){
+            return this.metodoActual.listaParametros.get(id);
+        }
+        if (this.metodoActual.listaVarLocales.containsKey(id)){
+            return this.metodoActual.listaVarLocales.get(id);
+        }
+
     }
 
     // metodo para validar herencia
@@ -120,6 +135,8 @@ public class TablaSimbolos implements ValidarDeclaracion{
         // si parametro es null ya inicializo en en registro del metodo a la lista vacia
         clase.listaMetodos.put(metodo.getNombre(), metodo);
     }
+
+
 
     // Inicializar clases predefinidas
     public void inicializarClasesPredefinidas() {
