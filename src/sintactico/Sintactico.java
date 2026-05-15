@@ -276,7 +276,7 @@ public class Sintactico {
         Tipo tipoSuperClase;
         // verifica si o si que lo que se recibe es un idClass
         // es un error heredar o redefinir: Int, Str, Bool
-        
+
         // ordenar eso
         if (token.getTipo().equals("idClass") || token.getLexema().equals("Int") || token.getLexema().equals("Str") || token.getLexema().equals("Bool")
             || token.getTipo().equals("Iterator") || token.getTipo().equals("IO") || token.getTipo().equals("Array")){
