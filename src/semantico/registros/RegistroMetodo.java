@@ -66,6 +66,14 @@ public class RegistroMetodo {
         return this.esEstatico;
     }
 
+    public Map<String, RegistroVariable> getListaVarLocales() {
+        return listaVarLocales;
+    }
+
+    public Map<String, RegistroParametro> getListaParametros() {
+        return listaParametros;
+    }
+
     // funcion que me imprime el metodo y sus parametros
     public void imprimirMetodo(RegistroMetodo metodo, RegistroClase claseActual){
         System.out.println("");

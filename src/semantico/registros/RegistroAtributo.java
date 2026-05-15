@@ -27,7 +27,9 @@ public class RegistroAtributo extends RegistroVariable {
                 '}';
     }
 
-
+    public boolean isVisibilidad() {
+        return visibilidad;
+    }
 }
 
 

@@ -6,6 +6,10 @@ import lexico.ErrorLexico;
 import lexico.Token;
 import lexico.Lexico;
 import semantico.ValidarDeclaracion;
+import semantico.nodos.NodoAccesoVar;
+import semantico.nodos.NodoAccesoVarRec;
+import semantico.nodos.NodoExpresion;
+import semantico.nodos.NodoId;
 import semantico.tipos.*;
 import sintactico.ErrorSintactico;
 import semantico.ErrorSemantico;
@@ -752,22 +756,23 @@ public class Sintactico {
     }
 
     // ExpresionOpt -> Expresion | lambda
-    private void expresionOpt() throws ErrorSintactico, ErrorLexico {
+    private void expresionOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (esPrimeroExpresion(token.getTipo())){
             expresion();
         }
     }
 
     // SentenciaSimple -> ( Expresion )
-    private void sentenciaSimple() throws ErrorSintactico, ErrorLexico {
+    private void sentenciaSimple() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("parAbre");
         expresion();
         match("parCierra");
     }
 
     //Expresion -> ExpresionOr
-    private void expresion() throws ErrorSintactico, ErrorLexico {
+    private NodoExpresion expresion() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         expresionOr();
+        return null;
     }
 
     //BLoque -> { ListaSentencia }
@@ -778,7 +783,7 @@ public class Sintactico {
     }
 
     //Asignacion -> AccesoVarSimple = Expresion | AccesoSelfSimple = Expresion
-    private void asignacion() throws ErrorSintactico, ErrorLexico {
+    private void asignacion() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si esta en los primeros de acceso var simple entro
         // Prim(AccesoVarSimple) = {id}
         if (token.getTipo().equals("idMetVar")){
@@ -798,13 +803,13 @@ public class Sintactico {
     }
 
     // AccesoVarSimple -> id AccesoVarSImpleRec
-    private void accesoVarSimple() throws ErrorSintactico, ErrorLexico {
+    private void accesoVarSimple() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("idMetVar");
         accesoVarSimpleRec();
     }
 
     // AccesoVarSimpleRec -> ListaEncadenadoSImple | [ Expresion ]
-    private void accesoVarSimpleRec() throws ErrorSintactico, ErrorLexico {
+    private void accesoVarSimpleRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si esta en los primeros de lista enadenado simple entro ahi
         // Prim(ListaEncadenadoSimple) = {. , lambda}
         if (token.getTipo().equals("pto")){
@@ -845,13 +850,13 @@ public class Sintactico {
     }
 
     // ExpresionOr -> ExpresionAnd ExpresionOrRec
-    private void expresionOr() throws ErrorSintactico, ErrorLexico {
+    private void expresionOr() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         expresionAnd();
         expresionOrRec();
     }
 
     // ExpresionOrRec -> || ExpresionAnd ExpresionOrRec | lambda
-    private void expresionOrRec() throws ErrorSintactico, ErrorLexico {
+    private void expresionOrRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         while (token.getTipo().equals("opOr")){
             match("opOr");
             expresionAnd();
@@ -860,13 +865,13 @@ public class Sintactico {
     }
 
     // ExpresionAnd -> ExpIgual ExpAndRec
-    private void expresionAnd() throws ErrorSintactico, ErrorLexico {
+    private void expresionAnd() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         expresionIgual();
         expresionAndRec();
     }
 
     //ExpresionAndRec -> && ExpIgual ExpresionAndRec | lambda
-    private void expresionAndRec() throws ErrorSintactico, ErrorLexico {
+    private void expresionAndRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("opAndLog")){
             match("opAndLog");
             expresionIgual();
@@ -875,13 +880,13 @@ public class Sintactico {
     }
 
     // ExpresionIgual -> ExpresionComp ExpresionIgualRec
-    private void expresionIgual() throws ErrorSintactico, ErrorLexico {
+    private void expresionIgual() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         expresionComp();
         expresionigualRec();
     }
 
     // ExpresionIgualRec -> OpIgual ExpresionComp ExpresionIgualRec | lambda
-    private void expresionigualRec() throws ErrorSintactico, ErrorLexico {
+    private void expresionigualRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // voy a repetir siempre que vengan los primros de opIgual
         // Prim(OpIgual) = { == , != }
         if (token.getTipo().equals("opIgualIgual") | token.getTipo().equals("opDiferente")){
@@ -892,13 +897,13 @@ public class Sintactico {
     }
 
     // ExpresionComp -> ExpresionAd ExpresionCompRec
-    private void expresionComp() throws ErrorSintactico, ErrorLexico {
+    private void expresionComp() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         expresionAd();
         expresionCompRec();
     }
 
     // ExpresionCompRec -> OpComp ExpresionAd | lambda
-    private void expresionCompRec() throws ErrorSintactico, ErrorLexico {
+    private void expresionCompRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // deben venir los primeros de opComp
         // Prim(OpComp) = {<, >, <=, >=}
         if (token.getTipo().equals("opMenor") | token.getTipo().equals("opMenorIgual")  | token.getTipo().equals("opMayor")
@@ -909,13 +914,13 @@ public class Sintactico {
     }
 
     // ExpresionMul -> ExpresionUnario ExpresionMulRec
-    private void expresionMul() throws ErrorSintactico, ErrorLexico {
+    private void expresionMul() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         expresionUnario();
         expresionMulRec();
     }
 
     // ExpresionMulRec -> OpMul ExpresionUnario ExpresionMulRec | lambda
-    private void expresionMulRec() throws ErrorSintactico, ErrorLexico {
+    private void expresionMulRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // simpre que venga un opMul hago recursividad
         if (token.getTipo().equals("opPor") | token.getTipo().equals("opdiv")){
             opMul();
@@ -925,7 +930,7 @@ public class Sintactico {
     }
 
     // ExpresionUnario -> OpUnario ExpresionUnario | Operando
-    private void expresionUnario() throws ErrorSintactico, ErrorLexico {
+    private void expresionUnario() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // siempre que venga un opUnario vuelvo
         if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos") |
                 token.getTipo().equals("opMasMas") | token.getTipo().equals("opMenosMenos") | token.getTipo().equals("opNot")){
@@ -944,13 +949,13 @@ public class Sintactico {
     }
 
     // ExpresionAd -> ExpresionMul ExpresionAdRec
-    private void expresionAd() throws ErrorSintactico, ErrorLexico {
+    private void expresionAd() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         expresionMul();
         expresionAdRec();
     }
 
     // ExpresionAdRec -> OpAd ExpresionMul ExpresionAdRec | lambda
-    private void expresionAdRec() throws ErrorSintactico, ErrorLexico {
+    private void expresionAdRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // es recursiva cada vez que venga un opAd vuelvo a entrar
         // Prim(OpAd) = {+ , -}
         if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos")){
@@ -1040,7 +1045,7 @@ public class Sintactico {
     }
 
     // Operando -> Literal | Primario EncadenadoOpt
-    private void operando() throws ErrorSintactico, ErrorLexico {
+    private void operando() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         String tipo = token.getTipo();
         //System.out.println("Estoy en operando con: "+token.getTipo());
         // si viene un literal
@@ -1060,7 +1065,7 @@ public class Sintactico {
     }
 
     // EncadenadoOpt -> Encadenado | lambda
-    private void encadenadoOpt() throws ErrorSintactico, ErrorLexico {
+    private void encadenadoOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si es pto va a encadendo, Prim(Encadenado) = { . }
         if (token.getTipo().equals("pto")){
             encadenado();
@@ -1090,7 +1095,7 @@ public class Sintactico {
     }
 
     // Primario -> ExpresionParentizada | AccesoSelf | AccesoVar | LlamadaMetodo | LlamadaMetodoEstatico | LlamadaConClassor
-    private void primario() throws ErrorSintactico, ErrorLexico {
+    private void primario() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         String tipo = token.getTipo();
         switch (tipo){
             // Prim(ExpresionParentizada) = { ( }
@@ -1126,7 +1131,7 @@ public class Sintactico {
     }
 
     // ExpresionParentizada -> ( Expresion ) EncadenadoOpt
-    private void expresionParentizada() throws ErrorSintactico, ErrorLexico {
+    private void expresionParentizada() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("parAbre");
         expresion();
         match("parCierra");
@@ -1134,39 +1139,59 @@ public class Sintactico {
     }
 
     // AccesoSelf -> self EncadenadoOpt
-    private void accesoSelf() throws ErrorSintactico, ErrorLexico {
+    private void accesoSelf() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prSelf");
         encadenadoOpt();
     }
 
     // AccesoVar -> id AccesoVarRec
-    private void accesoVar() throws ErrorSintactico, ErrorLexico {
+    private void accesoVar() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+
+        if (ts.noEstaTs(token.getLexema())){
+            throw new ErrorSemantico(token.getFila(), token.getColumna(), "La variable " + token.getLexema() + "no ha sido declarada o es un atributo de clase con visibilidad privada");
+        }
+        else {
+            RegistroVariable variable = ts.getVariable(token.getLexema());
+        }
+        // creo el nodo id antes de hacer match
+        NodoId nodoId = new NodoId(token.getFila(), token.getColumna(), token);
         match("idMetVar");
-        accesoVarRec();
+        //accesoVarRec();
+        NodoAccesoVarRec nodoAccesoVarRec = accesoVarRec();
+        if (!nodoAccesoVarRec.nodoDer.equals(null)){
+
+        }
+
+
+
     }
 
     //AccesoVarRec -> EncadenadoOpt | [ Expresion ] EncadenadoOpt
-    private void accesoVarRec() throws ErrorSintactico, ErrorLexico {
+    private NodoAccesoVarRec accesoVarRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("corcheteAbre")){
             match("corcheteAbre");
-            expresion();
+            NodoExpresion nodoExpresion = expresion();
+            Tipo tipoArray = nodoExpresion.chequear(true);
             match("corcheteCierra");
             encadenadoOpt();
+            return null;
+            //return new NodoAccesoVarRec(nodoExpresion, );
         }
         else {
             encadenadoOpt();
         }
+        return null;
     }
 
     // LlamadaMetdo -> id ArgumentosActuales EncadenadoOpt
-    private void llamadaMetodo() throws ErrorSintactico, ErrorLexico {
+    private void llamadaMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("idMetVar");
         argumentosActuales();
         encadenadoOpt();
     }
 
     // LlamadaMetodoEstatico -> idClass . LlamadaMetodo EncadenadoOpt
-    private void llamadaMetodoEstatico() throws ErrorSintactico, ErrorLexico {
+    private void llamadaMetodoEstatico() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("idClass");
         match("pto");
         llamadaMetodo();
@@ -1174,13 +1199,13 @@ public class Sintactico {
     }
 
     // LlamadaConClassor -> new LLamadaConClassOrRec
-    private void llamadaConClassor() throws ErrorSintactico, ErrorLexico {
+    private void llamadaConClassor() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prNew");
         llamadaConClassorRec();
     }
 
     // LlamadaConClassorRec -> idClass ArgumentosActuales EncadenadoOpt | TipoPrimitivo [ Expresion ]
-    private void llamadaConClassorRec() throws ErrorSintactico, ErrorLexico {
+    private void llamadaConClassorRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
 
         if (token.getTipo().equals("idClass")){
             match("idClass");
@@ -1196,14 +1221,14 @@ public class Sintactico {
     }
 
     // ArgumentosActuales -> ( ListaExpresionesOpt )
-    private void argumentosActuales() throws ErrorSintactico, ErrorLexico {
+    private void argumentosActuales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("parAbre");
         listaExpresionesOpt();
         match("parCierra");
     }
 
     // ListaExpresionesOpt -> ListaExpresiones | lambda
-    private void listaExpresionesOpt() throws ErrorSintactico, ErrorLexico {
+    private void listaExpresionesOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // Prim(ListaExpresiones) = Prim(Expresion)
         if (esPrimeroExpresion(token.getTipo())){
             listaExpresiones();
@@ -1211,13 +1236,13 @@ public class Sintactico {
     }
 
     // ListaExpresiones -> Expresion ListaExpresionesRec
-    private void listaExpresiones() throws ErrorSintactico, ErrorLexico {
+    private void listaExpresiones() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         expresion();
         listaExpresionesRec();
     }
 
     // ListaExpresionesRec -> , ListaExpresiones | lambda
-    private void listaExpresionesRec() throws ErrorSintactico, ErrorLexico {
+    private void listaExpresionesRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("coma")){
             match("coma");
             listaExpresiones();
@@ -1225,13 +1250,13 @@ public class Sintactico {
     }
 
     // Encadenado -> . EncadenadoRec
-    private void encadenado() throws ErrorSintactico, ErrorLexico {
+    private void encadenado() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("pto");
         encadenadoRec();
     }
 
     // EncadenadoRec -> LlamadaMetodo | AccesVar
-    private void encadenadoRec() throws ErrorSintactico, ErrorLexico {
+    private void encadenadoRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // como con ambos me llega id veo el nextToken
         Token next = lookAhead();
         if (next.getTipo().equals("parAbre")){ // es porq esta en llamada metodo
