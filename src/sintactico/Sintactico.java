@@ -1279,6 +1279,7 @@ public class Sintactico {
 
     }*/
 
+    //AccesoVarRec -> EncadenadoOpt | [ Expresion ] EncadenadoOpt
     private NodoAccesoVarRec accesoVarRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
 
         if (token.getTipo().equals("corcheteAbre")) {
@@ -1306,7 +1307,7 @@ public class Sintactico {
     }
 
     // LlamadaMetdo -> id ArgumentosActuales EncadenadoOpt
-    private NodoId llamadaMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoLlamadaMetodo llamadaMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (ts.noEstaTs(token.getLexema())){
             throw new ErrorSemantico(token.getFila(), token.getColumna(), "El id no fue declarado");
         }
@@ -1314,21 +1315,49 @@ public class Sintactico {
             RegistroVariable id = ts.getVariable(token.getLexema());
         }
         // creo el nodo id
-        NodoId nodoId = new NodoId(token.getFila(), token.getColumna(), token);
+        NodoId nodoId = new NodoId(token.getFila(), token.getColumna(), token.getLexema());
         // aca pierdo el id, se matchea
         match("idMetVar");
 
-        argumentosActuales();
-        encadenadoOpt();
-        return nodoId;
+        List<NodoExpresion> listaArgumentosActuales = argumentosActuales();
+        // en chaqueo de sentencias debo verificar que el tam de argumentos actuales y el tam de id coinciden
+
+        // si encadenado es null creo el nodo llamada metodo solo con arg actuales y el id
+        NodoEncadenadoOpt nodoEncOpt = encadenadoOpt();
+        if (nodoEncOpt == null){
+            return new NodoLlamadaMetodo(nodoId, listaArgumentosActuales);
+            //return new NodoLlamadaMetodo(nodoId, nodoArgumentosActuales);
+        }
+        else {
+            return new NodoLlamadaMetodo(nodoId, listaArgumentosActuales, nodoEncOpt);
+            //return new NodoLlamadaMetodo(nodoId, nodoArgumentosActuales, nodoEncOpt);
+        }
+
     }
 
     // LlamadaMetodoEstatico -> idClass . LlamadaMetodo EncadenadoOpt
-    private void llamadaMetodoEstatico() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoLlamadaMetodoEstatico llamadaMetodoEstatico() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        // voy a buscar el idClass a mi TS
+        if (ts.noEstaTs(token.getLexema())){
+            throw new ErrorSemantico(token.getFila(), token.getColumna(), "El id de clase: "+token.getLexema()+" no ha sido declarado");
+        }
+        else {
+            // obtengo el id
+            RegistroClase idClase = ts.getClase(token.getLexema());
+        }
+        NodoId nodoId = new NodoId(token.getFila(), token.getColumna(), token.getLexema());
         match("idClass");
         match("pto");
-        llamadaMetodo();
-        encadenadoOpt();
+        NodoLlamadaMetodo nodoLlamadaMetodo  = llamadaMetodo();
+        NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
+        if (nodoEncadenadoOpt == null) {
+            return new NodoLlamadaMetodoEstatico(nodoId, nodoLlamadaMetodo);
+
+        }
+        else {
+            return new NodoLlamadaMetodoEstatico(nodoId, nodoLlamadaMetodo, nodoEncadenadoOpt);
+        }
+
     }
 
     // LlamadaConClassor -> new LLamadaConClassOrRec
@@ -1338,49 +1367,90 @@ public class Sintactico {
     }
 
     // LlamadaConClassorRec -> idClass ArgumentosActuales EncadenadoOpt | TipoPrimitivo [ Expresion ]
-    private void llamadaConClassorRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-
+    private NodoLlamadaMetodo llamadaConClassorRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        // es igual a llamada metodo, solo que recibe una clase
+        // por lo tanot hago lo mismo que en llamada metodo
         if (token.getTipo().equals("idClass")){
+            if (ts.noEstaTs(token.getLexema())){
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "El id de clase: "+token.getLexema()+" no ha sido declarado");
+            }
+            else {
+                // obtengo el id
+                RegistroClase idclase = ts.getClase(token.getLexema());
+            }
+            NodoId nodoId = new NodoId(token.getFila(), token.getColumna(), token.getLexema());
             match("idClass");
-            argumentosActuales();
+            List<NodoExpresion> listaArgumentosActuales = argumentosActuales();
             Tipo tipoContexto = null;
-            encadenadoOpt();
+            NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
+            if (nodoEncadenadoOpt == null){
+                return new NodoLlamadaMetodo(nodoId, listaArgumentosActuales);
+            }
+            else {
+                return new NodoLlamadaMetodo(nodoId, listaArgumentosActuales, encadenadoOpt());
+            }
+
         }
         else {
+            // tipo es mas que nada para chequeo de sentencias, para verificar que lp que venga en expresion coincida con el tipoprimitivo
             tipoPrimitivo();
             match("corcheteAbre");
-            expresion();
+            NodoExpresion nodoE = expresion();
             match("corcheteCierra");
+            // VER BIEN QUE DEVOLVER ACA
+            return null; // pongo esto para que no me largue error
         }
     }
 
+
     // ArgumentosActuales -> ( ListaExpresionesOpt )
-    private void argumentosActuales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private List<NodoExpresion> argumentosActuales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("parAbre");
-        listaExpresionesOpt();
+        List<NodoExpresion> listaArgumentosActuales = listaExpresionesOpt();
         match("parCierra");
+        return listaArgumentosActuales;
+
     }
 
     // ListaExpresionesOpt -> ListaExpresiones | lambda
-    private void listaExpresionesOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private List<NodoExpresion> listaExpresionesOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // Prim(ListaExpresiones) = Prim(Expresion)
         if (esPrimeroExpresion(token.getTipo())){
-            listaExpresiones();
+            List<NodoExpresion> listaExpresiones = listaExpresiones();
+            return listaExpresiones;
+            //NodoListaExpresiones nodoListaExpresiones = listaExpresiones();
+            //return new NodoListaExpresionesOpt(nodoListaExpresiones);
         }
+        //return null;
+        return new ArrayList<>(); // caso base la lista esta vacia
     }
 
     // ListaExpresiones -> Expresion ListaExpresionesRec
-    private void listaExpresiones() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        expresion();
-        listaExpresionesRec();
+    private List<NodoExpresion> listaExpresiones() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        // llego al caso base, entonces armo la lista con las expresiones
+        List<NodoExpresion> listaExpresiones = new ArrayList<>(); // creo la lista para guardar todas las expresiones que van a llegar hasta argumentos actuales
+        NodoExpresion nodoE = expresion(); //me traigo la primera expresion
+        listaExpresiones.add(nodoE); // agrego a la lista la expresion
+
+        List<NodoExpresion> listaExpRec = listaExpresionesRec();
+        //NodoListaExpresionesRec nodoListaExpRec = listaExpresionesRec();
+        if (listaExpRec.isEmpty()){
+            return listaExpresiones; // caso base
+        }
+        else {
+            return listaExpRec;
+        }
     }
 
     // ListaExpresionesRec -> , ListaExpresiones | lambda
-    private void listaExpresionesRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private List<NodoExpresion> listaExpresionesRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("coma")){
             match("coma");
-            listaExpresiones();
+            List<NodoExpresion> listaExpresionesrec = listaExpresiones();
+            //NodoListaExpresiones nodoListaExp = listaExpresiones();
+            return listaExpresionesrec;
         }
+        return null;
     }
 
     // Encadenado -> . EncadenadoRec

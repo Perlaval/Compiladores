@@ -6,8 +6,6 @@ import semantico.tipos.TipoArreglo;
 
 public class NodoExpresion extends Nodo{
 
-
-
     @Override
     public void chequear() {
 
