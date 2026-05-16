@@ -16,4 +16,19 @@ public class TipoPrimitivo extends Tipo{
     public boolean esTipoEspecial() {
         return false;
     }
+
+    @Override
+    public boolean esTipoPrimitivo() {
+        return true;
+    }
+
+    @Override
+    public boolean esTipoReferencia() {
+        return false;
+    }
+
+    @Override
+    public boolean esTipoArreglo() {
+        return false;
+    }
 }

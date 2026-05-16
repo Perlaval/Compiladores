@@ -22,4 +22,19 @@ public class TipoArreglo extends Tipo{
     public boolean esTipoEspecial() {
         return true;
     }
+
+    @Override
+    public boolean esTipoPrimitivo() {
+        return false;
+    }
+
+    @Override
+    public boolean esTipoReferencia() {
+        return false;
+    }
+
+    @Override
+    public boolean esTipoArreglo() {
+        return true;
+    }
 }

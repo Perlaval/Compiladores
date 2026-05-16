@@ -6,10 +6,7 @@ import lexico.ErrorLexico;
 import lexico.Token;
 import lexico.Lexico;
 import semantico.ValidarDeclaracion;
-import semantico.nodos.NodoAccesoVar;
-import semantico.nodos.NodoAccesoVarRec;
-import semantico.nodos.NodoExpresion;
-import semantico.nodos.NodoId;
+import semantico.nodos.*;
 import semantico.tipos.*;
 import sintactico.ErrorSintactico;
 import semantico.ErrorSemantico;
@@ -112,6 +109,7 @@ public class Sintactico {
                 }
                 else {
                     clase = ts.crearRegClase(id.getLexema(), ""); // si no tiene herencia dejamos la cadena vacia, para no poner null y que se rompa
+
                 }
                 ts.tablaClases.put(clase.getNombre(), clase);
             }
@@ -261,6 +259,7 @@ public class Sintactico {
 
         // salgo de este impl, vuelvo la clase actual a null
         ts.claseActual = null;
+        ts.metodoActual = null;
     }
 
     // ListaMiembros -> Miembro ListaMiembros | lambda
@@ -349,7 +348,7 @@ public class Sintactico {
             ts.claseActual.listaMetodos.put(metodo.getNombre(), metodo);
             // seteo el metodo actual para los parametros y varlocales
             ts.metodoActual = metodo;
-            //System.out.println("Metodo: "+metodo.getNombre());
+            System.out.println("Metodo: "+metodo.getNombre());
         }
         else {
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idMetVar y se recibio: "+token.getTipo());
@@ -465,9 +464,12 @@ public class Sintactico {
 
         if (token.getTipo().equals("idMetVar")){
             // variable del metodo
+
             if (ts.metodoActual != null){
+                System.out.println("METODO ACTUAL NO ES NULL " + token.getLexema());
                 // estoy en metodo
                 // busco el idmetvar que voy a agregar en la lista de los parametros y si existe largo error, no pueden llamarse igual
+
                 if (ts.metodoActual.listaParametros.containsKey(token.getLexema())){
                     throw new ErrorSemantico(token.getFila(), token.getColumna(),
                             "El nombre de la variable: "+token.getLexema()+ " ya fue asignado para un parametro");
@@ -479,11 +481,12 @@ public class Sintactico {
                     varLocal.setTipo(tipo);
                     varLocal.setPos(ts.metodoActual.getProxPosVarLocal());
                     ts.metodoActual.listaVarLocales.put(varLocal.getNombre(), varLocal);
-                    //System.out.println("Guardo en la lista de variables del metodo: "+ts.metodoActual.getNombre()+ " la variable: "+varLocal.getNombre());
+                    System.out.println("Guardo en la lista de variables del metodo: "+ts.metodoActual.getNombre()+ " la variable: "+varLocal.getNombre());
                 }
             }
             // si viene aca es porque estoy en un tipo class, por lo tanto estoy viendo los atributos de la clase
             else {
+
                 RegistroAtributo atributo;
                 // atributo de clase
                 // verifico que no este guardado ya en la lista de atributos
@@ -1058,6 +1061,7 @@ public class Sintactico {
             case "parAbre", "prSelf", "idMetVar", "idClass", "prNew":
                 System.out.println("Voy a primario con: "+token.getTipo());
                 primario();
+                Tipo tipoContexto = null;
                 encadenadoOpt();
 
         }
@@ -1065,11 +1069,13 @@ public class Sintactico {
     }
 
     // EncadenadoOpt -> Encadenado | lambda
-    private void encadenadoOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoEncadenadoOpt encadenadoOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si es pto va a encadendo, Prim(Encadenado) = { . }
         if (token.getTipo().equals("pto")){
-            encadenado();
+            NodoEncadenado nodoEncadenado = encadenado();
+            return new NodoEncadenadoOpt(nodoEncadenado);
         }
+        return null;
     }
 
     // Literal -> nil | true | false | intLiteral | strLiteral
@@ -1145,42 +1151,158 @@ public class Sintactico {
     }
 
     // AccesoVar -> id AccesoVarRec
-    private void accesoVar() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    /*private NodoAccesoVar accesoVar(Tipo tipoContexto) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoId nodoId;
+        //1. Solo entra aqui cuando tipoContexto == null
+        // SI tipoCOntexto == null es la primera vez que entro a accesoVar
+        if (tipoContexto == null){
+            // En la primera interacion tengo que chequear que el id1 sea alguno de estos:
+            //1.1 Una variable local del metodo
+            //1.2 Un parametro del metodo
+            //1.3 Un atributo pub de la clase
+            if (ts.noEstaTs(token.getLexema())){
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "La variable " + token.getLexema() + " no ha sido declarada como variable local o parametro del metodo actual y tampoco es un atributo publico de la clase "+ ts.claseActual.getNombre() );
+            }
 
-        if (ts.noEstaTs(token.getLexema())){
-            throw new ErrorSemantico(token.getFila(), token.getColumna(), "La variable " + token.getLexema() + "no ha sido declarada o es un atributo de clase con visibilidad privada");
-        }
-        else {
             RegistroVariable variable = ts.getVariable(token.getLexema());
+            nodoId = new NodoId(token.getFila(), token.getColumna(), variable);
+            tipoContexto = nodoId.getTipoSintetizado();
+
         }
-        // creo el nodo id antes de hacer match
-        NodoId nodoId = new NodoId(token.getFila(), token.getColumna(), token);
+        //2. Si tipoContexto != null -> se accedio a este metodo de manera recursiva por medio de encadenadoOpt
+        // por lo que estariamos en el cuerpo del encadenado: id1.id2.id3.id4 -> estariamos evaluando los ids del 2 al 4
+        else {
+
+            //3. Verificamos que el id pertenezca a un atr del tipo contexto:
+            //3. Si tipoContexto es tipoReferencia entonces tenemos que buscar en la clase de tipoContexto el atributo del token actual
+            //3.1 Si la variable no es un atributo publico de tipoContexto:
+            if (tipoContexto.esTipoReferencia() && ts.noEstaTs(tipoContexto.getNombreTipo(), token.getLexema())) {
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "La variable " + token.getLexema() + " no es un atributo de la clase " + tipoContexto.getNombreTipo() + " o su visibilidad es privada");
+            }
+
+            //4. Actualizamos el tipo contexto para tener el de id2
+            //4.1 Si la variable es un atributo visible de tipoContexto, la busco:
+            RegistroVariable variable = ts.getAtrDeClase(ts.getClase(tipoContexto.getNombreTipo()), token.getLexema());
+
+            System.out.println("VARIABLW EN CLASE: " + ts.getClase(tipoContexto.getNombreTipo()).getNombre());
+            System.out.println("VARIABLE EN ACCESOVAR: " + variable.getNombre());
+
+            //2.1.2 Creamos el nodoId con los datos de la variable y el nro de fila y columna en el que se encuentra
+            nodoId = new NodoId(token.getFila(), token.getColumna(), variable);
+
+            //Actualizamos el tipoContexto
+            //tipoContexto = nodoId.getTipoSintetizado();
+
+
+
+        }
+
         match("idMetVar");
-        //accesoVarRec();
+
+
+        //4. Llamo a nodoAccesoVarRec
+        //Le paso el tipoContexto para que haga los chequeos correspondientes en caso de que haya encadenado
+        NodoAccesoVarRec nodoAccesoVarRec = accesoVarRec(tipoContexto);
+        NodoAccesoVar nodoAccesoVar = new NodoAccesoVar(nodoId, nodoAccesoVarRec);
+
+        System.out.println("EN ACCESOVAR TIPO HEREDADO1 : " + nodoId.getTipoSintetizado().getNombreTipo());
+        System.out.println("EN ACCESOVAR LINEA : " + nodoId.getNroLinea());
+
+        /*if (tipoContexto.esTipoReferencia()){
+            nodoAccesoVar.setTipoHeredado(ts.tablaClases.get(nodoId.getTipoSintetizado().getNombreTipo()));
+            System.out.println("EN ACCESOVAR TIPO HEREDADO: " + nodoId.getTipoSintetizado().getNombreTipo());
+        }*/
+
+
+
+
+        //4. una vez que tengo los dos nodos que conforman al nodoAccesoVar hago el cheque para el caso:
+        //AccesoVar -> id AccesoVarRec; AccesoVarRec -> [Expresion] EncadenadoOpt
+        //nodoAccesoVar.chequear();
+        //nodoAccesoVar.setTipoSintetizado(nodoId.getTipoSintetizado());
+        //return nodoAccesoVar;
+    //}
+
+    private NodoAccesoVar accesoVar() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoId nodoId;
+        Token tokenActual = token; // Guardamos el token para el nodo (línea y lexema)
+        String lexema = tokenActual.getLexema();
+
+
+        // 1. CASO BASE: Es el primer ID de la cadena (ej. 'v1' en v1.a.b)
+        // En el EDT NO buscamos si existe, solo creamos el nodo con el lexema.
+        // La resolución de nombres se hará en la segunda pasada (metodo chequear).
+        nodoId = new NodoId(tokenActual.getFila(), tokenActual.getColumna(), lexema);
+
+        match("idMetVar");
+
+        // Obtenemos el resto de la cadena.
+        // Pasamos null porque el tipo de 'v1' aún no se conoce (se infiere en la pasada 2).
         NodoAccesoVarRec nodoAccesoVarRec = accesoVarRec();
-        if (!nodoAccesoVarRec.nodoDer.equals(null)){
 
-        }
-
-
+        return new NodoAccesoVar(nodoId, nodoAccesoVarRec);
 
     }
 
     //AccesoVarRec -> EncadenadoOpt | [ Expresion ] EncadenadoOpt
-    private NodoAccesoVarRec accesoVarRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    /*private NodoAccesoVarRec accesoVarRec(Tipo tipoContexto) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoAccesoVarRec nodoAccesoVarRec;
         if (token.getTipo().equals("corcheteAbre")){
             match("corcheteAbre");
             NodoExpresion nodoExpresion = expresion();
-            Tipo tipoArray = nodoExpresion.chequear(true);
             match("corcheteCierra");
-            encadenadoOpt();
-            return null;
-            //return new NodoAccesoVarRec(nodoExpresion, );
+            //encadenadoOpt();
+
+            NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt(tipoContexto);
+            //2. Verifico que el tipoContexto actual de id sea array
+            if (nodoEncadenadoOpt == null){
+                // AccesoVarRec -> [expresion]
+                nodoAccesoVarRec = new NodoAccesoVarRec(nodoExpresion);
+                nodoAccesoVarRec.chequear(tipoContexto);
+                return nodoAccesoVarRec;
+            }
+
+            //AccesoVarRec -> [Expresion] EncadenadoOpt
+            //Este caso solo tiene sentido si EncadenadoOpt -> Encadenado -> EncadenadoRec -> LlamadaMetodo
+            nodoAccesoVarRec = new NodoAccesoVarRec(nodoExpresion, nodoEncadenadoOpt);
+            nodoAccesoVarRec.chequear(tipoContexto);
+            return nodoAccesoVarRec;
+
         }
         else {
-            encadenadoOpt();
+            //AccesoVarRec -> EncadenadoOpt
+            NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt(tipoContexto);
+            nodoAccesoVarRec = new NodoAccesoVarRec(nodoEncadenadoOpt);
+            return nodoAccesoVarRec;
+
         }
-        return null;
+
+    }*/
+
+    private NodoAccesoVarRec accesoVarRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+
+        if (token.getTipo().equals("corcheteAbre")) {
+            match("corcheteAbre");
+            // Construimos el nodo de la expresión del índice
+            NodoExpresion nodoExpresion = expresion();
+            match("corcheteCierra");
+
+            // Construimos la parte opcional del encadenado
+            // Pasamos null o simplemente llamamos al constructor vacío
+            NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
+
+            // Retornamos el nodo del AST con sus hijos conectados
+            // El chequeo de si el contexto es Array se hará en NodoAccesoVarRec.chequear()
+            if (nodoEncadenadoOpt == null){
+                return new NodoAccesoVarRec(nodoExpresion);
+            }
+            return new NodoAccesoVarRec(nodoExpresion, nodoEncadenadoOpt);
+
+        } else {
+            // AccesoVarRec -> EncadenadoOpt
+            NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
+            return new NodoAccesoVarRec(nodoEncadenadoOpt);
+        }
     }
 
     // LlamadaMetdo -> id ArgumentosActuales EncadenadoOpt
@@ -1221,6 +1343,7 @@ public class Sintactico {
         if (token.getTipo().equals("idClass")){
             match("idClass");
             argumentosActuales();
+            Tipo tipoContexto = null;
             encadenadoOpt();
         }
         else {
@@ -1261,21 +1384,24 @@ public class Sintactico {
     }
 
     // Encadenado -> . EncadenadoRec
-    private void encadenado() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoEncadenado encadenado() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("pto");
-        encadenadoRec();
+        NodoEncadenadoRec nodoEncadenadoRec = encadenadoRec();
+        return new NodoEncadenado(nodoEncadenadoRec);
     }
 
     // EncadenadoRec -> LlamadaMetodo | AccesVar
-    private void encadenadoRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoEncadenadoRec encadenadoRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // como con ambos me llega id veo el nextToken
         Token next = lookAhead();
         if (next.getTipo().equals("parAbre")){ // es porq esta en llamada metodo
             llamadaMetodo();
         }
         else {
-            accesoVar();
+            NodoAccesoVar nodoAccesoVar = accesoVar();
+            return new NodoEncadenadoRec(nodoAccesoVar);
         }
+        return null;
     }
 
 
