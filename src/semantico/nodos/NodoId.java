@@ -5,6 +5,7 @@ import semantico.tipos.Tipo;
 
 public class NodoId extends Nodo{
 
+
     public NodoId(int nroLinea, int nroColumna, Token token) {
         super(nroLinea, nroColumna, token);
     }

@@ -1184,10 +1184,21 @@ public class Sintactico {
     }
 
     // LlamadaMetdo -> id ArgumentosActuales EncadenadoOpt
-    private void llamadaMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoId llamadaMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        if (ts.noEstaTs(token.getLexema())){
+            throw new ErrorSemantico(token.getFila(), token.getColumna(), "El id no fue declarado");
+        }
+        else {
+            RegistroVariable id = ts.getVariable(token.getLexema());
+        }
+        // creo el nodo id
+        NodoId nodoId = new NodoId(token.getFila(), token.getColumna(), token);
+        // aca pierdo el id, se matchea
         match("idMetVar");
+
         argumentosActuales();
         encadenadoOpt();
+        return nodoId;
     }
 
     // LlamadaMetodoEstatico -> idClass . LlamadaMetodo EncadenadoOpt
