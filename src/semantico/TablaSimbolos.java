@@ -72,29 +72,74 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
     // metodo para verificar que una clase no esta
     public boolean noEstaTs(String id){
+        //System.out.println("HOLAA CLASE " + claseActual.getNombre());
 
-        if (this.claseActual.listaAtributos.containsKey(id)){
-            RegistroAtributo atr = this.claseActual.listaAtributos.get(id);
-            return !atr.isVisibilidad();
+        //1. Verifico si la var esta en el met actual
+        if (this.metodoActual != null){
+            System.out.println("ENTRO A METODO");
+            System.out.println("VARIABLE: " + id);
+            // 1.1.2 Verifico si el metodo tiene variable local / parametro con ese nombre
+            if (this.metodoActual.listaParametros.containsKey(id) | this.metodoActual.listaVarLocales.containsKey(id)){
+                return false;
+            }
 
         }
-        return !(this.tablaClases.containsKey(id) | this.metodoActual.listaParametros.containsKey(id) | this.metodoActual.listaVarLocales.containsKey(id));
+        //2. Si no esta en el met Actual lo busco en la clase Actual como un atr visible
+        if (this.claseActual != null){
+           if (this.claseActual.listaAtributos.containsKey(id)){
+                //System.out.println("CLASE ACTUAL NO ES NULL LINEA 79 " + id);
+                RegistroAtributo atr = this.claseActual.listaAtributos.get(id);
 
+                    return !atr.isVisibilidad();
+
+            }
+        }
+
+        return !(this.tablaClases.containsKey(id));
+
+    }
+    public boolean noEstaTs(String nombreClase, String id){
+        RegistroClase clase = this.getClase(nombreClase);
+        if (clase == null){
+            return true;
+        }
+
+        RegistroAtributo atr = clase.listaAtributos.get(id);
+        if (atr == null){
+            return true;
+        }
+        return !atr.isVisibilidad();
     }
 
     public RegistroVariable getVariable(String id){
 
-        if (this.claseActual.listaAtributos.containsKey(id)){
-            return this.claseActual.listaAtributos.get(id);
-        }
+        //1. Buscos en el met actual
         if (this.metodoActual.listaParametros.containsKey(id)){
             return this.metodoActual.listaParametros.get(id);
         }
+
         if (this.metodoActual.listaVarLocales.containsKey(id)){
             return this.metodoActual.listaVarLocales.get(id);
         }
 
+        //2. Busco en la clase actual
+        if (this.claseActual.listaAtributos.containsKey(id)){
+
+            return this.claseActual.listaAtributos.get(id);
+        }
+
+        return null;
     }
+
+//NO LO USO
+public RegistroVariable getAtrDeClase(RegistroClase clase, String id){
+    if (clase.listaAtributos.containsKey(id)){
+        return clase.listaAtributos.get(id);
+    }
+    return null;
+
+}
+
 
     // metodo para validar herencia
     public boolean herenciaValida(String id){

@@ -1,36 +1,47 @@
 package semantico.nodos;
 
 import lexico.Token;
+import semantico.ErrorSemantico;
+import semantico.registros.RegistroClase;
+import semantico.registros.RegistroVariable;
 import semantico.tipos.Tipo;
+import semantico.tipos.TipoReferencia;
 
 public abstract class Nodo {
 
-    private int nroLinea;
-    private int nroColumna;
-    //Agrego token pero no se si sirve tener este atr
-    public Token token;
-    public Tipo tipoSintetizado;
-    public Nodo nodoIzq;
-    public Nodo nodoDer;
+    protected int nroLinea;
+    protected int nroColumna;
+    protected String lexema;
 
-    /*//esto lo pongo por las dudas pero no se va aqui
-    public Tipo tipoEstatico;
-    public Tipo tipoDinamico;*/
+    //Durante la construccion del ast no necesito estos 3 atr---------
+    protected RegistroVariable token;
+    protected Tipo tipoSintetizado;
+    protected RegistroClase tipoHeredado;
+    //----------------------------------------------------
 
-    public Nodo(int nroLinea, int nroColumna, Token token) {
+
+   public RegistroVariable getToken() {
+        return token;
+    }
+
+    public int getNroLinea() {
+        return nroLinea;
+    }
+
+    public void setNroLinea(int nroLinea) {
         this.nroLinea = nroLinea;
+    }
+
+    public int getNroColumna() {
+        return nroColumna;
+    }
+
+    public void setNroColumna(int nroColumna) {
         this.nroColumna = nroColumna;
+    }
+
+    public void setToken(RegistroVariable token) {
         this.token = token;
-    }
-
-    public Nodo(Nodo izq, Nodo der) {
-        this.nodoIzq = izq;
-        this.nodoDer = der;
-
-    }
-
-    public Nodo() {
-
     }
 
     public Tipo getTipoSintetizado() {
@@ -41,5 +52,9 @@ public abstract class Nodo {
         this.tipoSintetizado = tipoSintetizado;
     }
 
-    public abstract Tipo chequear();
+    public void setTipoHeredado(RegistroClase tipoHeredado) {
+        this.tipoHeredado = tipoHeredado;
+    }
+
+    public abstract void chequear() throws ErrorSemantico;
 }

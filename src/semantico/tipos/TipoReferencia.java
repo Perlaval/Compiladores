@@ -20,4 +20,19 @@ public class TipoReferencia extends Tipo{
     public boolean esTipoEspecial() {
         return false;
     }
+
+    @Override
+    public boolean esTipoPrimitivo() {
+        return false;
+    }
+
+    @Override
+    public boolean esTipoReferencia() {
+        return true;
+    }
+
+    @Override
+    public boolean esTipoArreglo() {
+        return false;
+    }
 }
