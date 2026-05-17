@@ -1,14 +1,16 @@
 package sintactico;
-import java.util.List;
-import java.util.ArrayList;
 
 import lexico.ErrorLexico;
 import lexico.Token;
 import lexico.Lexico;
 import semantico.ValidarDeclaracion;
 import semantico.nodos.*;
+import semantico.nodos.expresion.*;
+import semantico.nodos.sentencia.NodoAccesoVarSimple;
+import semantico.nodos.sentencia.NodoAccesoVarSimpleRec;
+import semantico.nodos.sentencia.NodoId;
+import semantico.nodos.sentencia.NodoVarEncadenado;
 import semantico.tipos.*;
-import sintactico.ErrorSintactico;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.registros.*;
@@ -774,8 +776,9 @@ public class Sintactico {
 
     //Expresion -> ExpresionOr
     private NodoExpresion expresion() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        expresionOr();
-        return null;
+        NodoExpresion nodoExpresionOr = expresionOr();
+        return nodoExpresionOr;
+
     }
 
     //BLoque -> { ListaSentencia }
@@ -806,266 +809,326 @@ public class Sintactico {
     }
 
     // AccesoVarSimple -> id AccesoVarSImpleRec
-    private void accesoVarSimple() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoAccesoVarSimple accesoVarSimple() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+
         match("idMetVar");
-        accesoVarSimpleRec();
+        NodoVarEncadenado varEncadenado = new NodoVarEncadenado(token.getFila(), token.getColumna(), token.getLexema());
+        NodoVarEncadenado proxEncadenado = null;
+        return new NodoAccesoVarSimple(varEncadenado,accesoVarSimpleRec(proxEncadenado));
+        //accesoVarSimpleRec puede ser: null | NodoVarEncadenado| nodoExpresion
     }
 
     // AccesoVarSimpleRec -> ListaEncadenadoSImple | [ Expresion ]
-    private void accesoVarSimpleRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoAccesoVarSimpleRec accesoVarSimpleRec(NodoVarEncadenado varEncadenado) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si esta en los primeros de lista enadenado simple entro ahi
         // Prim(ListaEncadenadoSimple) = {. , lambda}
         if (token.getTipo().equals("pto")){
-            listaEncadenadoSimple();
+            listaEncadenadoSimple(varEncadenado); //en este metodo anido todos los encadenados a el id principal varEncadendo
+            return new NodoAccesoVarSimpleRec(varEncadenado);
         }
         else {
             if (token.getTipo().equals("corcheteAbre")){
                 match("corcheteAbre");
-                expresion();
+                NodoExpresion nodoExpresion = expresion();
                 match("corcheteCierra");
+                return new NodoAccesoVarSimpleRec(nodoExpresion);
             }
         }
+        return null;
     }
 
     // ListaEncadenadoSimple -> EncadenadoSimpple ListaEncadenadoSimple | lambda
-    private void listaEncadenadoSimple() throws ErrorSintactico, ErrorLexico {
+    // En esta clase se hacen los chequeos de tipos del encadenado en la 2da pasada
+    private void listaEncadenadoSimple(NodoVarEncadenado varEncadenado) throws ErrorSintactico, ErrorLexico {
         // es recursiva por lo tanto cada vez que viene un primero de encadenado simple vuelvo a entrar
         // Prim(EncadenadoSimple) = {.}
         if (token.getTipo().equals("pto")){
-            encadenadoSimple();
-            listaEncadenadoSimple();
+            NodoVarEncadenado nuevaVarEnc = encadenadoSimple();
+            if (varEncadenado != null) { //si varEncadenado == null entonces recien voy a setear el varEncadeno de id2
+                varEncadenado.setProxEncadenado(nuevaVarEnc);
+            }
+            //Sino ya pase el id2
+            //Aqui deberia chequear la correctitud semnatica del encadenado!
+            listaEncadenadoSimple(nuevaVarEnc);
         }
-       // else {
-            //sueldo
-       // }
     }
 
     // AccesoSelfSimple -> self ListaEncadenadoSimple
     private void accesoSelfSimple() throws ErrorSintactico, ErrorLexico {
         match("prSelf");
-        listaEncadenadoSimple();
+        //listaEncadenadoSimple();
     }
 
     // EncadenadoSimple -> . id
-    private void encadenadoSimple() throws ErrorSintactico, ErrorLexico {
+    private NodoVarEncadenado encadenadoSimple() throws ErrorSintactico, ErrorLexico {
         match("pto");
+        NodoVarEncadenado varEncadenado = new NodoVarEncadenado(token.getFila(), token.getColumna(), token.getLexema());
         match("idMetVar"); //sueldo
+        return varEncadenado;
     }
 
     // ExpresionOr -> ExpresionAnd ExpresionOrRec
-    private void expresionOr() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        expresionAnd();
-        expresionOrRec();
+    private NodoExpresion expresionOr() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoExpresion nodoExpresionAnd = expresionAnd();
+        return expresionOrRec(nodoExpresionAnd);
     }
 
     // ExpresionOrRec -> || ExpresionAnd ExpresionOrRec | lambda
-    private void expresionOrRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        while (token.getTipo().equals("opOr")){
+    private NodoExpresion expresionOrRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        //while (token.getTipo().equals("opOr")){
+        if (token.getTipo().equals("opOr")){
+            Token operador = token;
             match("opOr");
-            expresionAnd();
-            expresionOrRec();
+            NodoExpresion nodoDer = expresionAnd();
+            NodoExpresionBin nodoIzqRec = new NodoExpresionBin(operador, nodoIzq,nodoDer);
+            return expresionOrRec(nodoIzqRec);
         }
+        return nodoIzq;
     }
 
     // ExpresionAnd -> ExpIgual ExpAndRec
-    private void expresionAnd() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        expresionIgual();
-        expresionAndRec();
+    private NodoExpresion expresionAnd() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoExpresion nodoExpresionIgual = expresionIgual();
+        return expresionAndRec(nodoExpresionIgual);
     }
 
     //ExpresionAndRec -> && ExpIgual ExpresionAndRec | lambda
-    private void expresionAndRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoExpresion expresionAndRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+
         if (token.getTipo().equals("opAndLog")){
+            Token operador = token;
             match("opAndLog");
-            expresionIgual();
-            expresionAndRec();
+            NodoExpresion nodoDer = expresionIgual();
+            NodoExpresionBin nodoIzqRec = new NodoExpresionBin(operador, nodoIzq, nodoDer);
+            return expresionAndRec(nodoIzqRec);
         }
+        return nodoIzq;
     }
 
     // ExpresionIgual -> ExpresionComp ExpresionIgualRec
-    private void expresionIgual() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        expresionComp();
-        expresionigualRec();
+    private NodoExpresion expresionIgual() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoExpresion nodoExpresionComp = expresionComp();
+        //expresionigualRec();
+        return expresionigualRec(nodoExpresionComp);
+
     }
 
     // ExpresionIgualRec -> OpIgual ExpresionComp ExpresionIgualRec | lambda
-    private void expresionigualRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoExpresion expresionigualRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // voy a repetir siempre que vengan los primros de opIgual
         // Prim(OpIgual) = { == , != }
         if (token.getTipo().equals("opIgualIgual") | token.getTipo().equals("opDiferente")){
-            opIgual();
-            expresionComp();
-            expresionigualRec();
+            Token operador = opIgual();
+            NodoExpresion nodoDer = expresionComp();
+            //expresionigualRec();
+            NodoExpresionBin nodoIzqRec = new NodoExpresionBin(operador, nodoIzq, nodoDer);
+            return expresionigualRec(nodoIzqRec);
         }
+        return nodoIzq;
     }
 
     // ExpresionComp -> ExpresionAd ExpresionCompRec
-    private void expresionComp() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        expresionAd();
-        expresionCompRec();
+    private NodoExpresion expresionComp() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoExpresion nodoExpresionAd = expresionAd();
+        //expresionCompRec();
+
+        return expresionCompRec(nodoExpresionAd);
     }
 
     // ExpresionCompRec -> OpComp ExpresionAd | lambda
-    private void expresionCompRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    // Esta funcion no es recursiva
+    private NodoExpresion expresionCompRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // deben venir los primeros de opComp
         // Prim(OpComp) = {<, >, <=, >=}
-        if (token.getTipo().equals("opMenor") | token.getTipo().equals("opMenorIgual")  | token.getTipo().equals("opMayor")
-                | token.getTipo().equals("opMayorIgual")){
-            opComp();
-            expresionAd();
+        if (token.getTipo().equals("opMenor") | token.getTipo().equals("opMenorIgual")  | token.getTipo().equals("opMayor") | token.getTipo().equals("opMayorIgual")){
+            Token operador = opComp();
+            NodoExpresion nodoDer = expresionAd();
+
+            return new NodoExpresionBin(operador, nodoIzq, nodoDer);
         }
+        return nodoIzq;
+    }
+
+    // ExpresionAd -> ExpresionMul ExpresionAdRec
+    private NodoExpresion expresionAd() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoExpresion nodoExpresionMul = expresionMul();
+        //expresionAdRec();
+
+        return expresionAdRec(nodoExpresionMul);
+    }
+
+    // ExpresionAdRec -> OpAd ExpresionMul ExpresionAdRec | lambda
+    private NodoExpresion expresionAdRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        // es recursiva cada vez que venga un opAd vuelvo a entrar
+        // Prim(OpAd) = {+ , -}
+        if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos")){
+            Token operador = opAd();
+            NodoExpresion nodoDer = expresionMul();
+            //expresionAdRec();
+            NodoExpresionBin nodoIzqRec = new NodoExpresionBin(operador, nodoIzq, nodoDer);
+            return expresionAdRec(nodoIzqRec);
+        }
+        return nodoIzq;
     }
 
     // ExpresionMul -> ExpresionUnario ExpresionMulRec
-    private void expresionMul() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        expresionUnario();
-        expresionMulRec();
+    private NodoExpresion expresionMul() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+
+        NodoExpresionUnario nodoExpresionUnario = expresionUnario();
+        //expresionMulRec();
+        return expresionMulRec(nodoExpresionUnario);
     }
 
     // ExpresionMulRec -> OpMul ExpresionUnario ExpresionMulRec | lambda
-    private void expresionMulRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoExpresion expresionMulRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // simpre que venga un opMul hago recursividad
         if (token.getTipo().equals("opPor") | token.getTipo().equals("opdiv")){
-            opMul();
-            expresionUnario();
-            expresionMulRec();
+            Token operador = opMul();
+            NodoExpresionUnario nodoDer = expresionUnario();
+            NodoExpresionBin nodoIzqRec = new NodoExpresionBin(operador, nodoIzq, nodoDer);
+            //expresionMulRec();
+            return expresionMulRec(nodoIzqRec);
         }
+        return nodoIzq;
     }
 
     // ExpresionUnario -> OpUnario ExpresionUnario | Operando
-    private void expresionUnario() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoExpresionUnario expresionUnario() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // siempre que venga un opUnario vuelvo
         if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos") |
                 token.getTipo().equals("opMasMas") | token.getTipo().equals("opMenosMenos") | token.getTipo().equals("opNot")){
-            opUnario();
-            expresionUnario();
+            Token operador = opUnario();
+            NodoExpresionUnario nodoExpresionUnario = expresionUnario();
+            return new NodoExpresionUnario(operador, nodoExpresionUnario);
         }
         else { // si no es opMas ni opMenos es un operando
             // si lo que viene no esta en los prim de operando no voy
             if (esPrimeroOperando(token.getTipo())) {
-                operando();
+                NodoOperando nodoOperando = operando();
+                return new NodoExpresionUnario(nodoOperando);
             } else {
-                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un operando y se enontro "+token.getTipo());
+                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un operando y se encontro "+token.getTipo());
             }
             //operando();
         }
-    }
 
-    // ExpresionAd -> ExpresionMul ExpresionAdRec
-    private void expresionAd() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        expresionMul();
-        expresionAdRec();
-    }
-
-    // ExpresionAdRec -> OpAd ExpresionMul ExpresionAdRec | lambda
-    private void expresionAdRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        // es recursiva cada vez que venga un opAd vuelvo a entrar
-        // Prim(OpAd) = {+ , -}
-        if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos")){
-            opAd();
-            expresionMul();
-            expresionAdRec();
-        }
     }
 
     // OpIgual -> == | !=
-    private void opIgual() throws ErrorSintactico, ErrorLexico {
+    private Token opIgual() throws ErrorSintactico, ErrorLexico {
+        Token operador = token;
         if (token.getTipo().equals("opIgualIgual")) {
             match("opIgualIgual");
+            return operador;
         }
         else {
             if (token.getTipo().equals("opDiferente")){
                 match("opDiferente");
+                return operador;
             }
         }
+        return null;
     }
 
     // opComp -> < | > | <= | >=
-    private void opComp() throws ErrorSintactico, ErrorLexico {
+    private Token opComp() throws ErrorSintactico, ErrorLexico {
         String tipo = token.getTipo();
+        Token operador = token;
         switch (tipo){
             case "opMayor":
                 match("opMayor");
-                break;
+                return operador;
             case "opMayorIgual":
                 match("opMayorIgual");
-                break;
+                return operador;
             case "opMenor":
                 match("opMenor");
                 System.out.println("Matheo opMenor y salgo con: "+token.getTipo());
-                break;
+                return operador;
             case "opMenorIgual":{
                 match("opMenorIgual");
-                break;
+                return operador;
             }
         }
+        return null;
     }
 
     // opAd -> + | -
-    private void opAd() throws ErrorSintactico, ErrorLexico {
+    private Token opAd() throws ErrorSintactico, ErrorLexico {
+        Token operador = token;
         if (token.getTipo().equals("opMas")) {
             match("opMas");
+            return operador;
         }
         else {
             if (token.getTipo().equals("opMenos")){
                 match("opMenos");
+                return operador;
             }
         }
+        return null;
     }
 
     // opUnario -> + | - | ++ | -- | !
-    private void opUnario() throws ErrorSintactico, ErrorLexico {
+    private Token opUnario() throws ErrorSintactico, ErrorLexico {
         String tipo = token.getTipo();
+        Token tokenOperador = token;
         switch (tipo){
             case "opMas":
                 match("opMas");
-                break;
+                return tokenOperador;
             case "opMenos":
                 match("opMenos");
-                break;
+                return tokenOperador;
             case "opMasMas":
                 match("opMasMas");
-                break;
+                return tokenOperador;
             case "opMenosMenos":
                 match("opMenosMenos");
-                break;
+                return tokenOperador;
             case "opNot":
                 match("opNot");
-                break;
+                return tokenOperador;
         }
+        return null;
     }
 
     // OpMul -> * | /
-    private void opMul() throws ErrorSintactico, ErrorLexico {
+    private Token opMul() throws ErrorSintactico, ErrorLexico {
+        Token tokenOperador = token;
         if (token.getTipo().equals("opPor")) {
             match("opPor");
+            return tokenOperador;
         }
         else {
             if (token.getTipo().equals("opdiv")){
                 match("opdiv");
+                return tokenOperador;
             }
         }
+        return null;
     }
 
     // Operando -> Literal | Primario EncadenadoOpt
-    private void operando() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoOperando operando() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         String tipo = token.getTipo();
         //System.out.println("Estoy en operando con: "+token.getTipo());
         // si viene un literal
         switch (tipo){
             // Prim(Literal) = {nil, true, false, intLiteral, strLiteral}
             case "prNil" , "prTrue", "prFalse", "literal_entero", "literal_cadena":
-                literal();
-                break;
+                NodoLiteral nodoLiteral = literal();
+                return new NodoOperando(nodoLiteral);
             // Prim(Primario) = { (, self, id, idclass, new}
             case "parAbre", "prSelf", "idMetVar", "idClass", "prNew":
                 System.out.println("Voy a primario con: "+token.getTipo());
-                primario();
-                Tipo tipoContexto = null;
-                encadenadoOpt();
+                NodoPrimario nodoPrimario = primario();
+                NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
+                return new NodoOperando(nodoPrimario, nodoEncadenadoOpt);
 
         }
         //System.out.println("salgo de operando con: "+token.getTipo());
+        return null;
     }
 
     // EncadenadoOpt -> Encadenado | lambda
@@ -1079,39 +1142,45 @@ public class Sintactico {
     }
 
     // Literal -> nil | true | false | intLiteral | strLiteral
-    private void literal() throws ErrorSintactico, ErrorLexico {
+    private NodoLiteral literal() throws ErrorSintactico, ErrorLexico {
         String tipo = token.getTipo();
         switch (tipo){
             case "prNil":
+                NodoNil nodoNil = new NodoNil(token.getFila(), token.getColumna(), token.getLexema());
                 match("prNil");
-                break;
+                return nodoNil;
             case "prTrue":
+                NodoBool nodoBoolTrue = new NodoBool(token.getFila(), token.getColumna(), token.getLexema());
                 match("prTrue");
-                break;
+                return nodoBoolTrue;
             case "prFalse":
+                NodoBool nodoBoolFalse = new NodoBool(token.getFila(), token.getColumna(), token.getLexema());
                 match("prFalse");
-                break;
+                return nodoBoolFalse;
             case "literal_entero":
+                NodoNum nodoNum = new NodoNum(token.getFila(), token.getColumna(), token.getLexema());
                 match("literal_entero");
-                break;
+                return nodoNum;
             case "literal_cadena":
+                NodoStr nodoStr = new NodoStr(token.getFila(), token.getColumna(), token.getLexema());
                 match("literal_cadena");
-                break;
+                return nodoStr;
         }
+        return null;
     }
 
     // Primario -> ExpresionParentizada | AccesoSelf | AccesoVar | LlamadaMetodo | LlamadaMetodoEstatico | LlamadaConClassor
-    private void primario() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoPrimario primario() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         String tipo = token.getTipo();
         switch (tipo){
             // Prim(ExpresionParentizada) = { ( }
             case "parAbre":
-                expresionParentizada();
-                break;
+                NodoExpresionParentizada nodoExpresionParentizada = expresionParentizada();
+                return new NodoPrimario(nodoExpresionParentizada);
             // Prim(AccesoSelf) = { self }
             case "prSelf":
-                accesoSelf();
-                break;
+                NodoAccesoSelf nodoAccesoSelf = accesoSelf();
+                return new NodoPrimario(nodoAccesoSelf);
             // Prim(AccesoVar) = { id } y Prim(LlamadaMetodo) = { id }
             // como ambas van a id veo los siguientes
             case "idMetVar":
@@ -1119,35 +1188,46 @@ public class Sintactico {
                 System.out.println("estoy en primario con: "+token.getTipo());
                 Token next = lookAhead();
                 if (next.getTipo().equals("parAbre")){
+                    //HACER
+                    //NodoLlamadaMetodo nodoLLamadaMetodo = llamadaMetodo();
+                    //return new NodoPrimario(nodoLlamadaMetodo);
                     llamadaMetodo();
+
                 }
                 else {
-                    accesoVar();
+                    NodoAccesoVar nodoAccesoVar = accesoVar();
+                    return new NodoPrimario(nodoAccesoVar);
                 }
-                break;
+                //break;
             // Prim(LlamadaMetodoEstatico) = {idClass}
             case "idClass":
+                //HACER
                 llamadaMetodoEstatico();
                 break;
             // Prim(LlamadaConClassor) = {new}
             case "prNew":
-                llamadaConClassor();
-                break;
+                NodoLlamadaConClassOr nodoLlamadaConClassOr = llamadaConClassor();
+                return new NodoPrimario(nodoLlamadaConClassOr);
         }
+        return null;
     }
 
     // ExpresionParentizada -> ( Expresion ) EncadenadoOpt
-    private void expresionParentizada() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoExpresionParentizada expresionParentizada() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("parAbre");
-        expresion();
+        NodoExpresion nodoExpresion = expresion();
         match("parCierra");
-        encadenadoOpt();
+        NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
+
+        return new NodoExpresionParentizada(nodoExpresion, nodoEncadenadoOpt);
+
     }
 
     // AccesoSelf -> self EncadenadoOpt
-    private void accesoSelf() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoAccesoSelf accesoSelf() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prSelf");
-        encadenadoOpt();
+        NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
+        return new NodoAccesoSelf(nodoEncadenadoOpt);
     }
 
     // AccesoVar -> id AccesoVarRec
@@ -1321,55 +1401,68 @@ public class Sintactico {
     }
 
     // LlamadaConClassor -> new LLamadaConClassOrRec
-    private void llamadaConClassor() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoLlamadaConClassOr llamadaConClassor() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prNew");
-        llamadaConClassorRec();
+        NodoLlamadaConClassOrRec nodoLlamadaConClassOrRec = llamadaConClassorRec();
+        return new NodoLlamadaConClassOr(nodoLlamadaConClassOrRec);
     }
 
     // LlamadaConClassorRec -> idClass ArgumentosActuales EncadenadoOpt | TipoPrimitivo [ Expresion ]
-    private void llamadaConClassorRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoLlamadaConClassOrRec llamadaConClassorRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
 
         if (token.getTipo().equals("idClass")){
             match("idClass");
-            argumentosActuales();
-            Tipo tipoContexto = null;
-            encadenadoOpt();
+            NodoArgumentosActuales nodoArgumentosActuales = argumentosActuales();
+            NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
+            return new NodoLlamadaConClassOrRec(nodoArgumentosActuales, nodoEncadenadoOpt);
         }
         else {
-            tipoPrimitivo();
+
+            NodoTipoPrimitivo nodoTipoPrimitivo = new NodoTipoPrimitivo(token.getFila(), token.getColumna(), tipoPrimitivo().getNombreTipo());
+            //tipoPrimitivo();
             match("corcheteAbre");
-            expresion();
+            NodoExpresion nodoExpresion = expresion();
             match("corcheteCierra");
+            return new NodoLlamadaConClassOrRec(nodoTipoPrimitivo, nodoExpresion);
         }
+
     }
 
     // ArgumentosActuales -> ( ListaExpresionesOpt )
-    private void argumentosActuales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoArgumentosActuales argumentosActuales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("parAbre");
-        listaExpresionesOpt();
+        NodoListaExpresionesOpt nodoListaExpresionesOpt = listaExpresionesOpt();
         match("parCierra");
+        return new NodoArgumentosActuales(nodoListaExpresionesOpt);
     }
 
     // ListaExpresionesOpt -> ListaExpresiones | lambda
-    private void listaExpresionesOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoListaExpresionesOpt listaExpresionesOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // Prim(ListaExpresiones) = Prim(Expresion)
         if (esPrimeroExpresion(token.getTipo())){
-            listaExpresiones();
+            NodoListaExpresiones nodoListaExpresiones = listaExpresiones();
+            return new NodoListaExpresionesOpt(nodoListaExpresiones);
         }
+        return null;
     }
 
     // ListaExpresiones -> Expresion ListaExpresionesRec
-    private void listaExpresiones() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        expresion();
-        listaExpresionesRec();
+    private NodoListaExpresiones listaExpresiones() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoExpresion nodoExpresion = expresion();
+        NodoListaExpresionesRec nodoListaExpresionesRec = listaExpresionesRec();
+
+        return new NodoListaExpresiones(nodoExpresion, nodoListaExpresionesRec);
+
     }
 
     // ListaExpresionesRec -> , ListaExpresiones | lambda
-    private void listaExpresionesRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoListaExpresionesRec listaExpresionesRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("coma")){
             match("coma");
-            listaExpresiones();
+            NodoListaExpresiones nodoListaExpresiones = listaExpresiones();
+            return new NodoListaExpresionesRec(nodoListaExpresiones);
         }
+        return null;
     }
 
     // Encadenado -> . EncadenadoRec

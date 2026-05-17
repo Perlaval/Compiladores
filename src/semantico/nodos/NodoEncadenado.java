@@ -11,9 +11,9 @@ public class NodoEncadenado extends Nodo{
         this.tipoSintetizado = nodoEncadenadoRec.tipoSintetizado;
     }
 
-    @Override
-    public void chequear() {
+    public Tipo chequear() {
 
+        return null;
     }
 
     public NodoEncadenadoRec getNodoEncadenadoRec() {

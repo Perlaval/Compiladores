@@ -1,10 +1,9 @@
-package semantico.nodos;
+package semantico.nodos.expresion;
 
-import semantico.ErrorSemantico;
+import semantico.nodos.NodoEncadenadoOpt;
 import semantico.tipos.Tipo;
-import semantico.tipos.TipoArreglo;
 
-public class NodoAccesoVarRec extends Nodo{
+public class NodoAccesoVarRec extends NodoExpresion {
 
     private boolean encadenado = false;
     private NodoExpresion nodoExpresion;
@@ -13,7 +12,7 @@ public class NodoAccesoVarRec extends Nodo{
     public NodoAccesoVarRec(NodoExpresion nodoExpresion, NodoEncadenadoOpt nodoEncadenadoOpt) {
         this.nodoEncadenadoOpt = nodoEncadenadoOpt;
         this.nodoExpresion = nodoExpresion;
-        this.tipoSintetizado = nodoEncadenadoOpt.tipoSintetizado;
+        this.tipoSintetizado = nodoEncadenadoOpt.getTipoSintetizado();
     }
 
     public NodoAccesoVarRec(NodoExpresion nodoExpresion) {
@@ -25,11 +24,12 @@ public class NodoAccesoVarRec extends Nodo{
     }
 
     @Override
-    public void chequear() {
+    public Tipo chequear() {
 
+        return null;
     }
 
-    public void chequear(Tipo tipoContexto) throws ErrorSemantico {
+    /*public void chequear(Tipo tipoContexto) throws ErrorSemantico {
         if (nodoExpresion != null){
             //1. verifico si el tipo del id es tArray
             if (tipoContexto.getNombreTipo() == "tArray"){
@@ -57,7 +57,7 @@ public class NodoAccesoVarRec extends Nodo{
             //Asigno tipo sintetizado de encadenadoOpt
             setTipoSintetizado(nodoEncadenadoOpt.getTipoSintetizado());
         }
-    }
+    }*/
 
     public NodoExpresion getNodoExpresion() {
         return nodoExpresion;

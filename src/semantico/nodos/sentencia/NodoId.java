@@ -1,11 +1,9 @@
-package semantico.nodos;
+package semantico.nodos.sentencia;
 
-import lexico.Token;
-import semantico.ErrorSemantico;
-import semantico.registros.RegistroVariable;
+import semantico.nodos.expresion.NodoExpresion;
 import semantico.tipos.Tipo;
 
-public class NodoId extends Nodo{
+public class NodoId extends NodoExpresion {
 
     public NodoId(int nroLinea, int nroColumna, String lexema) {
         this.nroLinea = nroLinea;
@@ -15,15 +13,16 @@ public class NodoId extends Nodo{
     }
 
     @Override
-    public void chequear() {
+    public Tipo chequear() {
 
+        return null;
     }
 
-    public void chequear(boolean fromAcceso) throws ErrorSemantico {
+    /*public void chequear(boolean fromAcceso) throws ErrorSemantico {
         if (!(fromAcceso && token.tipo.getNombreTipo().equals("tArray"))){
             throw new ErrorSemantico(nroLinea, nroColumna, "La variable " + token.getNombre() + "debe ser de tipoArray");
 
         }
 
-    }
+    }*/
 }

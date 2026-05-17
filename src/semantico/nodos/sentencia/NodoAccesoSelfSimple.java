@@ -1,8 +1,8 @@
-package semantico.nodos;
+package semantico.nodos.sentencia;
 
 import semantico.ErrorSemantico;
 
-public class NodoLlamadaMetodo extends Nodo{
+public class NodoAccesoSelfSimple extends NodoSentencia{
     @Override
     public void chequear() throws ErrorSemantico {
 

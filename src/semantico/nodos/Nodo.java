@@ -56,5 +56,8 @@ public abstract class Nodo {
         this.tipoHeredado = tipoHeredado;
     }
 
-    public abstract void chequear() throws ErrorSemantico;
+
+    //public abstract Tipo chequear() throws ErrorSemantico;
+
+    //public void chequear() throws ErrorSemantico{};
 }

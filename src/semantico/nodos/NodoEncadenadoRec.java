@@ -1,6 +1,8 @@
 package semantico.nodos;
 
-import semantico.ErrorSemantico;
+import semantico.nodos.expresion.NodoAccesoVar;
+import semantico.nodos.expresion.NodoLlamadaMetodo;
+import semantico.tipos.Tipo;
 
 public class NodoEncadenadoRec extends Nodo{
 
@@ -17,9 +19,9 @@ public class NodoEncadenadoRec extends Nodo{
         this.tipoSintetizado = nodoAccesoVar.tipoSintetizado;
     }
 
-    @Override
-    public void chequear() throws ErrorSemantico {
+    public Tipo chequear() {
 
+        return null;
     }
 
     public NodoLlamadaMetodo getNodoLlamadaMetodo() {

@@ -1,12 +1,11 @@
-package semantico.nodos;
+package semantico.nodos.expresion;
 
-import lexico.Token;
 import semantico.ErrorSemantico;
+import semantico.nodos.sentencia.NodoId;
 import semantico.registros.RegistroAtributo;
-import semantico.registros.RegistroVariable;
 import semantico.tipos.Tipo;
 
-public class NodoAccesoVar extends Nodo{
+public class NodoAccesoVar extends NodoExpresion {
 
     private NodoId nodoId;
     private NodoAccesoVarRec nodoAccesoVarRec;
@@ -14,7 +13,7 @@ public class NodoAccesoVar extends Nodo{
     public NodoAccesoVar(NodoId nodoId, NodoAccesoVarRec nodoAccesoVarRec) {
         this.nodoId = nodoId;
         this.nodoAccesoVarRec = nodoAccesoVarRec;
-        this.tipoSintetizado = nodoId.tipoSintetizado;
+        this.tipoSintetizado = nodoId.getTipoSintetizado();
     }
 
     public NodoId getNodoId() {
@@ -34,7 +33,7 @@ public class NodoAccesoVar extends Nodo{
     }
 
     @Override
-    public void chequear() throws ErrorSemantico {
+    public Tipo chequear() throws ErrorSemantico {
         //1. No trae tipo heredado pq no viene de encadenado
         if (this.tipoHeredado == null){
             //1. AccesoVarRec -> [Expresion] EncadenadOpt
@@ -80,6 +79,7 @@ public class NodoAccesoVar extends Nodo{
 
         }
 
+        return null;
     }
 
 }
