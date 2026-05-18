@@ -36,6 +36,8 @@ public abstract class Nodo {
         return nroColumna;
     }
 
+    public String getLexema() { return lexema; }
+
     public void setNroColumna(int nroColumna) {
         this.nroColumna = nroColumna;
     }

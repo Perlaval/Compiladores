@@ -5,27 +5,29 @@ import semantico.tipos.Tipo;
 public class NodoPrimario extends NodoExpresion {
 
     //1. Primario -> ExpresionParentizada
-    private NodoExpresionParentizada nodoExpresionParentizada;
+    //private NodoExpresionParentizada nodoExpresionParentizada;
 
     //2. Primario -> AccesoSelf
-    private NodoAccesoSelf nodoAccesoSelf;
+    //private NodoAccesoSelf nodoAccesoSelf;
 
     //3. Primario -> AccesoVar
-    private NodoAccesoVar nodoAccesoVar;
+    //private NodoAccesoVar nodoAccesoVar;
 
     //4. Primario -> LlamadaMetodo
-    private NodoLlamadaMetodo llamadaMetodo;
+    //private NodoLlamadaMetodo llamadaMetodo;
 
     //5. Primario -> LlamadaMetodoEstatico - FALTA
 
     //6. Primario -> LlamadaConClassOr
-    private NodoLlamadaConClassOr nodoLlamadaConClassOr;
+    //private NodoLlamadaConClassOr nodoLlamadaConClassOr;
 
-    public NodoPrimario(NodoExpresionParentizada nodoExpresionParentizada) {
-        this.nodoExpresionParentizada = nodoExpresionParentizada;
+    private NodoExpresion nodoExpresion;
+
+    public NodoPrimario(NodoExpresion nodoExpresion) {
+        this.nodoExpresion = nodoExpresion;
     }
 
-    public NodoPrimario(NodoAccesoSelf nodoAccesoSelf) {
+    /*public NodoPrimario(NodoAccesoSelf nodoAccesoSelf) {
         this.nodoAccesoSelf = nodoAccesoSelf;
     }
 
@@ -39,7 +41,7 @@ public class NodoPrimario extends NodoExpresion {
 
     public NodoPrimario(NodoLlamadaConClassOr nodoLlamadaConClassOr) {
         this.nodoLlamadaConClassOr = nodoLlamadaConClassOr;
-    }
+    }*/
 
     @Override
     public Tipo chequear() {

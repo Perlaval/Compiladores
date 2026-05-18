@@ -3,24 +3,50 @@ package semantico.nodos.expresion;
 import semantico.nodos.NodoEncadenadoOpt;
 import semantico.tipos.Tipo;
 
+import java.util.ArrayList;
+
 public class NodoLlamadaConClassOrRec extends NodoExpresion {
 
     //1.
-    private NodoArgumentosActuales nodoArgumentosActuales;
+    private NodoId nodoId;
+    private ArrayList<NodoExpresion> listaArgumentosActuales;
     private NodoEncadenadoOpt nodoEncadenadoOpt;
 
     //2.
-    private NodoTipoPrimitivo nodoTipoPrimitivo;
+    private Tipo tipo;
     private NodoExpresion nodoExpresion;
 
-    public NodoLlamadaConClassOrRec(NodoArgumentosActuales nodoArgumentosActuales, NodoEncadenadoOpt nodoEncadenadoOpt) {
-        this.nodoArgumentosActuales = nodoArgumentosActuales;
+    public NodoLlamadaConClassOrRec(NodoId nodoId, ArrayList<NodoExpresion> listaArg, NodoEncadenadoOpt nodoEncadenadoOpt) {
+        this.nroLinea = nodoId.getNroLinea();
+        this.nroColumna = nodoId.getNroColumna();
+        this.nodoId = nodoId;
+        this.listaArgumentosActuales = listaArg;
         this.nodoEncadenadoOpt = nodoEncadenadoOpt;
     }
 
-    public NodoLlamadaConClassOrRec(NodoTipoPrimitivo nodoTipoPrimitivo, NodoExpresion nodoExpresion) {
-        this.nodoTipoPrimitivo = nodoTipoPrimitivo;
+    public NodoLlamadaConClassOrRec(Tipo tipo, NodoExpresion nodoExpresion) {
+        this.tipo = tipo;
         this.nodoExpresion = nodoExpresion;
+    }
+
+    public NodoId getNodoId() {
+        return nodoId;
+    }
+
+    public ArrayList<NodoExpresion> getListaArgumentosActuales() {
+        return listaArgumentosActuales;
+    }
+
+    public NodoEncadenadoOpt getNodoEncadenadoOpt() {
+        return nodoEncadenadoOpt;
+    }
+
+    public Tipo getTipo() {
+        return tipo;
+    }
+
+    public NodoExpresion getNodoExpresion() {
+        return nodoExpresion;
     }
 
     @Override

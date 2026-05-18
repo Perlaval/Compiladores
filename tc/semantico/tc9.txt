@@ -33,6 +33,7 @@ impl A {
         A varA;
         Int v;
         v = varA.a.d; //chequeo de sentencia encadenado
+        t = m3(4,6);
         //n = y[1]
         //v = h.y //Me lo toma sin el ;
     }
@@ -47,13 +48,13 @@ impl A {
 
 impl A {
    .(){
-    Bool x;
-    fn metodoprueba(){
-        for Int a in iteratoor do{
+    Bool x;}
+    fn Str metodoprueba(){
+        for (Int a in iteratoor) do{
 
         }
     }
-   }
+
 }
 //la clase B deberia ir arriba de la clase A pq uno de los metodos de A llama a una variable de tipo B
 //Para la primera parte del AST esta bien pero cuando vayamos a hacer el chequeo deberia funcionar con la clase B despues de la clase A
