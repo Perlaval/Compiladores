@@ -23,6 +23,18 @@ public class NodoAccesoVarRec extends NodoExpresion {
         this.nodoEncadenadoOpt = nodoEncadenadoOpt;
     }
 
+    public NodoExpresion getNodoExpresion() {
+        return nodoExpresion;
+    }
+
+    public NodoEncadenadoOpt getNodoEncadenadoOpt() {
+        return nodoEncadenadoOpt;
+    }
+
+    public boolean isEncadenado() {
+        return encadenado;
+    }
+
     @Override
     public Tipo chequear() {
 
@@ -58,30 +70,5 @@ public class NodoAccesoVarRec extends NodoExpresion {
             setTipoSintetizado(nodoEncadenadoOpt.getTipoSintetizado());
         }
     }*/
-
-    public NodoExpresion getNodoExpresion() {
-        return nodoExpresion;
-    }
-
-    public void setNodoExpresion(NodoExpresion nodoExpresion) {
-        this.nodoExpresion = nodoExpresion;
-    }
-
-    public NodoEncadenadoOpt getNodoEncadenadoOpt() {
-        return nodoEncadenadoOpt;
-    }
-
-    public void setNodoEncadenadoOpt(NodoEncadenadoOpt nodoEncadenadoOpt) {
-        this.nodoEncadenadoOpt = nodoEncadenadoOpt;
-    }
-
-    public boolean isEncadenado() {
-        return encadenado;
-    }
-
-    public void setEncadenado(boolean encadenado) {
-        this.encadenado = encadenado;
-    }
-
 
 }

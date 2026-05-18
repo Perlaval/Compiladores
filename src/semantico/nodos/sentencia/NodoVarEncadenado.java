@@ -11,9 +11,6 @@ public class NodoVarEncadenado extends NodoEncadenado{
         this.lexema = lexema;
     }
 
-    public NodoVarEncadenado() {
-    }
-
     public void setProxEncadenado(NodoVarEncadenado proxEncadenado){
         this.proxEncadenado = proxEncadenado;
     }

@@ -20,7 +20,5 @@ public class NodoEncadenadoOpt extends Nodo{
         return nodoEncadenado;
     }
 
-    public void setNodoEncadenado(NodoEncadenado nodoEncadenado) {
-        this.nodoEncadenado = nodoEncadenado;
-    }
+
 }

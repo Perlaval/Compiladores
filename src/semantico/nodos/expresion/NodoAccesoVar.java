@@ -1,7 +1,6 @@
 package semantico.nodos.expresion;
 
 import semantico.ErrorSemantico;
-import semantico.nodos.sentencia.NodoId;
 import semantico.registros.RegistroAtributo;
 import semantico.tipos.Tipo;
 
@@ -20,17 +19,11 @@ public class NodoAccesoVar extends NodoExpresion {
         return nodoId;
     }
 
-    public void setNodoId(NodoId nodoId) {
-        this.nodoId = nodoId;
-    }
-
-    public NodoAccesoVarRec getNodoAccesoVarRec() {
+   public NodoAccesoVarRec getNodoAccesoVarRec() {
         return nodoAccesoVarRec;
     }
 
-    public void setNodoAccesoVarRec(NodoAccesoVarRec nodoAccesoVarRec) {
-        this.nodoAccesoVarRec = nodoAccesoVarRec;
-    }
+
 
     @Override
     public Tipo chequear() throws ErrorSemantico {

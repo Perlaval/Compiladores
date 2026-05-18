@@ -1,6 +1,5 @@
-package semantico.nodos.sentencia;
+package semantico.nodos.expresion;
 
-import semantico.nodos.expresion.NodoExpresion;
 import semantico.tipos.Tipo;
 
 public class NodoId extends NodoExpresion {

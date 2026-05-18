@@ -6,11 +6,7 @@ import semantico.tipos.Tipo;
 
 public class NodoArgumentosActuales extends Nodo {
 
-    private NodoListaExpresionesOpt nodoListaExpresionesOpt;
 
-    public NodoArgumentosActuales(NodoListaExpresionesOpt nodoListaExpresionesOpt) {
-        this.nodoListaExpresionesOpt = nodoListaExpresionesOpt;
-    }
 
     public Tipo chequear() throws ErrorSemantico {
 

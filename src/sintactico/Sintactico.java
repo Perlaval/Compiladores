@@ -3,17 +3,19 @@ package sintactico;
 import lexico.ErrorLexico;
 import lexico.Token;
 import lexico.Lexico;
+import semantico.Ast;
 import semantico.ValidarDeclaracion;
 import semantico.nodos.*;
+import semantico.nodos.NodoEncadenado;
 import semantico.nodos.expresion.*;
-import semantico.nodos.sentencia.NodoAccesoVarSimple;
-import semantico.nodos.sentencia.NodoAccesoVarSimpleRec;
-import semantico.nodos.sentencia.NodoId;
-import semantico.nodos.sentencia.NodoVarEncadenado;
+import semantico.nodos.sentencia.*;
 import semantico.tipos.*;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.registros.*;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 
 // analizador sintactico
@@ -25,6 +27,7 @@ public class Sintactico {
     private Token next;
     private boolean lookahead = false;
     TablaSimbolos ts = new TablaSimbolos();
+    Ast ast;
 
     //constructor
     /*public Sintactico(List<Token> listaTokens){
@@ -41,35 +44,41 @@ public class Sintactico {
     public void analizador() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         this.token = lexico.analizador();
         // Program -> ListaDefiniciones Start
-        program();
+        NodoProgram program = program(); //program es la raiz de mi ast
         // si sale de program es porque hizo match con $ entonces devolver Exito!
 
+        ast = new Ast(program);
 
     }
 
     // Gramatica ----------------------------------------------------------------------------------------------
 
     //Program -> ListaDefiniciones Start
-    private void program() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        listaDefiniciones();
+    private NodoProgram program() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        Token tProgram = token;
+        ArrayList<NodoDefinicion> listaDefiniciones = listaDefiniciones(new ArrayList<NodoDefinicion>());
         //salgo de LS, voy a imprimir las clases:
         ts.imprimirClases();
         // si es lambda va directo a start
         RegistroStart metodoStart = new RegistroStart();
-        start();
+        NodoStart start = start();
         System.out.println("token final: "+ token.getTipo());
         match("EOF"); // ver si tiene que ser $ o EOF
+        return new NodoProgram(tProgram, listaDefiniciones, start);
+
     }
 
     // Start -> start BloqueMetodo
-    private void start() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoStart start() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // matcheo start asi avanza
         //match("prStart"); // esto tmb verificar porque nose si start era una palabra reservada (pregintar a profe)
         if (token.getLexema().equals("start")){
+            Token tStart = token;
             // deberia matchear idMetVar, porque start al no ser reservada la toma como idMetVar
             match("idMetVar"); //consumo start y voy a bloque
             // ahora mi clase actual es el metodo start
-            bloqueMetodo();
+            NodoBloqueMetodo bloqueMetodo = bloqueMetodo();
+            return new NodoStart(tStart, bloqueMetodo);
         }
         else {
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba start y se enontro "+token.getTipo());
@@ -78,22 +87,23 @@ public class Sintactico {
     }
 
     // ListaDefiniciones -> Clase ListaDefiniciones | Implementacion ListaDefiniciones | lambda
-    private void listaDefiniciones() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private ArrayList<NodoDefinicion> listaDefiniciones(ArrayList<NodoDefinicion> listaDef) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // es recursiva, por lo que voy a agregar un while, mientras lea la palabra reservada class o impl, tiene que volver a entrar
         if (token.getTipo().equals("prClass") || token.getTipo().equals("prImpl")){
             if (token.getTipo().equals("prClass")){
-                clase();
-                listaDefiniciones();
+                listaDef.add(clase());
+                return listaDefiniciones(listaDef);
             }
             else {
-                impl();
-                listaDefiniciones();
+                listaDef.add(impl());
+                return listaDefiniciones(listaDef);
             }
         }
+        return listaDef;
     }
 
     // Class -> class idClass HerenciaOpt { listaAtributos }
-    private void clase() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoClase clase() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prClass");
         // si el id esta en las clases predefinidas -> error
         if (ts.isNombreClasePredefinida(token.getLexema())){
@@ -130,13 +140,14 @@ public class Sintactico {
             // contexto para atributos
             ts.claseActual = clase;
             match("llaveAbre");
-            listaAtributos(); // si lo que viene es } es porque era lambda
+            ArrayList<NodoDeclaracion> listaAtr = listaAtributos(new ArrayList<NodoDeclaracion>()); // si lo que viene es } es porque era lambda
             // imprimo los atributos de esa clase
             System.out.println("Atributos de la clase: "+ ts.claseActual.listaAtributos.toString());
             match("llaveCierra");
 
             // salgo de la clase actual
             ts.claseActual = null;
+            return new NodoClase(id, listaAtr);
         }
         else {
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idClass y se recibio: "+token.getTipo());
@@ -220,21 +231,23 @@ public class Sintactico {
     }
 
     // ListaAtributos -> Atributo ListaAtributos | lambda
-    private void listaAtributos() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private ArrayList<NodoDeclaracion> listaAtributos(ArrayList<NodoDeclaracion> listaAtr) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         String tipo = token.getTipo();
         // si lo que viene no esta en los primeros de Atributo es porque listaAtributos es lambda entonces aca no hace nada
         // es recursiva, por lo tanto siempre que venga alguno de los primeros de A vuelvo a entrar
         // como puede no tener prPub, tambien puedo ir directamente a Tipo
         if (tipo.equals("prPub") | tipo.equals("tStr") | tipo.equals("tBool") | tipo.equals("tInt") | tipo.equals("idClass")) { //| tipo.equals("Array")
-            atributo();
+            ArrayList<NodoDeclaracion> listaAtrNueva = atributo(listaAtr);
             // actualizo el tipo
             //tipo = token.getTipo();
-            listaAtributos();
+            return listaAtributos(listaAtrNueva);
         }
+        return listaAtr;
     }
 
     // Impl -> impl idClass { ListaMiembros }
-    private void impl() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoImpl impl() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        Token tImpl = token;
         match("prImpl");
         if (ts.isNombreClasePredefinida(token.getLexema())){
             throw new ErrorSemantico(token.getFila(), token.getColumna(), "La clase: "+token.getLexema()+" No se puede redefinir, es una clase predefinida");
@@ -250,28 +263,39 @@ public class Sintactico {
             RegistroClase clase = ts.getClase(token.getLexema());
             ts.claseActual = clase;
             match("idClass");
+            // entonces ahora voy a ir a lista miembros con la clase actual
+            match("llaveAbre");
+            ArrayList<NodoMetodo> listaMiembros = listaMiembros(new ArrayList<NodoMetodo>());
+            match("llaveCierra");
+            // salgo de este impl, vuelvo la clase actual a null
+            ts.claseActual = null;
+            ts.metodoActual = null;
+            return new NodoImpl(tImpl, clase.nombre, listaMiembros);
+
         }
         else {
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idClass");
         }
-        // entonces ahora voy a ir a lista miembros con la clase actual
-        match("llaveAbre");
-        listaMiembros();
-        match("llaveCierra");
 
+    /* // entonces ahora voy a ir a lista miembros con la clase actual
+        match("llaveAbre");
+        ArrayList<NodoMetodo> listaMiembros = listaMiembros(new ArrayList<NodoMetodo>());
+        match("llaveCierra");
         // salgo de este impl, vuelvo la clase actual a null
         ts.claseActual = null;
-        ts.metodoActual = null;
+        ts.metodoActual = null;*/
+
     }
 
     // ListaMiembros -> Miembro ListaMiembros | lambda
-    private void listaMiembros() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private ArrayList<NodoMetodo> listaMiembros(ArrayList<NodoMetodo> listaMet) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si lo que viene esta en los primeros de miembro es porque lista miembro no es lambda
         // Prim(E) = { st, . , lambda}
         if (esPrimeroMiembro(token.getTipo()) | token.getTipo().equals("prFn")){
-            miembro();
-            listaMiembros();
+            listaMet.add(miembro());
+            return listaMiembros(listaMet);
         }
+        return listaMet;
     }
 
     // Herencia -> : Tipo
@@ -307,30 +331,30 @@ public class Sintactico {
     }
 
     // Miembro -> Metodo | Constructor
-    private void miembro() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoMetodo miembro() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // tengo dos opciones o voy a metodo o voy a constructor
         // cuando no tengo st puede venir fn
         if (token.getTipo().equals("prSt") | token.getTipo().equals("prFn")){
-            metodo();
+            return metodo();
         }
         else {
             // si va a constructor verifico si esa clase ya tiene constructor, si es asi largo error
             if (ts.claseActual.constructor != null){
                 throw new ErrorSemantico(token.getFila(), token.getColumna(), "El constructor de la clase: " + ts.claseActual.nombre + " ya ha sido declarado");
             }
-            constructor();
+            return constructor();
 
         }
     }
 
     // Metodo -> FormaMetodoOpt fn TipoMetodoOpt idMetAt ArgumentosFormales BloqueMetodo
-    private void metodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoMetodo metodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         boolean estatico = formaMetodoOpt(); // true = estatico, false = no estatico
         match("prFn");
         // si el tipo de retorno es vacio es porque es void
         Tipo tipo = tipoMetodoOpt(); // va a guardar en la ts el tipo de retorno de la funcion
         // aca es donde guardo el metodo con forma, tipo nombre
-
+        Token tMetodo = token;
         if (token.getTipo().equals("idMetVar")){
 
             if (!ts.validarNombre(ValidarDeclaracion.Definicion.METODO, token.getLexema())){
@@ -357,12 +381,14 @@ public class Sintactico {
         }
         // ya guarde el metodo en la ts.claseactual.listametodos, ahora voy a sus parametros y varlocales
         // voy a argumentos formales con el metodoactual
-        argumentosFormales(); //voy a guardar en la hash de listaParametros todos los argumentos
+        ArrayList<NodoDeclaracion> listaArg = argumentosFormales(new ArrayList<NodoDeclaracion>()); //voy a guardar en la hash de listaParametros todos los argumentos
         // salgo de argumentos imprimo a ver que guardo
 
         // voy a ir a bloque metodo con el metodoactual
-        bloqueMetodo();
+        //bloqueMetodo();
         ts.metodoActual.imprimirMetodo(ts.metodoActual, ts.claseActual);
+        return new NodoMetodo(tMetodo, listaArg, bloqueMetodo());
+
     }
 
     // formaMetodoOpt -> formaMetodo | lambda
@@ -385,37 +411,41 @@ public class Sintactico {
     }
 
     // ArgumentosFormales -> ( ListaArgumentosFormalesOpt )
-    private void argumentosFormales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private ArrayList<NodoDeclaracion> argumentosFormales(ArrayList<NodoDeclaracion> listaArg) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("parAbre");
-        listaArgumentosFormalesOpt();
+        ArrayList<NodoDeclaracion> listaArgNueva = listaArgumentosFormalesOpt(listaArg);
         match("parCierra");
+        return listaArgNueva;
     }
 
     // Constructor -> . ArgumentosFormales BloqueMetodo
-    private void constructor() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoMetodo constructor() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        Token tConst = token;
         match("pto");
         //ts.claseActual.inConstructor = true;
         ts.claseActual.constructor = new Constructor();
         ts.metodoActual = ts.claseActual.constructor;
         //System.out.println("Voy a arg formales con el constructor: "+ts.metodoActual);
-        argumentosFormales();
+        ArrayList<NodoDeclaracion> listaArg = argumentosFormales(new ArrayList<NodoDeclaracion>());
         //System.out.println("Voy al bloque metodo del constructor de la clase: "+ts.claseActual.constructor.getNombre()+" con el token: "+token.getTipo());
-        bloqueMetodo();
+        //bloqueMetodo();
         ts.metodoActual.imprimirMetodo(ts.metodoActual, ts.claseActual);
+        return new NodoMetodo(token, listaArg, bloqueMetodo());
         //ts.claseActual.constructor.active = true;
         //ts.claseActual.inConstructor = false;
     }
 
     // Atributo -> VisibilidadOpt Tipo ListaDeclaracionVar ;
-    private void atributo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private ArrayList<NodoDeclaracion> atributo(ArrayList<NodoDeclaracion> listaAtr) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // guardo en la TS el atributo con la posicion, visibilidad, tipo, nombre
         boolean vis = visibilidadOpt(); // si no entra a visibilidad es de tipo priv
         Tipo tipo = tipo();
-        listaDeclaracionVar(vis, tipo);
+        ArrayList<NodoDeclaracion> listaAtrNueva = listaDeclaracionVar(vis, tipo, listaAtr);
         // salgo de aca y voy a haber guardado por ej para: Int a,b
         // pos visibilidad tipo nombre
         //| 0 | pub | Int a | b |
         match("ptoComa");
+        return listaAtrNueva;
     }
 
     // VisibilidadOpt -> Visibilidad | lambda
@@ -459,7 +489,7 @@ public class Sintactico {
 
     // ListaDeclaracionVar -> idMetAt ListaDeclaracionesVarRec
     // misma funcion para guardar las variables de los atributos y las variables locales de un metodo
-    private void listaDeclaracionVar(boolean vis, Tipo tipo) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private ArrayList<NodoDeclaracion> listaDeclaracionVar(boolean vis, Tipo tipo, ArrayList<NodoDeclaracion> listaDec) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         //System.out.println("Metodo actual: "+ts.metodoActual.getNombre());
         // obtengo el metodo actual, si no es null es porque estoy en las variables locales de un metodo
         // por lo tanto no pueden repetirse los nombres de los parametros con los de las variables
@@ -468,7 +498,6 @@ public class Sintactico {
             // variable del metodo
 
             if (ts.metodoActual != null){
-                System.out.println("METODO ACTUAL NO ES NULL " + token.getLexema());
                 // estoy en metodo
                 // busco el idmetvar que voy a agregar en la lista de los parametros y si existe largo error, no pueden llamarse igual
 
@@ -483,6 +512,7 @@ public class Sintactico {
                     varLocal.setTipo(tipo);
                     varLocal.setPos(ts.metodoActual.getProxPosVarLocal());
                     ts.metodoActual.listaVarLocales.put(varLocal.getNombre(), varLocal);
+                    listaDec.add(new NodoDecLocal(token));
                     System.out.println("Guardo en la lista de variables del metodo: "+ts.metodoActual.getNombre()+ " la variable: "+varLocal.getNombre());
                 }
             }
@@ -502,6 +532,8 @@ public class Sintactico {
                     atributo.setVisibilidad(vis);
                     atributo.setPos(ts.claseActual.getProxPosAtributo());
                     ts.claseActual.listaAtributos.put(atributo.getNombre(), atributo);
+                    listaDec.add(new NodoDecAtr(token));
+
 
                 }
             }
@@ -511,49 +543,59 @@ public class Sintactico {
         else {
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idMetVar y se recibio: "+token.getTipo());
         }
-        listaDeclaracionVarRec(vis, tipo);
+        return listaDeclaracionVarRec(vis, tipo, listaDec);
+
     }
 
     // ListaDeclaracionVarRec -> , ListaDeclaracionVar | lambda
-    private void listaDeclaracionVarRec(boolean vis, Tipo tipo) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private ArrayList<NodoDeclaracion> listaDeclaracionVarRec(boolean vis, Tipo tipo, ArrayList<NodoDeclaracion> listaDec) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("coma")){
             match("coma");
-            listaDeclaracionVar(vis, tipo);
+            return listaDeclaracionVar(vis, tipo, listaDec);
         }
+        return listaDec;
     }
 
     // BloqueMetodo -> { ListaDeclaracioVarLocal ListaSentencia }
-    private void bloqueMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoBloqueMetodo bloqueMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        Token tBloqueM = token;
         match("llaveAbre");
         // voy a lista declaracion var local con el metodo actual
-        listaDeclaracionVarLocal();
+        ArrayList<NodoDeclaracion> listaVarLocal = listaDeclaracionVarLocal(new ArrayList<NodoDeclaracion>());
         // voy a hacer un print de las variables locales de un metodo para ver que me devuelve
         //System.out.println(ts.metodoActual.listaVarLocales.toString());
         // tengo que ir a lista sentencia con el retorno del metodo
         //System.out.println("El retorno del metodo: "+ts.metodoActual.getNombre()+" es: "+ts.metodoActual.tipoRetorno.getNombreTipo());
         //Tipo tipoRetorno = ts.metodoActual.tipoRetorno; // si es null es de retorno void
-        listaSentencia(); // le tengo que pasar el tipo
+        ArrayList<NodoSentencia> listaSent = listaSentencia(new ArrayList<NodoSentencia>());
         match("llaveCierra");
+        return new NodoBloqueMetodo(tBloqueM, listaVarLocal, listaSent);
     }
 
     // ListaDeclaracionVarLocal -> DeclaracionVarLocal ListaDeclaracionVarLocal | lambda
-    private void listaDeclaracionVarLocal() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private ArrayList<NodoDeclaracion> listaDeclaracionVarLocal(ArrayList<NodoDeclaracion> listaDec) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // recursiva
         // si lo que viene esta en los primeros de declaracionVarLocal es porque no es lambda
         if (esPrimeroDeclaracionVarLocal(token.getTipo())){
-            declaracionVarLocal(); // en declaracion variables las voy a guardar en la TS
-            listaDeclaracionVarLocal();
+            declaracionVarLocal(listaDec); // en declaracion variables las voy a guardar en la TS
+            return listaDeclaracionVarLocal(listaDec);
 
         }
+        return listaDec;
     }
 
     // ListaSentencia -> Sentencia ListaSentencia | lambda
-    private void listaSentencia() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private ArrayList<NodoSentencia> listaSentencia(ArrayList<NodoSentencia> listaSent) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // mientras este en los primeros de sentencia vuelvo a entrar
         if (esPrimeroSentencia(token.getTipo())){
-            sentencia();
-            listaSentencia();
+            NodoSentencia sentencia = sentencia();
+            if (sentencia != null){
+                listaSent.add(sentencia);
+                return listaSentencia(listaSent);
+            }
+
         }
+        return listaSent;
     }
 
     // Visibilidad -> pub
@@ -600,43 +642,47 @@ public class Sintactico {
     }
 
     // DeclaracionVarLocal -> Tipo ListaDeclaracionVar ;
-    private void declaracionVarLocal() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private void declaracionVarLocal(ArrayList<NodoDeclaracion> listaDec) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // en la hash de ListaVariablesLocales de un metodo voy a guardar:
         // la pos
         Tipo tipo = tipo(); //guardo el tipo
         // agrego vis pero porque lo uso para atributo, ver bien como seria en los metodos
         boolean vis = false;
-        listaDeclaracionVar(vis, tipo); //guardo el o los nombres de la variable
+        listaDeclaracionVar(vis, tipo, listaDec); //guardo el o los nombres de la variable
         match("ptoComa");
     }
 
     // ListaArgumentosFormalesOpt -> ListaArgumentosFormales | lambda
-    private void listaArgumentosFormalesOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private ArrayList<NodoDeclaracion> listaArgumentosFormalesOpt(ArrayList<NodoDeclaracion> listaArg) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // Prim(ListaArgumentosFormales) = {str, Bool, Int, idClass, Array}
         String tipo = token.getTipo();
         if (tipo == "tStr" | tipo == "tBool" | tipo == "tInt" | tipo == "idClass" | tipo == "tArray"){
-            listaArgumentosFormales();
+            return listaArgumentosFormales(listaArg);
         }
+        return listaArg;
     }
 
     // ListaArgumentosFormales -> ArgumentoFormal ListaArgumentosFormalesRec
-    private void listaArgumentosFormales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        argumentoFormal(); // en argumentoformal va a a agregar a la ts de ese metodo el argumento
-        listaArgumentosFormalesRec();
+    private ArrayList<NodoDeclaracion> listaArgumentosFormales(ArrayList<NodoDeclaracion> listaArg) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoDeclaracion nodoArgumento = argumentoFormal(); // en argumentoformal va a a agregar a la ts de ese metodo el argumento
+        listaArg.add(nodoArgumento);
+        return listaArgumentosFormalesRec(listaArg);
     }
 
     // ListaArgumentosFormalesRec -> , ListaArgumentosFormales | lambda
-    private void listaArgumentosFormalesRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private ArrayList<NodoDeclaracion> listaArgumentosFormalesRec(ArrayList<NodoDeclaracion> listaArg) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("coma")){
             match("coma");
-            listaArgumentosFormales();
+            return listaArgumentosFormales(listaArg);
         }
+        return listaArg;
     }
 
     // ArgumentoFormal -> Tipo idMetAt
-    private void argumentoFormal() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoDeclaracion argumentoFormal() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // en la hash de listaParametros voy a guardar
         Tipo tipo = tipo();
+        Token tArgu = token;
         if (tipo == null){
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un tipo para el parametro: "+token.getLexema());
         }
@@ -655,6 +701,7 @@ public class Sintactico {
                 parametro.setTipo(tipo);
                 ts.metodoActual.listaParametros.put(parametro.getNombre(), parametro);
                 match("idMetVar");
+                return new NodoDecArg(tArgu);
             }
         }
         else {
@@ -679,62 +726,76 @@ public class Sintactico {
 
     // Sentencia -> ; | Asignacion | SentenciaSimple ; | if ( Expresion ) SentenciaRec | while ( Expresion ) Sentencia |
     // for ( TipoPrimitivo idMetAt in idMetAt) Sentencia | Bloque | ret ExpresionOpt
-    private void sentencia(/*Tipo tipo*/) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoSentencia sentencia(/*Tipo tipo*/) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
 
         if (token.getTipo().equals("ptoComa")){
             match("ptoComa");
         }
-        else {
+        else {// SENTENCIA SIMPLE
             if (token.getTipo().equals("parAbre")){
-                sentenciaSimple();
+                NodoSentenciaSimple sentenciaSimple = sentenciaSimple();
                 match("ptoComa");
+                return sentenciaSimple;
             }
-            else {
+            else {// IF
                 if (token.getTipo().equals("prIf")){
+                    Token tIf = token;
                     match(("prIf"));
                     match("parAbre");
                     System.out.println("Voy a expresion con: "+token.getTipo());
-                    expresion(); //devuelvo la condicion
+                    NodoExpresion condicion = expresion(); //devuelvo la condicion
                     match("parCierra");
-                    sentenciaRec(); // como parametro
+                    NodoSentenciaRec sentenciaRec = sentenciaRec(); // me devuelve 2 nodos sentencia (then y else del if actual)
+                    return new NodoIf(tIf, condicion, sentenciaRec.getSentenciaThen(), sentenciaRec.getSentenciaElse());
                 }
-                else {
+                else { // WHILE
                     if (token.getTipo().equals("prWhile")){
+                        Token tWhile = token;
                         match("prWhile");
                         match("parAbre");
-                        expresion();
+                        NodoExpresion expresion = expresion();
                         match("parCierra");
-                        sentencia();
+                        NodoSentencia sentencia = sentencia();
+                        return new NodoWhile(tWhile, expresion, sentencia);
                     }
-                    else {
+                    else { // FOR
                         if (token.getTipo().equals("prFor")){
+                            Token tFor = token;
                             match("prFor");
                             match("parAbre");
-                            tipoPrimitivo();
-                            match("idMetVar");
+                            Tipo tipoVar = tipoPrimitivo();
+                            NodoId variable = new NodoId(token.getFila(), token.getColumna(), token.getLexema());
+                            match("idMetVar"); //en chequeo de sentencias se chequea que la variable no haya sido declarada como una variable local / param del metodo actual (no se si tambien atr de la clase actual)
                             match("prIn");
+                            // en chequeo verifico que sea de tipo Array
+                            NodoId iterador = new NodoId(token.getFila(), token.getColumna(), token.getLexema());
                             match("idMetVar");
                             match("parCierra");
-                            sentencia();
+                            match("prDo");
+                            NodoSentencia cuerpoFor = sentencia();
+                            return new NodoFor(tFor, tipoVar, variable, iterador, cuerpoFor);
                         }
-                        else {
+                        else { // BLOQUE
                             if (token.getTipo().equals("llaveAbre")){
-                                bloque();
+                                return bloque();
                             }
-                            else {
+                            else { // RET
 
                                 if (token.getTipo().equals("prRet")){
                                     // aca rompo si el tipo del metodo es void
                                     //if (tipo.getNombreTipo().equals("Void")){
                                     //    throw new ErrorSemantico(token.getFila(), token.getColumna(), "El tipo de retorno del metodo es void, no puede haber un ret");
                                     //}
+                                    Token tRet = token;
                                     match("prRet");
-                                    expresionOpt();
+                                    //expresionOpt();
+                                    return new NodoRet(tRet, expresionOpt());
+
                                 }
-                                else {
+                                else { //ASIGNACIÓN
                                     // con idMetVar o con self voy a asignacion
                                     if (token.getTipo().equals("idMetVar") | token.getTipo().equals("prSelf")){
-                                        asignacion();
+                                        return asignacion();
                                     }
                                 }
                             }
@@ -743,35 +804,41 @@ public class Sintactico {
                 }
             }
         }
+        return null;
     }
 
     // SentenciaRec -> Sentencia RecursivoElse
-    private void sentenciaRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        sentencia();
-        recursivoElse();
+    private NodoSentenciaRec sentenciaRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoSentencia nodoThen = sentencia();
+        NodoSentencia nodoElse = recursivoElse();
+        return new NodoSentenciaRec(nodoThen, nodoElse);
     }
 
     // RecursivoElse -> else Sentencia | lambda
-    private void recursivoElse() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoSentencia recursivoElse() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("prElse")){
             match("prElse");
-            sentencia();
+            return sentencia();
         }
+        return null;
         // sino es lambda
     }
 
     // ExpresionOpt -> Expresion | lambda
-    private void expresionOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoExpresion expresionOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (esPrimeroExpresion(token.getTipo())){
-            expresion();
+            return expresion();
         }
+        return null;
     }
 
     // SentenciaSimple -> ( Expresion )
-    private void sentenciaSimple() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoSentenciaSimple sentenciaSimple() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        Token tokenSS = token;
         match("parAbre");
-        expresion();
+        NodoExpresion nodoExpresion = expresion();
         match("parCierra");
+        return new NodoSentenciaSimple(tokenSS, nodoExpresion);
     }
 
     //Expresion -> ExpresionOr
@@ -782,37 +849,43 @@ public class Sintactico {
     }
 
     //BLoque -> { ListaSentencia }
-    private void bloque() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoBloque bloque() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        Token tBloque = token;
         match("llaveAbre");
-        listaSentencia();
+        ArrayList<NodoSentencia> listaSent = listaSentencia(new ArrayList<NodoSentencia>());
         match("llaveCierra");
+        return new NodoBloque(tBloque, listaSent);
     }
 
     //Asignacion -> AccesoVarSimple = Expresion | AccesoSelfSimple = Expresion
-    private void asignacion() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private NodoAsignacion asignacion() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si esta en los primeros de acceso var simple entro
         // Prim(AccesoVarSimple) = {id}
         if (token.getTipo().equals("idMetVar")){
-            accesoVarSimple();
+            NodoAccesoVarSimple nodoAccesoVarSimple = accesoVarSimple();
+            Token tAsig = token;
             match("opIgual");
-            expresion();
+            NodoExpresion nodoExpresion = expresion();
+            return new NodoAsignacion(tAsig, nodoAccesoVarSimple, nodoExpresion);
         }
         else {
             // si esta en los primeros de acceso self simple entro
             // Prim(AccesoVarSimple) = {self}
             if (token.getTipo().equals("prSelf")){
-                accesoSelfSimple();
+                NodoAccesoSelfSimple nodoAccesoSelfSimple = accesoSelfSimple();
+                Token tAsig = token;
                 match("opIgual");
-                expresion();
+                NodoExpresion nodoExpresion = expresion();
+                return new NodoAsignacion(tAsig, nodoAccesoSelfSimple, nodoExpresion);
             }
         }
+        return null;
     }
 
     // AccesoVarSimple -> id AccesoVarSImpleRec
     private NodoAccesoVarSimple accesoVarSimple() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-
-        match("idMetVar");
         NodoVarEncadenado varEncadenado = new NodoVarEncadenado(token.getFila(), token.getColumna(), token.getLexema());
+        match("idMetVar");
         NodoVarEncadenado proxEncadenado = null;
         return new NodoAccesoVarSimple(varEncadenado,accesoVarSimpleRec(proxEncadenado));
         //accesoVarSimpleRec puede ser: null | NodoVarEncadenado| nodoExpresion
@@ -854,9 +927,13 @@ public class Sintactico {
     }
 
     // AccesoSelfSimple -> self ListaEncadenadoSimple
-    private void accesoSelfSimple() throws ErrorSintactico, ErrorLexico {
+    private NodoAccesoSelfSimple accesoSelfSimple() throws ErrorSintactico, ErrorLexico {
+        NodoVarEncadenado selfEncadenado = new NodoVarEncadenado(token.getFila(), token.getColumna(), token.getLexema());
         match("prSelf");
-        //listaEncadenadoSimple();
+        NodoVarEncadenado varEncadenado = null; //inicializo el nodo en null
+        listaEncadenadoSimple(varEncadenado); //este metodo va agregando los nodos del encadenados
+        //Si hay encadenado varEncadenado != nul -> selfEncadenado = self y varEncadenado = id1.id1.id3
+        return new NodoAccesoSelfSimple(selfEncadenado,varEncadenado);
     }
 
     // EncadenadoSimple -> . id
@@ -1206,8 +1283,9 @@ public class Sintactico {
                 break;
             // Prim(LlamadaConClassor) = {new}
             case "prNew":
-                NodoLlamadaConClassOr nodoLlamadaConClassOr = llamadaConClassor();
-                return new NodoPrimario(nodoLlamadaConClassOr);
+                //HACER
+               llamadaConClassor();
+
         }
         return null;
     }
@@ -1401,20 +1479,18 @@ public class Sintactico {
     }
 
     // LlamadaConClassor -> new LLamadaConClassOrRec
-    private NodoLlamadaConClassOr llamadaConClassor() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private void llamadaConClassor() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prNew");
-        NodoLlamadaConClassOrRec nodoLlamadaConClassOrRec = llamadaConClassorRec();
-        return new NodoLlamadaConClassOr(nodoLlamadaConClassOrRec);
+        llamadaConClassorRec();
     }
 
     // LlamadaConClassorRec -> idClass ArgumentosActuales EncadenadoOpt | TipoPrimitivo [ Expresion ]
-    private NodoLlamadaConClassOrRec llamadaConClassorRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private void llamadaConClassorRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
 
         if (token.getTipo().equals("idClass")){
             match("idClass");
-            NodoArgumentosActuales nodoArgumentosActuales = argumentosActuales();
+            argumentosActuales();
             NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
-            return new NodoLlamadaConClassOrRec(nodoArgumentosActuales, nodoEncadenadoOpt);
         }
         else {
 
@@ -1423,46 +1499,41 @@ public class Sintactico {
             match("corcheteAbre");
             NodoExpresion nodoExpresion = expresion();
             match("corcheteCierra");
-            return new NodoLlamadaConClassOrRec(nodoTipoPrimitivo, nodoExpresion);
+
         }
 
     }
 
     // ArgumentosActuales -> ( ListaExpresionesOpt )
-    private NodoArgumentosActuales argumentosActuales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private void argumentosActuales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("parAbre");
-        NodoListaExpresionesOpt nodoListaExpresionesOpt = listaExpresionesOpt();
+        listaExpresionesOpt();
         match("parCierra");
-        return new NodoArgumentosActuales(nodoListaExpresionesOpt);
+
     }
 
     // ListaExpresionesOpt -> ListaExpresiones | lambda
-    private NodoListaExpresionesOpt listaExpresionesOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private void listaExpresionesOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // Prim(ListaExpresiones) = Prim(Expresion)
         if (esPrimeroExpresion(token.getTipo())){
-            NodoListaExpresiones nodoListaExpresiones = listaExpresiones();
-            return new NodoListaExpresionesOpt(nodoListaExpresiones);
+            listaExpresiones();
+
         }
-        return null;
+
     }
 
     // ListaExpresiones -> Expresion ListaExpresionesRec
-    private NodoListaExpresiones listaExpresiones() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private void listaExpresiones() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         NodoExpresion nodoExpresion = expresion();
-        NodoListaExpresionesRec nodoListaExpresionesRec = listaExpresionesRec();
-
-        return new NodoListaExpresiones(nodoExpresion, nodoListaExpresionesRec);
-
+        listaExpresionesRec();
     }
 
     // ListaExpresionesRec -> , ListaExpresiones | lambda
-    private NodoListaExpresionesRec listaExpresionesRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private void listaExpresionesRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         if (token.getTipo().equals("coma")){
             match("coma");
-            NodoListaExpresiones nodoListaExpresiones = listaExpresiones();
-            return new NodoListaExpresionesRec(nodoListaExpresiones);
+            listaExpresiones();
         }
-        return null;
     }
 
     // Encadenado -> . EncadenadoRec

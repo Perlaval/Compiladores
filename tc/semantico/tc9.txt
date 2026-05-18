@@ -48,6 +48,11 @@ impl A {
 impl A {
    .(){
     Bool x;
+    fn metodoprueba(){
+        for Int a in iteratoor do{
+
+        }
+    }
    }
 }
 //la clase B deberia ir arriba de la clase A pq uno de los metodos de A llama a una variable de tipo B

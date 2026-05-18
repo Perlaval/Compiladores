@@ -13,6 +13,14 @@ public class NodoExpresionParentizada extends NodoExpresion {
         this.nodoEncadenadoOpt = nodoEncadenadoOpt;
     }
 
+    public NodoExpresion getNodoExpresion() {
+        return nodoExpresion;
+    }
+
+    public NodoEncadenadoOpt getNodoEncadenadoOpt() {
+        return nodoEncadenadoOpt;
+    }
+
     @Override
     public Tipo chequear(){
 

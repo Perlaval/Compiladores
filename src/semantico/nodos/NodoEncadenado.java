@@ -20,7 +20,4 @@ public class NodoEncadenado extends Nodo{
         return nodoEncadenadoRec;
     }
 
-    public void setNodoEncadenadoRec(NodoEncadenadoRec nodoEncadenadoRec) {
-        this.nodoEncadenadoRec = nodoEncadenadoRec;
-    }
 }

@@ -12,6 +12,10 @@ public class NodoAccesoSelf extends NodoExpresion {
         this.nodoEncadenadoOpt = nodoEncadenadoOpt;
     }
 
+    public NodoEncadenadoOpt getNodoEncadenadoOpt() {
+        return nodoEncadenadoOpt;
+    }
+
     @Override
     public Tipo chequear() throws ErrorSemantico {
 

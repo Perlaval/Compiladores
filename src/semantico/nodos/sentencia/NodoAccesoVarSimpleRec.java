@@ -6,17 +6,25 @@ import semantico.nodos.expresion.NodoExpresion;
 public class NodoAccesoVarSimpleRec extends NodoSentencia{
 
     //1. AccesoVarSimpleRec -> id2.i3..
-    private NodoVarEncadenado varEncadenado;
+    private NodoVarEncadenado nodoVarEncadenado;
 
     //2. AccesoVarSimpleRec -> [Expresion]
     private NodoExpresion nodoExpresion;
 
     public NodoAccesoVarSimpleRec(NodoVarEncadenado varEncadenado) {
-        this.varEncadenado = varEncadenado;
+        this.nodoVarEncadenado = varEncadenado;
     }
 
     public NodoAccesoVarSimpleRec(NodoExpresion nodoExpresion) {
         this.nodoExpresion = nodoExpresion;
+    }
+
+    public NodoVarEncadenado getNodoVarEncadenado() {
+        return nodoVarEncadenado;
+    }
+
+    public NodoExpresion getNodoExpresion() {
+        return nodoExpresion;
     }
 
     @Override

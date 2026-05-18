@@ -28,15 +28,9 @@ public class NodoEncadenadoRec extends Nodo{
         return nodoLlamadaMetodo;
     }
 
-    public void setNodoLlamadaMetodo(NodoLlamadaMetodo nodoLlamadaMetodo) {
-        this.nodoLlamadaMetodo = nodoLlamadaMetodo;
-    }
-
     public NodoAccesoVar getNodoAccesoVar() {
         return nodoAccesoVar;
     }
 
-    public void setNodoAccesoVar(NodoAccesoVar nodoAccesoVar) {
-        this.nodoAccesoVar = nodoAccesoVar;
-    }
+
 }

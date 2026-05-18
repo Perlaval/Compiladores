@@ -8,5 +8,9 @@ public abstract class NodoEncadenado extends Nodo {
 
     protected NodoEncadenado proxEncadenado;
 
+    public NodoEncadenado getProxEncadenado() {
+        return proxEncadenado;
+    }
+
     public abstract Tipo chequear(Tipo tipo) throws ErrorSemantico;
 }
