@@ -1267,7 +1267,7 @@ public class Sintactico {
                     //HACER
                     //NodoLlamadaMetodo nodoLLamadaMetodo = llamadaMetodo();
                     //return new NodoPrimario(nodoLlamadaMetodo);
-                    llamadaMetodo();
+                    return new NodoPrimario(llamadaMetodo());
 
                 }
                 else {
@@ -1278,12 +1278,12 @@ public class Sintactico {
             // Prim(LlamadaMetodoEstatico) = {idClass}
             case "idClass":
                 //HACER
-                llamadaMetodoEstatico();
-                break;
+                return new NodoPrimario(llamadaMetodoEstatico());
+
             // Prim(LlamadaConClassor) = {new}
             case "prNew":
                 //HACER
-               llamadaConClassor();
+               return new NodoPrimario(llamadaConClassor());
 
         }
         return null;
@@ -1465,7 +1465,7 @@ public class Sintactico {
 
     // LlamadaMetdo -> id ArgumentosActuales EncadenadoOpt
     private NodoLlamadaMetodo llamadaMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        if (ts.noEstaTs(token.getLexema())){
+        if (ts.noEstaMetodoTs(token.getLexema())){
             throw new ErrorSemantico(token.getFila(), token.getColumna(), "El id no fue declarado");
         }
         else {

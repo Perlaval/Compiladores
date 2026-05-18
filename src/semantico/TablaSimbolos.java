@@ -98,17 +98,15 @@ public class TablaSimbolos implements ValidarDeclaracion{
         return !(this.tablaClases.containsKey(id));
 
     }
-    public boolean noEstaTs(String nombreClase, String id){
-        RegistroClase clase = this.getClase(nombreClase);
-        if (clase == null){
-            return true;
-        }
+    public boolean noEstaMetodoTs(String nombreMetodo){
+        RegistroMetodo metodo = this.claseActual.listaMetodos.get(nombreMetodo);
+        return (metodo == null);
 
-        RegistroAtributo atr = clase.listaAtributos.get(id);
+        /*RegistroAtributo atr = clase.listaAtributos.get(id);
         if (atr == null){
             return true;
         }
-        return !atr.isVisibilidad();
+        return !atr.isVisibilidad();*/
     }
 
     public RegistroVariable getVariable(String id){
