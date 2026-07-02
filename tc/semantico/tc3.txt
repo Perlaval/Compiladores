@@ -9,12 +9,13 @@ class A {
 class A {}
 
 impl A {
+/*
     .(Int b, Bool z){
         //.(){} probar despues de arreglar el sintactico
         Array Int x;
         z = 1;
 
-    }
+    } */
 
     st fn Int m2(Int c, Str y, Array Str hola, A m2){
         // defino variables locales para probar
@@ -28,14 +29,14 @@ impl A {
 }
 
 impl A {
-    //.(){}
+    //.(){} // deberia lanzar error porque A ya tiene constructor
 }
-
+impl C{}
 impl B{
     st fn Int m2(){
         Bool a;
     }
 }
-class B {}
+class B {} // en la consolidacion deberia largar error porque esta el impl y no la class
 class C {}
 start{}

@@ -3,6 +3,7 @@ package semantico;
 import semantico.registros.*;
 import semantico.tipos.*;
 
+import javax.imageio.plugins.tiff.ExifInteroperabilityTagSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -129,8 +130,8 @@ public class TablaSimbolos implements ValidarDeclaracion{
         return null;
     }
 
-//NO LO USO
-public RegistroVariable getAtrDeClase(RegistroClase clase, String id){
+    //NO LO USO
+    public RegistroVariable getAtrDeClase(RegistroClase clase, String id){
     if (clase.listaAtributos.containsKey(id)){
         return clase.listaAtributos.get(id);
     }
@@ -179,17 +180,94 @@ public RegistroVariable getAtrDeClase(RegistroClase clase, String id){
         clase.listaMetodos.put(metodo.getNombre(), metodo);
     }
 
+    // metodo que verifica que todos los impl tengan su clase antes de pasar a la consolidacion
+    public void consolidar() throws ErrorSemantico {
+        for (RegistroClase clase : tablaClases.values()) {
+            if (clase.getEsPredefinida()){
+                continue;
+            }
+            verificarDeclarada(clase);
+            verificarImplementada(clase);
+            verificarConstructor(clase);
 
+            String padre = clase.getHeredaDe();
+            verificarHerenciaDeclarada(clase, padre); // validacion de que las herencias esten declaradas
+
+            consolidarAtributos(clase);
+            consolidarMetodos(clase);
+
+        }
+    }
+
+    public void verificarDeclarada(RegistroClase clase) throws ErrorSemantico{
+        if (!clase.getDeclarada()) {
+            throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+                    "La clase " + clase.getNombre() + " no fue declarada");
+        }
+    }
+    public void verificarImplementada(RegistroClase clase) throws ErrorSemantico{
+        if (!clase.getImplementada()){
+            throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+                    "La clase "+clase.getNombre()+" debe tener al menos un impl");
+        }
+    }
+    public void verificarConstructor(RegistroClase clase) throws ErrorSemantico{
+        if (!clase.inConstructor){
+            throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+                    "La clase "+clase.getNombre()+" no posee constructor");
+        }
+    }
+    public void verificarHerenciaDeclarada(RegistroClase clase, String padre) throws ErrorSemantico{
+        if (padre != null && !tablaClases.containsKey(padre)){
+            throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+                    "La clase "+padre+" no fue declarada");
+        }
+        // le asigno object si no tiene herencia declarada
+        if (padre == null){
+            clase.setHeredaDe("Object");
+        }
+    }
+    public void consolidarAtributos(RegistroClase clase) throws ErrorSemantico {
+        // si no tiene padre no hago nada
+        if (!clase.heredaDe.equals("Object")){
+            RegistroClase padre = tablaClases.get(clase.getHeredaDe());
+            int desplazamiento = padre.getListaAtributos().size();
+            // actualizo la pos de los atributos del hijo
+            for (RegistroAtributo atributohijo : clase.getListaAtributos().values()){
+                atributohijo.setPos(atributohijo.getPos() + desplazamiento);
+            }
+            // agrego los atributos del padre al hijo
+            for (RegistroAtributo atributo : padre.getListaAtributos().values()) {
+                // si el atributo ya esta en la clase hija error, sino lo agrego
+                if (clase.getListaAtributos().containsKey(atributo.getNombre())) {
+                    throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+                            "Atributo " + atributo.getNombre() + " redefinido en la clase " + clase.getNombre());
+                }
+                clase.getListaAtributos().put(atributo.getNombre(), atributo);
+            }
+        }
+    }
+    public void consolidarMetodos(RegistroClase clase){
+        // la subclase hereda todos los metodos de la superclase
+        // si un metodo de instancia tiene el mismo nombre que uno heredado lo puedo reescribir solo si:
+            // - misma cantidad de parametros
+            // - mismos tipos de parametros
+            // - el tipo de retorno es igual
+        // los metodos estaticos no se sobreescriben
+    }
 
     // Inicializar clases predefinidas
     public void inicializarClasesPredefinidas() {
         // Clase Object, no posee ni metodos ni atributos
         RegistroClase claseObject = crearRegClase("Object", null);
+        claseObject.setDeclarada(true);
+        claseObject.setEsPredefinida(true);
         this.tablaClases.put(claseObject.getNombre(), claseObject);
 
         // --------------------------------------------------------------------------------------
         // Clase IO, contiene metodos utiles de E/S
         RegistroClase claseIO = crearRegClase("IO", "Object");
+
         // st fn out_str(Str s):
         RegistroMetodo metodoStr = crearRegMetodo("out_str", true, new TipoVoid());
         RegistroParametro paramStr = crearRegParametros("s", new TipoPrimitivo("String"));
@@ -201,7 +279,7 @@ public RegistroVariable getAtrDeClase(RegistroClase clase, String id){
         guardar(metodoInt, paramInt, claseIO);
 
         // st fn out_bool(Bool b):
-        RegistroMetodo metodoBool = crearRegMetodo("out_bool", true, new TipoPrimitivo("Bool"));
+        RegistroMetodo metodoBool = crearRegMetodo("out_bool", true, new TipoVoid());
         RegistroParametro paramBool = crearRegParametros("b", new TipoPrimitivo("Bool"));
         guardar(metodoBool, paramBool, claseIO);
 
@@ -232,11 +310,13 @@ public RegistroVariable getAtrDeClase(RegistroClase clase, String id){
         RegistroMetodo metodoInBool = crearRegMetodo("in_bool", true, new TipoPrimitivo("Bool"));
         guardar(metodoInBool, null, claseIO);
 
+        claseIO.setDeclarada(true);
+        claseIO.setEsPredefinida(true);
         this.tablaClases.put(claseIO.getNombre(), claseIO);
         // --------------------------------------------------------------------------------------
-
+        /*
         // Clase Iterator, es una interfaz que define los métodos necesarios para iterar sobre una colección de elementos.
-        RegistroClase iterator = crearRegClase("Iterator", "Object");
+        //RegistroClase iterator = crearRegClase("Iterator", "Object");
 
         // fn Bool hasNext(): devuelve true si hay más elementos para iterar, de lo contrario devuelve false.
         RegistroMetodo hasNext = crearRegMetodo("hasNext", false, new TipoPrimitivo("Bool"));
@@ -253,22 +333,44 @@ public RegistroVariable getAtrDeClase(RegistroClase clase, String id){
         RegistroMetodo nextStr = crearRegMetodo("next_str", false, new TipoPrimitivo("Str"));
         guardar(nextStr, null, iterator);
 
-        this.tablaClases.put(iterator.getNombre(), iterator);
+        this.tablaClases.put(iterator.getNombre(), iterator); */
         // --------------------------------------------------------------------------------------
 
         // Clase Array, La clase arreglo proporciona listas de tamaño estático de elementos de tipos primitivos
         RegistroClase claseArray = crearRegClase("Array", "Object");
 
         // fn Int length(), length devuelve la longitud del parámetro self y los métodos de la interfaz Iterator
-        // (hasNext() y next <type>()) para iterar sobre los elementos del arreglo.
         RegistroMetodo metodoLength = crearRegMetodo("length", false, new TipoPrimitivo("Int"));
-        guardar(metodoLength,null, claseArray);
+        guardar(metodoLength, null, claseArray);
 
+        // (hasNext() y next <type>()) para iterar sobre los elementos del arreglo.
+
+        // fn Bool hasNext()
+        RegistroMetodo hasNext = crearRegMetodo("hasNext", false, new TipoPrimitivo("Bool"));
+        guardar(hasNext, null, claseArray);
+
+        // fn next_int()
+        RegistroMetodo nextInt = crearRegMetodo("next_int", false, new TipoPrimitivo("Int"));
+        guardar(nextInt, null, claseArray);
+
+        // fn next_str():
+        RegistroMetodo nextStr = crearRegMetodo("next_str", false, new TipoPrimitivo("Str"));
+        guardar(nextStr, null, claseArray);
+
+        // fn next_bool():
+        RegistroMetodo nextBool = crearRegMetodo("next_bool", false, new TipoPrimitivo("Bool"));
+        guardar(nextBool, null, claseArray);
+
+        claseArray.setDeclarada(true);
+        claseArray.setEsPredefinida(true);
         this.tablaClases.put(claseArray.getNombre(), claseArray);
 
         // --------------------------------------------------------------------------------------
         // Clase Int, La clase Int proporciona números enteros. No hay métodos especiales para Int.
         RegistroClase claseInt = crearRegClase("Int", "Object");
+
+        claseInt.setDeclarada(true);
+        claseInt.setEsPredefinida(true);
         this.tablaClases.put(claseInt.getNombre(), claseInt);
 
         // --------------------------------------------------------------------------------------
@@ -284,15 +386,17 @@ public RegistroVariable getAtrDeClase(RegistroClase clase, String id){
         RegistroParametro paramConcat = crearRegParametros("s", new TipoPrimitivo("Str"));
         guardar(concat, paramConcat, claseStr);
 
+        claseStr.setDeclarada(true);
+        claseStr.setEsPredefinida(true);
         this.tablaClases.put(claseStr.getNombre(), claseStr);
 
         // --------------------------------------------------------------------------------------
         // Clase Bool,La clase Bool brinda el true y false.
         RegistroClase claseBool = crearRegClase("Bool", "Object");
+
+        claseBool.setDeclarada(true);
+        claseBool.setEsPredefinida(true);
         this.tablaClases.put(claseBool.getNombre(), claseBool);
     }
 }
 
-// cada una de las clases Entrada... hacen referencia a la tabla con informacion de eso, por ejemplo la clase
-// EntradaClase es la tabla que va a contener toda la info que contiene una clase. Seria como las mini bases de datos
-// de cada una de las tablas internas que tiene la tabla de simbolos

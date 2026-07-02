@@ -1,5 +1,6 @@
 package semantico.registros;
 
+import lexico.Token;
 import semantico.tipos.Tipo;
 
 import java.util.HashMap;
@@ -9,6 +10,10 @@ import java.util.Map;
 public class RegistroClase {
 
     private int proxPosAtributo = 0;
+
+    private Token tokenClase;
+
+    private boolean esPredefinida;
 
     //nombre de la clase
     public String nombre;
@@ -30,6 +35,12 @@ public class RegistroClase {
 
     public boolean inConstructor = false;
 
+    // utilizado para verificacion en la consolidacion de la TS
+    public boolean declarada;
+
+    // cada clase debe tener al menos un impl
+    public boolean implementada;
+
     public RegistroClase(String nombre) {
         this.nombre = nombre;
         //this.heredaDe = "Object"; // por default
@@ -39,21 +50,37 @@ public class RegistroClase {
 
     }
 
+    public void setDeclarada(boolean esdeclarada){
+        this.declarada = esdeclarada;
+    }
+
+    public void setTokenClase(Token token){ this.tokenClase = token; }
+
+    public void setHeredaDe(String superClase) {
+        this.heredaDe = superClase;
+    }
+
+    public void setEsPredefinida(boolean predefinida){ this.esPredefinida = predefinida; }
+
+    public void setImplementada(boolean implementada){ this.implementada = implementada; }
+
+    // metodo utilizado paea las clases predefinidas
+    public void setListaMetodos(Map<String, RegistroMetodo> metodos){
+        this.listaMetodos = metodos;
+    }
+
+    public boolean getDeclarada(){
+        return this.declarada;
+    }
+
+    public boolean getImplementada() {return this.implementada; }
+
     public int getProxPosAtributo(){
         return proxPosAtributo++;
     }
 
     public String getNombre() {
         return this.nombre;
-    }
-
-    public void setHeredaDe(String superClase) {
-        this.heredaDe = superClase;
-    }
-
-    // metodo utilizado paea las clases predefinidas
-    public void setListaMetodos(Map<String, RegistroMetodo> metodos){
-        this.listaMetodos = metodos;
     }
 
     public String getHeredaDe() {
@@ -63,6 +90,12 @@ public class RegistroClase {
     public Map<String, RegistroAtributo> getListaAtributos() {
         return listaAtributos;
     }
+
+    public Token getTokenClase(){ return this.tokenClase; }
+
+    public boolean getEsPredefinida(){return this.esPredefinida; }
+
+
 
 
 }

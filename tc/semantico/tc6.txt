@@ -1,5 +1,6 @@
 // en este verifico los metodos de las clases para la TS
 
+// verifico que la clase de la que hereda existe
 
 class A {
     Int m2;
@@ -37,7 +38,15 @@ impl B{
         Bool a;
     }
 }
-class B : C{
-    Int x;
+
+class B: C { // C no existe deberia lanzar error
+
 }
+/*
+class C {}
+impl C{
+.() {}
+} */
+class B {} // deberia largar error porque B ya puse que hereda de C
+
 start{}

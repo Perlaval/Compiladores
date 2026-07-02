@@ -1,5 +1,5 @@
 
-class A {
+class A{
     pub Int x;
 }
 
@@ -9,7 +9,7 @@ class Calculadora {
     Array Int a;
 }
 */
-impl Int{
+impl C{
     st fn Int m2(Str b){
             Bool a;
         }

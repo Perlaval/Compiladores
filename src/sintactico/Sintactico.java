@@ -50,6 +50,8 @@ public class Sintactico {
 
     }
 
+
+
     // Gramatica ----------------------------------------------------------------------------------------------
 
     //Program -> ListaDefiniciones Start
@@ -57,8 +59,12 @@ public class Sintactico {
         Token tProgram = token;
         ArrayList<NodoDefinicion> listaDefiniciones = listaDefiniciones(new ArrayList<NodoDefinicion>());
         //salgo de LS, voy a imprimir las clases:
-        ts.imprimirClases();
+        //ts.imprimirClases();
         // si es lambda va directo a start
+
+        // ya arme toda mi TS, antes de seguir voy a consolidar
+        ts.consolidar();
+
         RegistroStart metodoStart = new RegistroStart();
         NodoStart start = start();
         System.out.println("token final: "+ token.getTipo());
@@ -117,9 +123,10 @@ public class Sintactico {
                 if (token.getTipo().equals("dosPuntos")){ // tiene herencia
                     String superClase = herenciaOpt();
                     clase = ts.crearRegClase(id.getLexema(), superClase);
+
                 }
                 else {
-                    clase = ts.crearRegClase(id.getLexema(), ""); // si no tiene herencia dejamos la cadena vacia, para no poner null y que se rompa
+                    clase = ts.crearRegClase(id.getLexema(), null); // si no tiene herencia dejamos la cadena vacia, para no poner null y que se rompa
 
                 }
                 ts.tablaClases.put(clase.getNombre(), clase);
@@ -127,21 +134,30 @@ public class Sintactico {
             else { // si ya esta en la TS verifico que no haya redefinicion de herencia
                 // veo si tiene herencia, si tiene debe ser la misma
                 clase = ts.getClase(id.getLexema());
-                System.out.println("Entre aca con: "+clase.getNombre());
+                //System.out.println("Entre aca con: "+clase.getNombre());
                 if (token.getTipo().equals("dosPuntos")){
                     String superClase = herenciaOpt();
+                    // le seteo de quien hereda
+                    if (clase.heredaDe == null){
+                        clase.setHeredaDe(superClase);
+                    }
+                    // no puedo redefinir herencia por lo tanto si ya tiene debe coincidir
                     if (!clase.heredaDe.equals(superClase)){
                         throw new ErrorSemantico(token.getFila(), token.getColumna(), "Redefinicion de herencia para la clase: "+clase.getNombre());
                     }
                 }
 
             }
+
+            // la declaro
+            clase.setTokenClase(id);
+            clase.setDeclarada(true);
             // contexto para atributos
             ts.claseActual = clase;
             match("llaveAbre");
             ArrayList<NodoDeclaracion> listaAtr = listaAtributos(new ArrayList<NodoDeclaracion>()); // si lo que viene es } es porque era lambda
             // imprimo los atributos de esa clase
-            System.out.println("Atributos de la clase: "+ ts.claseActual.listaAtributos.toString());
+            //System.out.println("Atributos de la clase: "+ ts.claseActual.listaAtributos.toString());
             match("llaveCierra");
 
             // salgo de la clase actual
@@ -255,12 +271,20 @@ public class Sintactico {
             if (ts.noEstaTs(token.getLexema())){
                 // no esta esa clase, la agrego
                 RegistroClase clase = new RegistroClase(token.getLexema());
+
+                // le seteo declarada a false porque la guarde desde un impl
+                clase.setDeclarada(false);
+                // le seteo el token por si luego no se declara para lanzar el error
+                clase.setTokenClase(tImpl);
+                // le seteo que tiene un impl esa clase
+                clase.setImplementada(true);
                 ts.tablaClases.put(clase.getNombre(), clase);
                 ts.claseActual = clase;
             }
             // obtengo la clase actual para guardarle los metodos
             RegistroClase clase = ts.getClase(token.getLexema());
             ts.claseActual = clase;
+            clase.setImplementada(true);
             match("idClass");
             // entonces ahora voy a ir a lista miembros con la clase actual
             match("llaveAbre");
@@ -421,7 +445,13 @@ public class Sintactico {
     private NodoMetodo constructor() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         Token tConst = token;
         match("pto");
-        //ts.claseActual.inConstructor = true;
+        // verifico si ya tiene constructor
+        if (ts.claseActual.inConstructor){
+            throw new ErrorSemantico(ts.claseActual.getTokenClase().getFila(), ts.claseActual.getTokenClase().getColumna(),
+                    "La clase "+ts.claseActual.getNombre()+ " ya posee un constructor");
+        }
+        // si no tiene lo creo y lo seteo en true
+        ts.claseActual.inConstructor = true;
         ts.claseActual.constructor = new Constructor();
         ts.metodoActual = ts.claseActual.constructor;
         //System.out.println("Voy a arg formales con el constructor: "+ts.metodoActual);
@@ -741,7 +771,7 @@ public class Sintactico {
                     Token tIf = token;
                     match(("prIf"));
                     match("parAbre");
-                    System.out.println("Voy a expresion con: "+token.getTipo());
+                    //System.out.println("Voy a expresion con: "+token.getTipo());
                     NodoExpresion condicion = expresion(); //devuelvo la condicion
                     match("parCierra");
                     NodoSentenciaRec sentenciaRec = sentenciaRec(); // me devuelve 2 nodos sentencia (then y else del if actual)
@@ -770,7 +800,6 @@ public class Sintactico {
                             NodoId iterador = new NodoId(token.getFila(), token.getColumna(), token.getLexema());
                             match("idMetVar");
                             match("parCierra");
-                            match("prDo");
                             NodoSentencia cuerpoFor = sentencia();
                             return new NodoFor(tFor, tipoVar, variable, iterador, cuerpoFor);
                         }
@@ -840,13 +869,6 @@ public class Sintactico {
         return new NodoSentenciaSimple(tokenSS, nodoExpresion);
     }
 
-    //Expresion -> ExpresionOr
-    private NodoExpresion expresion() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        NodoExpresion nodoExpresionOr = expresionOr();
-        return nodoExpresionOr;
-
-    }
-
     //BLoque -> { ListaSentencia }
     private NodoBloque bloque() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         Token tBloque = token;
@@ -861,10 +883,10 @@ public class Sintactico {
         // si esta en los primeros de acceso var simple entro
         // Prim(AccesoVarSimple) = {id}
         if (token.getTipo().equals("idMetVar")){
-            NodoAccesoVarSimple nodoAccesoVarSimple = accesoVarSimple();
+            NodoAccesoVarSimple nodoAccesoVarSimple = accesoVarSimple(); //NODO IZQ
             Token tAsig = token;
             match("opIgual");
-            NodoExpresion nodoExpresion = expresion();
+            NodoExpresion nodoExpresion = expresion(); //NODO DER
             return new NodoAsignacion(tAsig, nodoAccesoVarSimple, nodoExpresion);
         }
         else {
@@ -927,6 +949,7 @@ public class Sintactico {
 
     // AccesoSelfSimple -> self ListaEncadenadoSimple
     private NodoAccesoSelfSimple accesoSelfSimple() throws ErrorSintactico, ErrorLexico {
+        System.out.println("Estoy en AccesoSelfSimple con el metodo actual: "+ts.metodoActual.getNombre());
         NodoVarEncadenado selfEncadenado = new NodoVarEncadenado(token.getFila(), token.getColumna(), token.getLexema());
         match("prSelf");
         NodoVarEncadenado varEncadenado = null; //inicializo el nodo en null
@@ -941,6 +964,13 @@ public class Sintactico {
         NodoVarEncadenado varEncadenado = new NodoVarEncadenado(token.getFila(), token.getColumna(), token.getLexema());
         match("idMetVar"); //sueldo
         return varEncadenado;
+    }
+// ----------------------------------------------EXPRESIONES -----------------------------------------------------
+    //Expresion -> ExpresionOr
+    private NodoExpresion expresion() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        NodoExpresion nodoExpresionOr = expresionOr();
+        return nodoExpresionOr;
+
     }
 
     // ExpresionOr -> ExpresionAnd ExpresionOrRec
@@ -1072,24 +1102,23 @@ public class Sintactico {
     private NodoExpresionUnario expresionUnario() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // siempre que venga un opUnario vuelvo
         if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos") |
-                token.getTipo().equals("opMasMas") | token.getTipo().equals("opMenosMenos") | token.getTipo().equals("opNot")){
+                token.getTipo().equals("opMasMas") | token.getTipo().equals("opMenosMenos") | token.getTipo().equals("opNot")) {
             Token operador = opUnario();
             NodoExpresionUnario nodoExpresionUnario = expresionUnario();
             return new NodoExpresionUnario(operador, nodoExpresionUnario);
-        }
-        else { // si no es opMas ni opMenos es un operando
+        } else { // si no es opMas ni opMenos es un operando
             // si lo que viene no esta en los prim de operando no voy
             if (esPrimeroOperando(token.getTipo())) {
                 NodoOperando nodoOperando = operando();
                 return new NodoExpresionUnario(nodoOperando);
             } else {
-                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un operando y se encontro "+token.getTipo());
+                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un operando y se encontro " + token.getTipo());
             }
             //operando();
         }
 
     }
-
+// --------------------------------------------FIN EXPRESIONES----------------------------------------------------------
     // OpIgual -> == | !=
     private Token opIgual() throws ErrorSintactico, ErrorLexico {
         Token operador = token;
@@ -1197,7 +1226,7 @@ public class Sintactico {
                 return new NodoOperando(nodoLiteral);
             // Prim(Primario) = { (, self, id, idclass, new}
             case "parAbre", "prSelf", "idMetVar", "idClass", "prNew":
-                System.out.println("Voy a primario con: "+token.getTipo());
+                //System.out.println("Voy a primario con: "+token.getTipo());
                 NodoPrimario nodoPrimario = primario();
                 NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
                 return new NodoOperando(nodoPrimario, nodoEncadenadoOpt);
@@ -1255,13 +1284,18 @@ public class Sintactico {
                 return new NodoPrimario(nodoExpresionParentizada);
             // Prim(AccesoSelf) = { self }
             case "prSelf":
+                // verifico que no este en un contexto estatico
+                //System.out.println("Metodo actual: "+ts.metodoActual.getNombre());
+                if (ts.metodoActual.esEstatico){
+                    throw new ErrorSemantico(token.getFila(), token.getColumna(), "No se puede acceder a una variable de instancia en un contexto estatico");
+                }
                 NodoAccesoSelf nodoAccesoSelf = accesoSelf();
                 return new NodoPrimario(nodoAccesoSelf);
             // Prim(AccesoVar) = { id } y Prim(LlamadaMetodo) = { id }
             // como ambas van a id veo los siguientes
             case "idMetVar":
                 // si me viene un parAbre es porque fue a LlamadaMetodo
-                System.out.println("estoy en primario con: "+token.getTipo());
+                //System.out.println("estoy en primario con: "+token.getTipo());
                 Token next = lookAhead();
                 if (next.getTipo().equals("parAbre")){
                     //HACER
@@ -1303,6 +1337,10 @@ public class Sintactico {
     // AccesoSelf -> self EncadenadoOpt
     private NodoAccesoSelf accesoSelf() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("prSelf");
+        //System.out.println("Estoy en accesoSelf con el metodo: "+ts.metodoActual.getNombre());
+        // Si el metood es estatico no puedo acceder a una variable de instancia (self)
+        //System.out.println("Metodo actual estatico? "+ts.metodoActual.getFormaMetodo());
+
         NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
         return new NodoAccesoSelf(nodoEncadenadoOpt);
     }
@@ -1480,15 +1518,8 @@ public class Sintactico {
 
             // si encadenado es null creo el nodo llamada metodo solo con arg actuales y el id
             NodoEncadenadoOpt nodoEncOpt = encadenadoOpt();
+            // si no tiene encadenado se pone null
             return new NodoLlamadaMetodo(nodoId, listaArgumentosActuales, nodoEncOpt);
-            /*if (nodoEncOpt == null){
-                return new NodoLlamadaMetodo(nodoId, listaArgumentosActuales);
-                //return new NodoLlamadaMetodo(nodoId, nodoArgumentosActuales);
-            }
-            else {
-                return new NodoLlamadaMetodo(nodoId, listaArgumentosActuales, nodoEncOpt);
-                //return new NodoLlamadaMetodo(nodoId, nodoArgumentosActuales, nodoEncOpt);
-            }*/
         }
 
 
@@ -1509,14 +1540,8 @@ public class Sintactico {
             NodoLlamadaMetodo nodoLlamadaMetodo  = llamadaMetodo();
             NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
 
+            // si no tiene encadenado se pone null
             return new NodoLlamadaMetodoEstatico(nodoId, nodoLlamadaMetodo, nodoEncadenadoOpt);
-            /*if (nodoEncadenadoOpt == null) {
-                return new NodoLlamadaMetodoEstatico(nodoId, nodoLlamadaMetodo);
-
-            }
-            else {
-                return new NodoLlamadaMetodoEstatico(nodoId, nodoLlamadaMetodo, nodoEncadenadoOpt);
-            }*/
         }
 
 
@@ -1545,19 +1570,11 @@ public class Sintactico {
                 match("idClass");
                 ArrayList<NodoExpresion> listaArgumentosActuales = argumentosActuales();
                 NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
+                // si no tiene encadenado se pone null
                 return new NodoLlamadaConClassOrRec(nodoId, listaArgumentosActuales, nodoEncadenadoOpt);
-            /*if (nodoEncadenadoOpt == null){
-                return new NodoLlamadaMetodo(nodoId, listaArgumentosActuales);
             }
-            else {
-                return new NodoLlamadaMetodo(nodoId, listaArgumentosActuales, encadenadoOpt());
-            }*/
-            }
-
-
         }
         else {
-
             Tipo tipo = tipoPrimitivo();
             // tipo es mas que nada para chequeo de sentencias, para verificar que lp que venga en expresion coincida con el tipoprimitivo
             //tipoPrimitivo();
