@@ -1,5 +1,6 @@
 
 // prueba para que largue error
+
 impl B{
     st fn Int m2(Int x){
         Bool a;

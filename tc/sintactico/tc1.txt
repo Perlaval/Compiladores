@@ -9,7 +9,7 @@ self .x = false ;
 } else {
 self .x = true ;
 }
-self .y = new Otra();
+//self .y = new Otra();
 }
 }
 class Otra {

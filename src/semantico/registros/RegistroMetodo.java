@@ -1,9 +1,11 @@
 package semantico.registros;
 
+import lexico.Token;
 import semantico.tipos.Tipo;
 import semantico.tipos.TipoArreglo;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 // Hash con todos los metodos de una clase
@@ -13,7 +15,7 @@ public class RegistroMetodo {
     private int proxPosParametro = 0; // contador de los parametros del metodo
 
     public String nombre; // nombre del metodo
-
+    private Token tokenMetodo;
     // forma del metodo puede ser st o no
     public boolean esEstatico; // true: estatico
 
@@ -40,7 +42,7 @@ public class RegistroMetodo {
     public RegistroMetodo() {
         this.esEstatico = false; // por default no es estatico
         this.tipoRetorno = null; // por default le ponemos retorno null, que seria void
-        this.listaParametros = new HashMap<>();
+        this.listaParametros = new LinkedHashMap<>();
         this.listaVarLocales = new HashMap<>();
     }
 
@@ -56,6 +58,8 @@ public class RegistroMetodo {
     public void setTipoRetorno(Tipo t){
         this.tipoRetorno = t;
     }
+    public void setTokenMetodo(Token token){ this.tokenMetodo = token; }
+
     public String getNombre(){
         return this.nombre;
     }
@@ -65,11 +69,10 @@ public class RegistroMetodo {
     public boolean getFormaMetodo(){
         return this.esEstatico;
     }
-
+    public Token getTokenMetodo(){ return this.tokenMetodo; }
     public Map<String, RegistroVariable> getListaVarLocales() {
         return listaVarLocales;
     }
-
     public Map<String, RegistroParametro> getListaParametros() {
         return listaParametros;
     }

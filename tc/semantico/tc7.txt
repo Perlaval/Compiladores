@@ -1,13 +1,11 @@
 // en este verifico los metodos de las clases para la TS
 
 
-class A {
+class A  {
     Int m2;
     Bool z;
     Array Int a;
 }
-
-class A {}
 
 impl A {
     .(Int b, Bool z){
@@ -22,7 +20,7 @@ impl A {
         Bool d;
         Int v;
     }
-    st fn m3(Int x, Str y){} //metodo que retorna void
+    st fn Int m3(Int x, Str y){} //metodo que retorna void
     fn A m4(){} //metodo que retorna un objeto de la clase A
     fn A m5(){}
 
@@ -44,8 +42,21 @@ impl B{
     st fn Int m6(Int x){
         Bool a;
     }
+    // metodo con el mismo nombre que A
+    st fn Str m3(Int a, Str y){}
+    fn Int getZ(){
+        ret z;
+    }
+}
+impl C{
+    .(){}
+}
+class C : B{
+    Int dia;
+
 }
 class B : A{
     Int x;
 }
+
 start{}

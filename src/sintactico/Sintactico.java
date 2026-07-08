@@ -58,8 +58,6 @@ public class Sintactico {
     private NodoProgram program() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         Token tProgram = token;
         ArrayList<NodoDefinicion> listaDefiniciones = listaDefiniciones(new ArrayList<NodoDefinicion>());
-        //salgo de LS, voy a imprimir las clases:
-        //ts.imprimirClases();
         // si es lambda va directo a start
 
         // ya arme toda mi TS, antes de seguir voy a consolidar
@@ -67,7 +65,7 @@ public class Sintactico {
 
         RegistroStart metodoStart = new RegistroStart();
         NodoStart start = start();
-        System.out.println("token final: "+ token.getTipo());
+        //System.out.println("token final: "+ token.getTipo());
         match("EOF"); // ver si tiene que ser $ o EOF
         return new NodoProgram(tProgram, listaDefiniciones, start);
 
@@ -75,12 +73,10 @@ public class Sintactico {
 
     // Start -> start BloqueMetodo
     private NodoStart start() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        // matcheo start asi avanza
-        //match("prStart"); // esto tmb verificar porque nose si start era una palabra reservada (pregintar a profe)
         if (token.getLexema().equals("start")){
             Token tStart = token;
             // deberia matchear idMetVar, porque start al no ser reservada la toma como idMetVar
-            match("idMetVar"); //consumo start y voy a bloque
+            match("idMetVar");
             // ahora mi clase actual es el metodo start
             NodoBloqueMetodo bloqueMetodo = bloqueMetodo();
             return new NodoStart(tStart, bloqueMetodo);
@@ -93,7 +89,7 @@ public class Sintactico {
 
     // ListaDefiniciones -> Clase ListaDefiniciones | Implementacion ListaDefiniciones | lambda
     private ArrayList<NodoDefinicion> listaDefiniciones(ArrayList<NodoDefinicion> listaDef) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        // es recursiva, por lo que voy a agregar un while, mientras lea la palabra reservada class o impl, tiene que volver a entrar
+        // es recursiva mientras lea la palabra reservada class o impl, tiene que volver a entrar
         if (token.getTipo().equals("prClass") || token.getTipo().equals("prImpl")){
             if (token.getTipo().equals("prClass")){
                 listaDef.add(clase());
@@ -123,113 +119,43 @@ public class Sintactico {
                 if (token.getTipo().equals("dosPuntos")){ // tiene herencia
                     String superClase = herenciaOpt();
                     clase = ts.crearRegClase(id.getLexema(), superClase);
-
                 }
                 else {
-                    clase = ts.crearRegClase(id.getLexema(), null); // si no tiene herencia dejamos la cadena vacia, para no poner null y que se rompa
-
+                    clase = ts.crearRegClase(id.getLexema(), null); // le colocamos que hereda de null, en la consolidacion se le coloca que hereda de Object
                 }
                 ts.tablaClases.put(clase.getNombre(), clase);
             }
             else { // si ya esta en la TS verifico que no haya redefinicion de herencia
-                // veo si tiene herencia, si tiene debe ser la misma
                 clase = ts.getClase(id.getLexema());
-                //System.out.println("Entre aca con: "+clase.getNombre());
-                if (token.getTipo().equals("dosPuntos")){
-                    String superClase = herenciaOpt();
-                    // le seteo de quien hereda
-                    if (clase.heredaDe == null){
-                        clase.setHeredaDe(superClase);
+                if (token.getTipo().equals("dosPuntos")) {
+                    String padre = herenciaOpt();
+                    // si esta declarada la firme debe coincidir porque la guarde desde class
+                    if (clase.declarada){
+                        if (!clase.heredaDe.equals(padre)){
+                            throw new ErrorSemantico(token.getFila(), token.getColumna(),
+                                    "Redefinicion de herencia para la clase: "+clase.getNombre());
+                        }
                     }
-                    // no puedo redefinir herencia por lo tanto si ya tiene debe coincidir
-                    if (!clase.heredaDe.equals(superClase)){
-                        throw new ErrorSemantico(token.getFila(), token.getColumna(), "Redefinicion de herencia para la clase: "+clase.getNombre());
+                    else {
+                        // si no esta declarada, la guarde desde impl entonces le seteo la herencia
+                        clase.setHeredaDe(padre);
+                        System.out.println("La clase: "+clase.getNombre()+" hereda de: "+clase.heredaDe);
                     }
                 }
-
             }
-
-            // la declaro
-            clase.setTokenClase(id);
-            clase.setDeclarada(true);
+            clase.setTokenClase(id); // token utilizado para largar errores durante la consolidacion
+            clase.setDeclarada(true); // la declaro
             // contexto para atributos
             ts.claseActual = clase;
             match("llaveAbre");
             ArrayList<NodoDeclaracion> listaAtr = listaAtributos(new ArrayList<NodoDeclaracion>()); // si lo que viene es } es porque era lambda
-            // imprimo los atributos de esa clase
-            //System.out.println("Atributos de la clase: "+ ts.claseActual.listaAtributos.toString());
             match("llaveCierra");
-
-            // salgo de la clase actual
-            ts.claseActual = null;
+            ts.claseActual = null; // limpio la clase actual porque salgo
             return new NodoClase(id, listaAtr);
         }
         else {
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idClass y se recibio: "+token.getTipo());
         }
-            /*
-            match("idClass");
-            RegistroClase clase;
-
-            if (ts.tablaClases.containsKey(id.getLexema())){
-                // verifico la herencia que debe ser la misma
-                clase = ts.getClase(id.getLexema());
-                if (token.getTipo().equals("dosPuntos")){ // tiene herencia
-                    String superClase = herenciaOpt(); // obtengo esa herencia y la comparo con la que ya tengo en mi ts
-                    if (!clase.heredaDe.equals(superClase)){ // si son iguales esta todo correcto
-                        throw new ErrorSemantico(token.getFila(), token.getColumna(), "Redefinicion herencia inconsistente");
-                    }
-                }
-            }
-            else {
-                clase = new RegistroClase(id.getLexema());
-                //clase.setNombre(id.getLexema());
-                ts.tablaClases.put(clase.getNombre(), clase);
-                if (token.getTipo().equals("dosPuntos")){
-                    // obtengo la superClase
-                    String superClase = herenciaOpt();
-                    // verifico que no este haciendo esto A : A
-                    if (clase.getNombre().equals(superClase)){
-                        throw new ErrorSemantico(token.getFila(), token.getColumna(), "No puede heredar de la misma clase");
-                    }
-                    else {
-                        // verifico herencia circular
-                        if (ts.tablaClases.containsKey(superClase)){
-                            // obtengo esa clase y me fijo su herencia
-                            RegistroClase claseHerencia = ts.getClase(superClase);
-                            if (claseHerencia.getHeredaDe().equals(clase.getNombre())){
-                                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Error, herencia circular");
-                            }
-                        }
-                        else {
-
-                            clase.setHeredaDe(superClase);
-                        }
-                    }
-                }
-                // si no me vienen : es porque no tiene herencia y hereda de object
-                else {
-                    clase.setHeredaDe("Object");
-                }
-                System.out.println("Nombre clase: "+clase.getNombre());
-                System.out.println("hereda de: "+ clase.getHeredaDe());
-            //}
-            // contexto para atributos
-            ts.claseActual = clase;
-            match("llaveAbre");
-            listaAtributos(); // si lo que viene es } es porque era lambda
-            // imprimo los atributos de esa clase
-            System.out.println("Atributos de la clase: "+ ts.claseActual.listaAtributos.toString());
-            match("llaveCierra");
-
-            // salgo de la clase actual
-            ts.claseActual = null;
-        }
-        else {
-            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idClass y se recibio: "+token.getTipo());
-        } */
-        // chequear cuando se intenta declarar una clase cuyo nombre es un tipo primitivo
-
     }
 
     // HerenciaOpt -> Herencia | lambda
@@ -253,8 +179,6 @@ public class Sintactico {
         // como puede no tener prPub, tambien puedo ir directamente a Tipo
         if (tipo.equals("prPub") | tipo.equals("tStr") | tipo.equals("tBool") | tipo.equals("tInt") | tipo.equals("idClass")) { //| tipo.equals("Array")
             ArrayList<NodoDeclaracion> listaAtrNueva = atributo(listaAtr);
-            // actualizo el tipo
-            //tipo = token.getTipo();
             return listaAtributos(listaAtrNueva);
         }
         return listaAtr;
@@ -271,7 +195,7 @@ public class Sintactico {
             if (ts.noEstaTs(token.getLexema())){
                 // no esta esa clase, la agrego
                 RegistroClase clase = new RegistroClase(token.getLexema());
-
+                System.out.println("La clase: "+clase.getNombre()+ "  hereda de: "+clase.getHeredaDe());
                 // le seteo declarada a false porque la guarde desde un impl
                 clase.setDeclarada(false);
                 // le seteo el token por si luego no se declara para lanzar el error
@@ -299,22 +223,13 @@ public class Sintactico {
         else {
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idClass");
         }
-
-    /* // entonces ahora voy a ir a lista miembros con la clase actual
-        match("llaveAbre");
-        ArrayList<NodoMetodo> listaMiembros = listaMiembros(new ArrayList<NodoMetodo>());
-        match("llaveCierra");
-        // salgo de este impl, vuelvo la clase actual a null
-        ts.claseActual = null;
-        ts.metodoActual = null;*/
-
     }
 
     // ListaMiembros -> Miembro ListaMiembros | lambda
     private ArrayList<NodoMetodo> listaMiembros(ArrayList<NodoMetodo> listaMet) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si lo que viene esta en los primeros de miembro es porque lista miembro no es lambda
         // Prim(E) = { st, . , lambda}
-        if (esPrimeroMiembro(token.getTipo()) | token.getTipo().equals("prFn")){
+        if (esPrimeroMiembro(token) | token.getTipo().equals("prFn")){
             listaMet.add(miembro());
             return listaMiembros(listaMet);
         }
@@ -327,29 +242,20 @@ public class Sintactico {
         String superClase;
         Tipo tipoSuperClase;
         // verifica si o si que lo que se recibe es un idClass
-        // es un error heredar o redefinir: Int, Str, Bool
-        
-        // ordenar eso
-        if (token.getTipo().equals("idClass") || token.getLexema().equals("Int") || token.getLexema().equals("Str") || token.getLexema().equals("Bool")
-            || token.getTipo().equals("Iterator") || token.getTipo().equals("IO") || token.getTipo().equals("Array")){
-            if (ts.herenciaValida(token.getLexema())){
+        // es un error heredar o redefinir las clases predefinidas
+        // hago doble if para poder comunicar bien el error
+        if (token.getTipo().equals("idClass") || ts.isNombreClasePredefinida(token.getLexema())) {
+            if (!ts.isNombreClasePredefinida(token.getLexema())) { // si es idClass y No es predefinida entonces sigo
                 tipoSuperClase = tipo(); // como es idClass va a ir a TipoReferencia
                 superClase = tipoSuperClase.getNombreTipo();
             }
             else {
-                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Es un error heredar de la clase: "+token.getLexema());
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Es un error heredar de la clase: " +token.getLexema());
             }
         }
         else {
             throw new ErrorSemantico(token.getFila(), token.getColumna(), "Se esperaba un id de clase y se encontro: "+token.getLexema());
         }
-        /*
-        ts.herenciaValida(token.getLexema())){ // ver tmb para los otros casos (Int, Bool, Iterator, etc)
-            tipoSuperClase = tipo(); // como es idClass va a ir a TipoReferencia
-            superClase = tipoSuperClase.getNombreTipo();
-        }*/
-
-        //tipo();
         return superClase;
     }
 
@@ -393,11 +299,12 @@ public class Sintactico {
             }
             // caso base agregar el metodo a la lista de metodos de la clase
             RegistroMetodo metodo = ts.crearRegMetodo(token.getLexema(),estatico,tipo);
+            metodo.setTokenMetodo(tMetodo);
             match("idMetVar");
             ts.claseActual.listaMetodos.put(metodo.getNombre(), metodo);
             // seteo el metodo actual para los parametros y varlocales
             ts.metodoActual = metodo;
-            System.out.println("Metodo: "+metodo.getNombre());
+            //System.out.println("Metodo: "+metodo.getNombre());
         }
         else {
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idMetVar y se recibio: "+token.getTipo());
@@ -405,13 +312,10 @@ public class Sintactico {
         // ya guarde el metodo en la ts.claseactual.listametodos, ahora voy a sus parametros y varlocales
         // voy a argumentos formales con el metodoactual
         ArrayList<NodoDeclaracion> listaArg = argumentosFormales(new ArrayList<NodoDeclaracion>()); //voy a guardar en la hash de listaParametros todos los argumentos
-        // salgo de argumentos imprimo a ver que guardo
 
         // voy a ir a bloque metodo con el metodoactual
-        //bloqueMetodo();
-        ts.metodoActual.imprimirMetodo(ts.metodoActual, ts.claseActual);
+        //ts.metodoActual.imprimirMetodo(ts.metodoActual, ts.claseActual);
         return new NodoMetodo(tMetodo, listaArg, bloqueMetodo());
-
     }
 
     // formaMetodoOpt -> formaMetodo | lambda
@@ -427,7 +331,7 @@ public class Sintactico {
     // TipoMetodoOpt -> TipoMetodo | lambda
     private Tipo tipoMetodoOpt() throws ErrorSintactico, ErrorLexico {
         // si el tokoen esta en los primeros de tipoMetodo entro
-        if (esPrimeroTipoMetodo(token.getTipo())){
+        if (esPrimeroTipoMetodo(token)){
             return tipoMetodo();
         }
         return new TipoVoid();
@@ -443,22 +347,17 @@ public class Sintactico {
 
     // Constructor -> . ArgumentosFormales BloqueMetodo
     private NodoMetodo constructor() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        // si entra en constructor es porque no habia sido declarado todavia
+        // el cheuqueo de + de un constructor se hace en el metodo miembro
         Token tConst = token;
         match("pto");
-        // verifico si ya tiene constructor
-        if (ts.claseActual.inConstructor){
-            throw new ErrorSemantico(ts.claseActual.getTokenClase().getFila(), ts.claseActual.getTokenClase().getColumna(),
-                    "La clase "+ts.claseActual.getNombre()+ " ya posee un constructor");
-        }
-        // si no tiene lo creo y lo seteo en true
-        ts.claseActual.inConstructor = true;
-        ts.claseActual.constructor = new Constructor();
-        ts.metodoActual = ts.claseActual.constructor;
-        //System.out.println("Voy a arg formales con el constructor: "+ts.metodoActual);
+        ts.claseActual.inConstructor = true; // seteo la clase actual como el constructor
+        ts.claseActual.constructor = new Constructor(); // lo creo
+        ts.metodoActual = ts.claseActual.constructor; // actualizo el metodo actual
+
         ArrayList<NodoDeclaracion> listaArg = argumentosFormales(new ArrayList<NodoDeclaracion>());
-        //System.out.println("Voy al bloque metodo del constructor de la clase: "+ts.claseActual.constructor.getNombre()+" con el token: "+token.getTipo());
-        //bloqueMetodo();
-        ts.metodoActual.imprimirMetodo(ts.metodoActual, ts.claseActual);
+
+        //ts.metodoActual.imprimirMetodo(ts.metodoActual, ts.claseActual);
         return new NodoMetodo(token, listaArg, bloqueMetodo());
         //ts.claseActual.constructor.active = true;
         //ts.claseActual.inConstructor = false;
@@ -467,7 +366,7 @@ public class Sintactico {
     // Atributo -> VisibilidadOpt Tipo ListaDeclaracionVar ;
     private ArrayList<NodoDeclaracion> atributo(ArrayList<NodoDeclaracion> listaAtr) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // guardo en la TS el atributo con la posicion, visibilidad, tipo, nombre
-        boolean vis = visibilidadOpt(); // si no entra a visibilidad es de tipo priv
+        boolean vis = visibilidadOpt(); // si no entra a visibilidad es de tipo priv (false)
         Tipo tipo = tipo();
         ArrayList<NodoDeclaracion> listaAtrNueva = listaDeclaracionVar(vis, tipo, listaAtr);
         // salgo de aca y voy a haber guardado por ej para: Int a,b
@@ -480,20 +379,17 @@ public class Sintactico {
     // VisibilidadOpt -> Visibilidad | lambda
     private boolean visibilidadOpt() throws ErrorSintactico, ErrorLexico {
         // si lo que viene esta en los primeros de visibilidad entro
-        boolean vis = false;
         if (token.getTipo().equals("prPub")){
             return visibilidad();
         }
-        return vis;
+        return false;
     }
 
     // Tipo -> TipoPrimitivo | TipoReferencia | TipoArreglo
     private Tipo tipo() throws ErrorSintactico, ErrorLexico {
         // si lo que viene esta en los primeros de tipo primitivo entro ahi
-        //String hereda = null;
-        //String tipo;
         Tipo tipo = null;
-        if (esPrimeroTipoPrimitivo(token.getTipo())){
+        if (esPrimeroTipoPrimitivo(token)){
             return tipoPrimitivo();
         }
         else {
@@ -506,13 +402,7 @@ public class Sintactico {
                 }
 
             }
-            //else {
-                //if (token.getTipo().equals("prArray")){
-                //    return tipoArreglo();
-                //}
-            //}
         }
-        //return hereda;
         return tipo;
     }
 
@@ -537,43 +427,35 @@ public class Sintactico {
                 else{
                     // no existe ese nombre en la lista de parametros por lo tanto creo una nueva variable del metodo
                     RegistroVariable varLocal;
-                    varLocal = new RegistroVariable(token.getLexema());
-                    varLocal.setTipo(tipo);
+                    varLocal = ts.crearRegVar(token.getLexema(), tipo);
                     varLocal.setPos(ts.metodoActual.getProxPosVarLocal());
                     ts.metodoActual.listaVarLocales.put(varLocal.getNombre(), varLocal);
                     listaDec.add(new NodoDecLocal(token));
-                    System.out.println("Guardo en la lista de variables del metodo: "+ts.metodoActual.getNombre()+ " la variable: "+varLocal.getNombre());
+                    //System.out.println("Guardo en la lista de variables del metodo: "+ts.metodoActual.getNombre()+ " la variable: "+varLocal.getNombre());
                 }
             }
             // si viene aca es porque estoy en un tipo class, por lo tanto estoy viendo los atributos de la clase
             else {
-
                 RegistroAtributo atributo;
                 // atributo de clase
                 // verifico que no este guardado ya en la lista de atributos
                 if (ts.claseActual.listaAtributos.containsKey(token.getLexema())){
                     // si ya esta, lanzo error semantico
-                    throw new ErrorSemantico(token.getFila(), token.getColumna(), "Atributo: '"+token.getLexema()+"' repetido");
+                    throw new ErrorSemantico(token.getFila(), token.getColumna(), "Atributo: "+token.getLexema()+" ,repetido");
                 }
                 else {
-                    atributo = new RegistroAtributo(token.getLexema());
-                    atributo.setTipo(tipo);
-                    atributo.setVisibilidad(vis);
+                    atributo = ts.crearRegAtributo(token.getLexema(), tipo, vis);
                     atributo.setPos(ts.claseActual.getProxPosAtributo());
                     ts.claseActual.listaAtributos.put(atributo.getNombre(), atributo);
                     listaDec.add(new NodoDecAtr(token));
-
-
                 }
             }
             match("idMetVar");
-
         }
         else {
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un idMetVar y se recibio: "+token.getTipo());
         }
         return listaDeclaracionVarRec(vis, tipo, listaDec);
-
     }
 
     // ListaDeclaracionVarRec -> , ListaDeclaracionVar | lambda
@@ -591,7 +473,6 @@ public class Sintactico {
         match("llaveAbre");
         // voy a lista declaracion var local con el metodo actual
         ArrayList<NodoDeclaracion> listaVarLocal = listaDeclaracionVarLocal(new ArrayList<NodoDeclaracion>());
-        // voy a hacer un print de las variables locales de un metodo para ver que me devuelve
         //System.out.println(ts.metodoActual.listaVarLocales.toString());
         // tengo que ir a lista sentencia con el retorno del metodo
         //System.out.println("El retorno del metodo: "+ts.metodoActual.getNombre()+" es: "+ts.metodoActual.tipoRetorno.getNombreTipo());
@@ -605,10 +486,10 @@ public class Sintactico {
     private ArrayList<NodoDeclaracion> listaDeclaracionVarLocal(ArrayList<NodoDeclaracion> listaDec) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // recursiva
         // si lo que viene esta en los primeros de declaracionVarLocal es porque no es lambda
-        if (esPrimeroDeclaracionVarLocal(token.getTipo())){
+        // prim declaracion var local = primeros tipo metodo
+        if (esPrimeroTipoMetodo(token)){
             declaracionVarLocal(listaDec); // en declaracion variables las voy a guardar en la TS
             return listaDeclaracionVarLocal(listaDec);
-
         }
         return listaDec;
     }
@@ -616,13 +497,12 @@ public class Sintactico {
     // ListaSentencia -> Sentencia ListaSentencia | lambda
     private ArrayList<NodoSentencia> listaSentencia(ArrayList<NodoSentencia> listaSent) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // mientras este en los primeros de sentencia vuelvo a entrar
-        if (esPrimeroSentencia(token.getTipo())){
+        if (esPrimeroSentencia(token)){
             NodoSentencia sentencia = sentencia();
             if (sentencia != null){
                 listaSent.add(sentencia);
                 return listaSentencia(listaSent);
             }
-
         }
         return listaSent;
     }
@@ -641,33 +521,28 @@ public class Sintactico {
 
     // TipoPrimitivo -> Str | Bool | Int
     private Tipo tipoPrimitivo() throws ErrorSintactico, ErrorLexico {
-        switch (token.getTipo()){
-            case "tStr":
-                match("tStr");
-                return new TipoPrimitivo("tStr");
-            case "tBool":
-                match("tBool");
-                return new TipoPrimitivo("tBool");
-            case "tInt":
-                match("tInt");
-                return new TipoPrimitivo("tInt");
-            default:
-                throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un tipo primitivo");
+        if (esPrimeroTipoPrimitivo(token)){
+            String tipo = token.getTipo();
+            match(token.getTipo());
+            return new TipoPrimitivo(tipo);
         }
-
+        else {
+            throw new ErrorSintactico(token.getFila(), token.getColumna(),
+                    "Se esperaba un tipo primitivo (Int, Str, Bool), y se recibio: "+token.getLexema());
+        }
     }
+
     // TipoReferencia -> idClass
     private Tipo tipoReferencia() throws ErrorSintactico, ErrorLexico {
         String nombre = token.getLexema();
         match("idClass");
-        //return hereda;
         return new TipoReferencia(nombre);
     }
+
     // TipoArray -> Array TipoPrimitivo
     private Tipo tipoArreglo() throws ErrorSintactico, ErrorLexico {
         match("idClass");
         return new TipoArreglo(tipoPrimitivo());
-        // return true
     }
 
     // DeclaracionVarLocal -> Tipo ListaDeclaracionVar ;
@@ -684,8 +559,9 @@ public class Sintactico {
     // ListaArgumentosFormalesOpt -> ListaArgumentosFormales | lambda
     private ArrayList<NodoDeclaracion> listaArgumentosFormalesOpt(ArrayList<NodoDeclaracion> listaArg) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // Prim(ListaArgumentosFormales) = {str, Bool, Int, idClass, Array}
-        String tipo = token.getTipo();
-        if (tipo == "tStr" | tipo == "tBool" | tipo == "tInt" | tipo == "idClass" | tipo == "tArray"){
+        //String tipo = token.getTipo();
+        if (esPrimeroTipoPrimitivo(token) || token.getTipo().equals("idClass")){
+        //if (tipo == "tStr" | tipo == "tBool" | tipo == "tInt" | tipo == "idClass" | tipo == "tArray"){
             return listaArgumentosFormales(listaArg);
         }
         return listaArg;
@@ -715,19 +591,16 @@ public class Sintactico {
         if (tipo == null){
             throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba un tipo para el parametro: "+token.getLexema());
         }
-
         if (token.getTipo().equals("idMetVar")){
-            // creo un argumento formal
-            RegistroParametro parametro = new RegistroParametro(token.getLexema());
             // no pueden haber dos parametros que se llamen igual para el mismo metodo
-
             if (ts.metodoActual.listaParametros.containsKey(token.getLexema())){
                 throw new ErrorSintactico(token.getFila(), token.getColumna(), "Ya existe un parametro con nombre: " + token.getLexema());
             }
             else {
+                // creo un argumento formal
+                RegistroParametro parametro = ts.crearRegParametros(token.getLexema(), tipo);
                 // no esta ese parametro lo agrego
                 parametro.setPos(ts.metodoActual.getProxPosParametro());
-                parametro.setTipo(tipo);
                 ts.metodoActual.listaParametros.put(parametro.getNombre(), parametro);
                 match("idMetVar");
                 return new NodoDecArg(tArgu);
@@ -739,13 +612,18 @@ public class Sintactico {
 
 
     }
+
      // TipoMetodo -> Tipo | void
-    // Prim(Tipo)= {str, bool int, idClass, Array}
+    // Prim(Tipo)= {str, bool int, idClass, Array} // Array es un idClass
     private Tipo tipoMetodo() throws ErrorSintactico, ErrorLexico {
+        if (esPrimeroTipoMetodo(token)){
+            return tipo();
+        }
+        /*
         if (token.getTipo().equals("tStr") || token.getTipo().equals("tBool") || token.getTipo().equals("tInt") ||
                 token.getTipo().equals("idClass") || token.getTipo().equals("tArray")) {
             return tipo();
-        }
+        }*/
         else {
             match("prVoid");
             return new TipoVoid();
@@ -854,7 +732,7 @@ public class Sintactico {
 
     // ExpresionOpt -> Expresion | lambda
     private NodoExpresion expresionOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        if (esPrimeroExpresion(token.getTipo())){
+        if (esPrimeroExpresion(token)){
             return expresion();
         }
         return null;
@@ -903,7 +781,7 @@ public class Sintactico {
         return null;
     }
 
-    // AccesoVarSimple -> id AccesoVarSImpleRec
+    // AccesoVarSimple -> id AccesoVarSimpleRec
     private NodoAccesoVarSimple accesoVarSimple() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         NodoVarEncadenado varEncadenado = new NodoVarEncadenado(token.getFila(), token.getColumna(), token.getLexema());
         match("idMetVar");
@@ -912,7 +790,7 @@ public class Sintactico {
         //accesoVarSimpleRec puede ser: null | NodoVarEncadenado| nodoExpresion
     }
 
-    // AccesoVarSimpleRec -> ListaEncadenadoSImple | [ Expresion ]
+    // AccesoVarSimpleRec -> ListaEncadenadoSimple | [ Expresion ]
     private NodoAccesoVarSimpleRec accesoVarSimpleRec(NodoVarEncadenado varEncadenado) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si esta en los primeros de lista enadenado simple entro ahi
         // Prim(ListaEncadenadoSimple) = {. , lambda}
@@ -965,6 +843,7 @@ public class Sintactico {
         match("idMetVar"); //sueldo
         return varEncadenado;
     }
+
 // ----------------------------------------------EXPRESIONES -----------------------------------------------------
     //Expresion -> ExpresionOr
     private NodoExpresion expresion() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
@@ -1046,7 +925,7 @@ public class Sintactico {
     private NodoExpresion expresionCompRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // deben venir los primeros de opComp
         // Prim(OpComp) = {<, >, <=, >=}
-        if (token.getTipo().equals("opMenor") | token.getTipo().equals("opMenorIgual")  | token.getTipo().equals("opMayor") | token.getTipo().equals("opMayorIgual")){
+        if (esOpComp(token)){
             Token operador = opComp();
             NodoExpresion nodoDer = expresionAd();
 
@@ -1059,7 +938,6 @@ public class Sintactico {
     private NodoExpresion expresionAd() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         NodoExpresion nodoExpresionMul = expresionMul();
         //expresionAdRec();
-
         return expresionAdRec(nodoExpresionMul);
     }
 
@@ -1067,7 +945,7 @@ public class Sintactico {
     private NodoExpresion expresionAdRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // es recursiva cada vez que venga un opAd vuelvo a entrar
         // Prim(OpAd) = {+ , -}
-        if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos")){
+        if (esOpAd(token)){
             Token operador = opAd();
             NodoExpresion nodoDer = expresionMul();
             //expresionAdRec();
@@ -1081,14 +959,13 @@ public class Sintactico {
     private NodoExpresion expresionMul() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
 
         NodoExpresionUnario nodoExpresionUnario = expresionUnario();
-        //expresionMulRec();
         return expresionMulRec(nodoExpresionUnario);
     }
 
     // ExpresionMulRec -> OpMul ExpresionUnario ExpresionMulRec | lambda
     private NodoExpresion expresionMulRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // simpre que venga un opMul hago recursividad
-        if (token.getTipo().equals("opPor") | token.getTipo().equals("opdiv")){
+        if (esOpMul(token)){
             Token operador = opMul();
             NodoExpresionUnario nodoDer = expresionUnario();
             NodoExpresionBin nodoIzqRec = new NodoExpresionBin(operador, nodoIzq, nodoDer);
@@ -1101,14 +978,13 @@ public class Sintactico {
     // ExpresionUnario -> OpUnario ExpresionUnario | Operando
     private NodoExpresionUnario expresionUnario() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // siempre que venga un opUnario vuelvo
-        if (token.getTipo().equals("opMas") | token.getTipo().equals("opMenos") |
-                token.getTipo().equals("opMasMas") | token.getTipo().equals("opMenosMenos") | token.getTipo().equals("opNot")) {
+        if (esOpUnario(token)){
             Token operador = opUnario();
             NodoExpresionUnario nodoExpresionUnario = expresionUnario();
             return new NodoExpresionUnario(operador, nodoExpresionUnario);
         } else { // si no es opMas ni opMenos es un operando
             // si lo que viene no esta en los prim de operando no voy
-            if (esPrimeroOperando(token.getTipo())) {
+            if (esPrimeroOperando(token)) {
                 NodoOperando nodoOperando = operando();
                 return new NodoExpresionUnario(nodoOperando);
             } else {
@@ -1119,120 +995,46 @@ public class Sintactico {
 
     }
 // --------------------------------------------FIN EXPRESIONES----------------------------------------------------------
+
+// --------------------------------------------Operadores---------------------------------------------------------------
     // OpIgual -> == | !=
     private Token opIgual() throws ErrorSintactico, ErrorLexico {
-        Token operador = token;
-        if (token.getTipo().equals("opIgualIgual")) {
-            match("opIgualIgual");
-            return operador;
-        }
-        else {
-            if (token.getTipo().equals("opDiferente")){
-                match("opDiferente");
-                return operador;
-            }
-        }
-        return null;
+        return consumirOperador();
     }
 
     // opComp -> < | > | <= | >=
     private Token opComp() throws ErrorSintactico, ErrorLexico {
-        String tipo = token.getTipo();
-        Token operador = token;
-        switch (tipo){
-            case "opMayor":
-                match("opMayor");
-                return operador;
-            case "opMayorIgual":
-                match("opMayorIgual");
-                return operador;
-            case "opMenor":
-                match("opMenor");
-                System.out.println("Matheo opMenor y salgo con: "+token.getTipo());
-                return operador;
-            case "opMenorIgual":{
-                match("opMenorIgual");
-                return operador;
-            }
-        }
-        return null;
+        return consumirOperador();
     }
 
     // opAd -> + | -
     private Token opAd() throws ErrorSintactico, ErrorLexico {
-        Token operador = token;
-        if (token.getTipo().equals("opMas")) {
-            match("opMas");
-            return operador;
-        }
-        else {
-            if (token.getTipo().equals("opMenos")){
-                match("opMenos");
-                return operador;
-            }
-        }
-        return null;
+        return consumirOperador();
     }
 
     // opUnario -> + | - | ++ | -- | !
     private Token opUnario() throws ErrorSintactico, ErrorLexico {
-        String tipo = token.getTipo();
-        Token tokenOperador = token;
-        switch (tipo){
-            case "opMas":
-                match("opMas");
-                return tokenOperador;
-            case "opMenos":
-                match("opMenos");
-                return tokenOperador;
-            case "opMasMas":
-                match("opMasMas");
-                return tokenOperador;
-            case "opMenosMenos":
-                match("opMenosMenos");
-                return tokenOperador;
-            case "opNot":
-                match("opNot");
-                return tokenOperador;
-        }
-        return null;
+        return consumirOperador();
     }
 
     // OpMul -> * | /
     private Token opMul() throws ErrorSintactico, ErrorLexico {
-        Token tokenOperador = token;
-        if (token.getTipo().equals("opPor")) {
-            match("opPor");
-            return tokenOperador;
-        }
-        else {
-            if (token.getTipo().equals("opdiv")){
-                match("opdiv");
-                return tokenOperador;
-            }
-        }
-        return null;
+        return consumirOperador();
     }
+// -------------------------------------Fin Operadores------------------------------------------------------------------
 
     // Operando -> Literal | Primario EncadenadoOpt
     private NodoOperando operando() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        String tipo = token.getTipo();
-        //System.out.println("Estoy en operando con: "+token.getTipo());
-        // si viene un literal
-        switch (tipo){
-            // Prim(Literal) = {nil, true, false, intLiteral, strLiteral}
-            case "prNil" , "prTrue", "prFalse", "literal_entero", "literal_cadena":
-                NodoLiteral nodoLiteral = literal();
-                return new NodoOperando(nodoLiteral);
-            // Prim(Primario) = { (, self, id, idclass, new}
-            case "parAbre", "prSelf", "idMetVar", "idClass", "prNew":
-                //System.out.println("Voy a primario con: "+token.getTipo());
-                NodoPrimario nodoPrimario = primario();
-                NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
-                return new NodoOperando(nodoPrimario, nodoEncadenadoOpt);
-
+        //String tipo = token.getTipo();
+        if (esLiteral(token)){
+            NodoLiteral nodoLiteral = literal();
+            return new NodoOperando(nodoLiteral);
         }
-        //System.out.println("salgo de operando con: "+token.getTipo());
+        if (esPrimario(token)){
+            NodoPrimario nodoPrimario = primario();
+            NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
+            return new NodoOperando(nodoPrimario, nodoEncadenadoOpt);
+        }
         return null;
     }
 
@@ -1248,28 +1050,20 @@ public class Sintactico {
 
     // Literal -> nil | true | false | intLiteral | strLiteral
     private NodoLiteral literal() throws ErrorSintactico, ErrorLexico {
-        String tipo = token.getTipo();
-        switch (tipo){
+        Token t = token;
+        switch (t.getTipo()){
             case "prNil":
-                NodoNil nodoNil = new NodoNil(token.getFila(), token.getColumna(), token.getLexema());
                 match("prNil");
-                return nodoNil;
-            case "prTrue":
-                NodoBool nodoBoolTrue = new NodoBool(token.getFila(), token.getColumna(), token.getLexema());
-                match("prTrue");
-                return nodoBoolTrue;
-            case "prFalse":
-                NodoBool nodoBoolFalse = new NodoBool(token.getFila(), token.getColumna(), token.getLexema());
-                match("prFalse");
-                return nodoBoolFalse;
+                return new NodoNil(t);
+            case "prTrue" , "prFalse":
+                match(token.getTipo());
+                return new NodoBool(t);
             case "literal_entero":
-                NodoNum nodoNum = new NodoNum(token.getFila(), token.getColumna(), token.getLexema());
                 match("literal_entero");
-                return nodoNum;
+                return new NodoNum(t);
             case "literal_cadena":
-                NodoStr nodoStr = new NodoStr(token.getFila(), token.getColumna(), token.getLexema());
                 match("literal_cadena");
-                return nodoStr;
+                return new NodoStr(t);
         }
         return null;
     }
@@ -1346,78 +1140,6 @@ public class Sintactico {
     }
 
     // AccesoVar -> id AccesoVarRec
-    /*private NodoAccesoVar accesoVar(Tipo tipoContexto) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        NodoId nodoId;
-        //1. Solo entra aqui cuando tipoContexto == null
-        // SI tipoCOntexto == null es la primera vez que entro a accesoVar
-        if (tipoContexto == null){
-            // En la primera interacion tengo que chequear que el id1 sea alguno de estos:
-            //1.1 Una variable local del metodo
-            //1.2 Un parametro del metodo
-            //1.3 Un atributo pub de la clase
-            if (ts.noEstaTs(token.getLexema())){
-                throw new ErrorSemantico(token.getFila(), token.getColumna(), "La variable " + token.getLexema() + " no ha sido declarada como variable local o parametro del metodo actual y tampoco es un atributo publico de la clase "+ ts.claseActual.getNombre() );
-            }
-
-            RegistroVariable variable = ts.getVariable(token.getLexema());
-            nodoId = new NodoId(token.getFila(), token.getColumna(), variable);
-            tipoContexto = nodoId.getTipoSintetizado();
-
-        }
-        //2. Si tipoContexto != null -> se accedio a este metodo de manera recursiva por medio de encadenadoOpt
-        // por lo que estariamos en el cuerpo del encadenado: id1.id2.id3.id4 -> estariamos evaluando los ids del 2 al 4
-        else {
-
-            //3. Verificamos que el id pertenezca a un atr del tipo contexto:
-            //3. Si tipoContexto es tipoReferencia entonces tenemos que buscar en la clase de tipoContexto el atributo del token actual
-            //3.1 Si la variable no es un atributo publico de tipoContexto:
-            if (tipoContexto.esTipoReferencia() && ts.noEstaTs(tipoContexto.getNombreTipo(), token.getLexema())) {
-                throw new ErrorSemantico(token.getFila(), token.getColumna(), "La variable " + token.getLexema() + " no es un atributo de la clase " + tipoContexto.getNombreTipo() + " o su visibilidad es privada");
-            }
-
-            //4. Actualizamos el tipo contexto para tener el de id2
-            //4.1 Si la variable es un atributo visible de tipoContexto, la busco:
-            RegistroVariable variable = ts.getAtrDeClase(ts.getClase(tipoContexto.getNombreTipo()), token.getLexema());
-
-            System.out.println("VARIABLW EN CLASE: " + ts.getClase(tipoContexto.getNombreTipo()).getNombre());
-            System.out.println("VARIABLE EN ACCESOVAR: " + variable.getNombre());
-
-            //2.1.2 Creamos el nodoId con los datos de la variable y el nro de fila y columna en el que se encuentra
-            nodoId = new NodoId(token.getFila(), token.getColumna(), variable);
-
-            //Actualizamos el tipoContexto
-            //tipoContexto = nodoId.getTipoSintetizado();
-
-
-
-        }
-
-        match("idMetVar");
-
-
-        //4. Llamo a nodoAccesoVarRec
-        //Le paso el tipoContexto para que haga los chequeos correspondientes en caso de que haya encadenado
-        NodoAccesoVarRec nodoAccesoVarRec = accesoVarRec(tipoContexto);
-        NodoAccesoVar nodoAccesoVar = new NodoAccesoVar(nodoId, nodoAccesoVarRec);
-
-        System.out.println("EN ACCESOVAR TIPO HEREDADO1 : " + nodoId.getTipoSintetizado().getNombreTipo());
-        System.out.println("EN ACCESOVAR LINEA : " + nodoId.getNroLinea());
-
-        /*if (tipoContexto.esTipoReferencia()){
-            nodoAccesoVar.setTipoHeredado(ts.tablaClases.get(nodoId.getTipoSintetizado().getNombreTipo()));
-            System.out.println("EN ACCESOVAR TIPO HEREDADO: " + nodoId.getTipoSintetizado().getNombreTipo());
-        }*/
-
-
-
-
-        //4. una vez que tengo los dos nodos que conforman al nodoAccesoVar hago el cheque para el caso:
-        //AccesoVar -> id AccesoVarRec; AccesoVarRec -> [Expresion] EncadenadoOpt
-        //nodoAccesoVar.chequear();
-        //nodoAccesoVar.setTipoSintetizado(nodoId.getTipoSintetizado());
-        //return nodoAccesoVar;
-    //}
-
     private NodoAccesoVar accesoVar() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         NodoId nodoId;
         Token tokenActual = token; // Guardamos el token para el nodo (línea y lexema)
@@ -1438,41 +1160,6 @@ public class Sintactico {
         return new NodoAccesoVar(nodoId, nodoAccesoVarRec);
 
     }
-
-    //AccesoVarRec -> EncadenadoOpt | [ Expresion ] EncadenadoOpt
-    /*private NodoAccesoVarRec accesoVarRec(Tipo tipoContexto) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-        NodoAccesoVarRec nodoAccesoVarRec;
-        if (token.getTipo().equals("corcheteAbre")){
-            match("corcheteAbre");
-            NodoExpresion nodoExpresion = expresion();
-            match("corcheteCierra");
-            //encadenadoOpt();
-
-            NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt(tipoContexto);
-            //2. Verifico que el tipoContexto actual de id sea array
-            if (nodoEncadenadoOpt == null){
-                // AccesoVarRec -> [expresion]
-                nodoAccesoVarRec = new NodoAccesoVarRec(nodoExpresion);
-                nodoAccesoVarRec.chequear(tipoContexto);
-                return nodoAccesoVarRec;
-            }
-
-            //AccesoVarRec -> [Expresion] EncadenadoOpt
-            //Este caso solo tiene sentido si EncadenadoOpt -> Encadenado -> EncadenadoRec -> LlamadaMetodo
-            nodoAccesoVarRec = new NodoAccesoVarRec(nodoExpresion, nodoEncadenadoOpt);
-            nodoAccesoVarRec.chequear(tipoContexto);
-            return nodoAccesoVarRec;
-
-        }
-        else {
-            //AccesoVarRec -> EncadenadoOpt
-            NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt(tipoContexto);
-            nodoAccesoVarRec = new NodoAccesoVarRec(nodoEncadenadoOpt);
-            return nodoAccesoVarRec;
-
-        }
-
-    }*/
 
     //AccesoVarRec -> EncadenadoOpt | [ Expresion ] EncadenadoOpt
     private NodoAccesoVarRec accesoVarRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
@@ -1590,7 +1277,6 @@ public class Sintactico {
 
     }
 
-
     // ArgumentosActuales -> ( ListaExpresionesOpt )
     private ArrayList<NodoExpresion> argumentosActuales() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         match("parAbre");
@@ -1603,7 +1289,7 @@ public class Sintactico {
     // ListaExpresionesOpt -> ListaExpresiones | lambda
     private ArrayList<NodoExpresion> listaExpresionesOpt(ArrayList<NodoExpresion> listaExpr) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // Prim(ListaExpresiones) = Prim(Expresion)
-        if (esPrimeroExpresion(token.getTipo())){
+        if (esPrimeroExpresion(token)){
             return listaExpresiones(listaExpr);
             //NodoListaExpresiones nodoListaExpresiones = listaExpresiones();
             //return new NodoListaExpresionesOpt(nodoListaExpresiones);
@@ -1662,101 +1348,98 @@ public class Sintactico {
         return null;
     }
 
+//--------------------------Conjuntos de primeros ----------------------------------------------------------------------
 
-    // Conjuntos de primeros --------------------------------------------------------------------------------
-
-    // COnjunto de primeros Operando
+    // Conjunto de primeros Operando
     // Prim(Operando) = {nil, true, false, intLiteral, strLiteral, (, self, id, idClass, new, ., lambda}
-    private boolean esPrimeroOperando(String tipo){
-        if (tipo == "prNil" | tipo == "prTrue" | tipo == "prFalse" | tipo == "literal_entero" | tipo == "literal_cadena" |
-                tipo == "parAbre" | tipo == "prSelf" | tipo == "idMetVar" | tipo == "idClass" | tipo == "prNew" | tipo == "pto"){
-            return true;
-        } else {
-            return false;
-        }
+    private boolean esPrimeroOperando(Token token){
+        return token.getTipo().equals("prNil") || token.getTipo().equals("prTrue") || token.getTipo().equals("prFalse")
+                || token.getTipo().equals("literal_entero") || token.getTipo().equals("literal_cadena") || token.getTipo().equals("parAbre")
+                || token.getTipo().equals("prSelf") || token.getTipo().equals("idMetVar") || token.getTipo().equals("idClass")
+                || token.getTipo().equals("prNew") || token.getTipo().equals("pto");
     }
 
-
     // conjunto de primeros expresion
-    private boolean esPrimeroExpresion(String tipo){
+    private boolean esPrimeroExpresion(Token token){
         // Prim(Expresion) = {+, -, !, ++, --, (, self, id, idclass, new, nil, true, false, intLiteral, strliteral, . ,lambda}
-        if (tipo == "opMas" | tipo == "opMenos"| tipo == "opNot" | tipo == "opMasMas" | tipo == "opMenosMenos" |
-                tipo == "prNil" | tipo == "prTrue" | tipo == "prFalse" | tipo == "literal_entero" | tipo == "literal_cadena" |
-                tipo == "parAbre" | tipo == "prSelf" | tipo == "idMetVar" | tipo == "idClass" | tipo == "prNew" |
-                tipo == "pto"){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return token.getTipo().equals("opMas") || token.getTipo().equals("opMenos") || token.getTipo().equals("opNot")
+                || token.getTipo().equals("opMasMas") || token.getTipo().equals("opMenosMenos") || token.getTipo().equals("prNil")
+                || token.getTipo().equals("prTrue") || token.getTipo().equals("prFalse") || token.getTipo().equals("literal_entero")
+                || token.getTipo().equals("literal_cadena") || token.getTipo().equals("parAbre") || token.getTipo().equals("prSelf")
+                || token.getTipo().equals("idMetVar") || token.getTipo().equals("idClass") || token.getTipo().equals("prNew")
+                || token.getTipo().equals("pto");
     }
 
     // conjunto de primeros sentencia
-    private boolean esPrimeroSentencia(String tipo){
+    private boolean esPrimeroSentencia(Token token){
         // Prim(Sentencia) = {;, id, self, (, if, while, for, {, ret}
         // que tipo de id es? verificar eso asi lo devuelvo aca
-        if (tipo == "ptoComa" | tipo == "idMetVar" | tipo == "prSelf" | tipo == "parAbre" | tipo == "prIf" |
-                tipo == "prWhile" | tipo == "prFor" | tipo == "llaveAbre" | tipo == "prRet"){
-            return true;
-        } else {
-            return false;
-        }
+        return token.getTipo().equals("ptoComa") || token.getTipo().equals("idMetVar") || token.getTipo().equals("prSelf")
+                || token.getTipo().equals("parAbre") || token.getTipo().equals("prIf") || token.getTipo().equals("prWhile")
+                || token.getTipo().equals("prFor") || token.getTipo().equals("llaveAbre") || token.getTipo().equals("prRet");
+
     }
 
     // conjunto de primeros tipo primitivo
-    private boolean esPrimeroTipoPrimitivo(String tipo){
+    private boolean esPrimeroTipoPrimitivo(Token token){
         // Prim(TipoPrimitivo) = {str, bool, int}
-        if (tipo == "tStr" || tipo == "tBool" || tipo == "tInt"){
-            return true;
-        }
-        else {
-            return false;
-        }
+        return token.getTipo().equals("tStr") || token.getTipo().equals("tBool") || token.getTipo().equals("tInt");
     }
 
     // conjunto de primeros de tipo metodo
-    private boolean esPrimeroTipoMetodo(String tipo){
-        // Prim(TipoMetodo) = {Str, BOol, Int, idClass, Array, lambda}
-        if (tipo == "tStr" | tipo == "tBool" | tipo == "tInt" | tipo == "idClass" | tipo == "tArray"){
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    // conjunto de primeros declaracion variable local
-    private boolean esPrimeroDeclaracionVarLocal(String tipo){
-        // Prim(DeclaracionVarLocal) = {Str, Bool, Int, idClass, Array, lambda}
-        if (tipo == "tStr" | tipo == "tBool" | tipo == "tInt" | tipo == "idClass" | tipo == "prArray"){
-            return true;
-        }
-        else {
-            return false;
-        }
+    private boolean esPrimeroTipoMetodo(Token token){
+        // Prim(TipoMetodo) = {Str, Bool, Int, idClass, Array, lambda}
+        // Prim(DeclaracionVarLocal) = {Str, Bool, Int, idClass, Array, lambda}}
+        // Prim(Herencia) = {Str, Bool, Int, idClass, Array}
+        // tArray no lo tenemos mas es un idClass y lo verificamos dentro de tipoPrimitivo
+        return token.getTipo().equals("tStr") || token.getTipo().equals("tBool") || token.getTipo().equals("tInt")
+                || token.getTipo().equals("idClass");
     }
 
     // conjunto de primeros miembro
-    private boolean esPrimeroMiembro(String tipo){
-        if (tipo == "prSt" | tipo == "pto"){
-            return true;
-        }
-        else {
-            return false;
-        }
+    private boolean esPrimeroMiembro(Token token){
+        // Prim(Miembro) = {st, .}
+        return token.getTipo().equals("prSt") || token.getTipo().equals("pto");
+
     }
 
-    // conjunto de primeros herenciaOpcional
-    private boolean esPrimeroHerencia(String tipo) {
-        // Prim(Herencia) = {Str, Bool, Int, idClass, Array}
-        if (tipo == "tStr" | tipo == "tBool" | tipo == "tInt" | tipo == "idMetVar" | tipo == "tArray"){
-            return true;
-        }
-        else {
-            return false;
-        }
+// ---------------------------Conjunto operadores-----------------------------------------------------------------------
+    private boolean esOpComp(Token token) {
+        return token.getTipo().equals("opMenor") || token.getTipo().equals("opMenorIgual")
+                || token.getTipo().equals("opMayor") || token.getTipo().equals("opMayorIgual");
+    }
+    private boolean esOpAd(Token token){
+        return token.getTipo().equals("opMas") || token.getTipo().equals("opMenos");
+    }
+    private boolean esOpMul(Token token){
+        return token.getTipo().equals("opPor") || token.getTipo().equals("opdiv");
+    }
+    private boolean esOpUnario(Token token){
+        return token.getTipo().equals("opMas") || token.getTipo().equals("opMenos") ||
+                token.getTipo().equals("opMasMas") || token.getTipo().equals("opMenosMenos") || token.getTipo().equals("opNot");
+    }
+    private Token consumirOperador() throws ErrorSintactico, ErrorLexico {
+        Token operador = token;
+        match(token.getTipo());
+        return operador;
     }
 
+    private boolean esLiteral(Token token){
+        // "prNil" , "prTrue", "prFalse", "literal_entero", "literal_cadena":
+        return token.getTipo().equals("prNil") || token.getTipo().equals("prTrue")
+                || token.getTipo().equals("prFalse") || token.getTipo().equals("literal_entero")
+                || token.getTipo().equals("literal_cadena");
+    }
+
+    private boolean esPrimario(Token token){
+        // case "parAbre", "prSelf", "idMetVar", "idClass", "prNew":
+        return token.getTipo().equals("parAbre") || token.getTipo().equals("prSelf")
+                || token.getTipo().equals("idMetVar") || token.getTipo().equals("idClass")
+                || token.getTipo().equals("prNew");
+    }
+
+
+// ---------------------------------------------------------------------------------------------------------------------
     // funcion matcheo que vamos a utilizar para pedir el next token
     // por lo tanto voy a verificar que el tipo que recibo es el tipo esperado
     // si eso pasa pido next token
@@ -1786,9 +1469,6 @@ public class Sintactico {
     private void nextToken() throws ErrorLexico {
         //puntero += 1;
         token = lexico.analizador();
-
-
-
     }
 
     // funcion solo para ver el siguiente, sin avanzar (lookahead)
@@ -1803,7 +1483,6 @@ public class Sintactico {
             return next;
         }
         return null;*/
-
 
     }
 

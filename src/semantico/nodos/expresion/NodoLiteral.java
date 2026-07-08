@@ -1,5 +1,6 @@
 package semantico.nodos.expresion;
 
+import lexico.Token;
 import semantico.tipos.Tipo;
 
 public abstract class NodoLiteral extends NodoExpresion {
@@ -9,6 +10,10 @@ public abstract class NodoLiteral extends NodoExpresion {
         this.nroColumna = nroColumna;
         this.lexema = lexema;
 
+    }
+
+    public NodoLiteral(Token token) {
+        super(token);
     }
 
     @Override

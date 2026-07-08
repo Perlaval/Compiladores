@@ -12,21 +12,24 @@ public class RegistroVariable{
     public RegistroVariable(String nombre){
         this.nombre = nombre;
     }
+
     public void setPos(int pos){
         this.pos = pos;
-    }
-    public String getNombre(){
-        return this.nombre;
     }
     public void setTipo(Tipo t){
         this.tipo = t;
     }
+
     public int getPos(){
         return this.pos;
     }
     public Tipo getTipo(){
         return tipo;
     }
+    public String getNombre(){
+        return this.nombre;
+    }
+
     @Override
     public String toString() {
         return "Variable Local{" +

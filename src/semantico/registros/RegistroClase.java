@@ -4,6 +4,7 @@ import lexico.Token;
 import semantico.tipos.Tipo;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,8 +45,8 @@ public class RegistroClase {
     public RegistroClase(String nombre) {
         this.nombre = nombre;
         //this.heredaDe = "Object"; // por default
-        this.listaMetodos = new HashMap<>();
-        this.listaAtributos = new HashMap<>();
+        this.listaMetodos = new LinkedHashMap<>();
+        this.listaAtributos = new LinkedHashMap<>();
         //this.constructor = null;
 
     }
@@ -53,17 +54,12 @@ public class RegistroClase {
     public void setDeclarada(boolean esdeclarada){
         this.declarada = esdeclarada;
     }
-
     public void setTokenClase(Token token){ this.tokenClase = token; }
-
     public void setHeredaDe(String superClase) {
         this.heredaDe = superClase;
     }
-
     public void setEsPredefinida(boolean predefinida){ this.esPredefinida = predefinida; }
-
     public void setImplementada(boolean implementada){ this.implementada = implementada; }
-
     // metodo utilizado paea las clases predefinidas
     public void setListaMetodos(Map<String, RegistroMetodo> metodos){
         this.listaMetodos = metodos;
@@ -72,27 +68,23 @@ public class RegistroClase {
     public boolean getDeclarada(){
         return this.declarada;
     }
-
     public boolean getImplementada() {return this.implementada; }
-
     public int getProxPosAtributo(){
         return proxPosAtributo++;
     }
-
     public String getNombre() {
         return this.nombre;
     }
-
     public String getHeredaDe() {
         return heredaDe;
     }
-
     public Map<String, RegistroAtributo> getListaAtributos() {
         return listaAtributos;
     }
-
+    public Map<String, RegistroMetodo> getListaMetodos() {
+        return listaMetodos;
+    }
     public Token getTokenClase(){ return this.tokenClase; }
-
     public boolean getEsPredefinida(){return this.esPredefinida; }
 
 

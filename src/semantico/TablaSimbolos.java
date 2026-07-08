@@ -4,8 +4,7 @@ import semantico.registros.*;
 import semantico.tipos.*;
 
 import javax.imageio.plugins.tiff.ExifInteroperabilityTagSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static semantico.ValidarDeclaracion.Definicion.*;
 
@@ -37,6 +36,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
     public RegistroClase getClaseActual() { return this.claseActual;}
 
+    /*
     public void imprimirClases(){
         System.out.println("Clases guardadas en la lista de clases de la TS: ");
         for (RegistroClase c : tablaClases.values()) {
@@ -49,6 +49,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
             System.out.println("");
         }
     }
+    */
 
     @Override
     public boolean validarNombre(Definicion def, String nombre) {
@@ -99,6 +100,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
         return !(this.tablaClases.containsKey(id));
 
     }
+
     public boolean noEstaMetodoTs(String nombreMetodo){
         RegistroMetodo metodo = this.claseActual.listaMetodos.get(nombreMetodo);
         return (metodo == null);
@@ -139,15 +141,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
 }
 
-
-    // metodo para validar herencia
-    public boolean herenciaValida(String id){
-        if (id.equals("Int") || id.equals("tStr") || id.equals("tBool") || id.equals("IO") || id.equals("Iterator") || id.equals("Array")){
-            return false;
-        }
-        return true;
-    }
-
+// -----------------------------------------Crear Registros-------------------------------------------------------------------------------------------
     // creo un registro de clase
     public RegistroClase crearRegClase(String id, String herencia){
         RegistroClase clase = new RegistroClase(id);
@@ -171,6 +165,22 @@ public class TablaSimbolos implements ValidarDeclaracion{
         return metodo;
     }
 
+    // creo un registro de un atributo
+    public RegistroAtributo crearRegAtributo(String id, Tipo tipo, boolean vis){
+        RegistroAtributo atributo = new RegistroAtributo(id);
+        atributo.setTipo(tipo);
+        atributo.setVisibilidad(vis);
+        return atributo;
+    }
+
+    // creo un registro de una variable
+    public RegistroVariable crearRegVar(String id, Tipo tipo){
+        RegistroVariable variable = new RegistroVariable(id);
+        variable.setTipo(tipo);
+        return variable;
+    }
+// ----------------------------------------------------------------------------------------------------------------------------------------------------
+
     // guardo una clase en la TS
     public void guardar(RegistroMetodo metodo, RegistroParametro parametro, RegistroClase clase){
         if (parametro != null){
@@ -180,7 +190,8 @@ public class TablaSimbolos implements ValidarDeclaracion{
         clase.listaMetodos.put(metodo.getNombre(), metodo);
     }
 
-    // metodo que verifica que todos los impl tengan su clase antes de pasar a la consolidacion
+// --------------------------CONSOLIDACION TS-----------------------------------------------------------------------------------------------------
+    // metodo de consolidacion de la TS
     public void consolidar() throws ErrorSemantico {
         for (RegistroClase clase : tablaClases.values()) {
             if (clase.getEsPredefinida()){
@@ -193,12 +204,14 @@ public class TablaSimbolos implements ValidarDeclaracion{
             String padre = clase.getHeredaDe();
             verificarHerenciaDeclarada(clase, padre); // validacion de que las herencias esten declaradas
 
+            // verifico herencia circular
+            verificarHerenciaCircular(clase);
+
             consolidarAtributos(clase);
             consolidarMetodos(clase);
 
         }
     }
-
     public void verificarDeclarada(RegistroClase clase) throws ErrorSemantico{
         if (!clase.getDeclarada()) {
             throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
@@ -222,9 +235,36 @@ public class TablaSimbolos implements ValidarDeclaracion{
             throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
                     "La clase "+padre+" no fue declarada");
         }
+        // si hereda de si misma
+        if (padre != null && clase.getHeredaDe().equals(clase.getNombre())){
+            throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+                    "La clase "+padre+" no puede heredar de si misma");
+        }
         // le asigno object si no tiene herencia declarada
         if (padre == null){
             clase.setHeredaDe("Object");
+        }
+    }
+    public void verificarHerenciaCircular(RegistroClase clase) throws ErrorSemantico{
+        // recorro la cadena de herencia hacia arriba (hasta object)
+        // si visito dos veces la misma clase -> error (circular)
+        // A : B
+        // B : C
+        // C : Object
+        // recorro desde A y no deberia repetir una clase
+        Set<String> visitadas = new HashSet<>(); // uso hashset porque no permite elementos repetidos
+        RegistroClase claseActual = clase;
+        while(!claseActual.getNombre().equals("Object")){
+            if (visitadas.contains(claseActual.getNombre())) {
+                throw new ErrorSemantico(
+                        clase.getTokenClase().getFila(),
+                        clase.getTokenClase().getColumna(),
+                        "La clase '" + clase.getNombre() +
+                                "' posee herencia circular."
+                );
+            }
+            visitadas.add(claseActual.getNombre());
+            claseActual = tablaClases.get(claseActual.getHeredaDe());
         }
     }
     public void consolidarAtributos(RegistroClase clase) throws ErrorSemantico {
@@ -247,14 +287,99 @@ public class TablaSimbolos implements ValidarDeclaracion{
             }
         }
     }
-    public void consolidarMetodos(RegistroClase clase){
-        // la subclase hereda todos los metodos de la superclase
-        // si un metodo de instancia tiene el mismo nombre que uno heredado lo puedo reescribir solo si:
-            // - misma cantidad de parametros
-            // - mismos tipos de parametros
-            // - el tipo de retorno es igual
-        // los metodos estaticos no se sobreescriben
+// ------------------------------------METODOS-----------------------------------------------------------------------------------------------------
+    // si un metodo de instancia tiene el mismo nombre que uno heredado lo puedo reescribir solo si:
+    // - misma cantidad de parametros (OK)
+    // - mismos tipos de parametros (OK)
+    // - el tipo de retorno es igual (OK)
+    // Un metodo de instancia (fn) se puede sobreescribir
+    // Un metodo estatico (st) no se puede sobreescribir
+    public void consolidarMetodos(RegistroClase clase) throws ErrorSemantico {
+        LinkedHashMap<String, RegistroMetodo> nuevosMetodos = new LinkedHashMap<>();
+        if (!clase.heredaDe.equals("Object")){
+            RegistroClase padre = tablaClases.get(clase.getHeredaDe());
+            for (RegistroMetodo metodo: padre.getListaMetodos().values()){ // agrego los metodos del padre al hijo
+                if (clase.getListaMetodos().containsKey(metodo.getNombre())){ // si el metodo es redefinido
+                    RegistroMetodo metodoHijo = clase.getListaMetodos().get(metodo.getNombre());
+                    verificarRedefinicionMetodo(metodo, metodoHijo, padre);
+                    nuevosMetodos.put(metodo.getNombre(),clase.getListaMetodos().get(metodo.getNombre()));
+                }
+                else {
+                    nuevosMetodos.put(metodo.getNombre(), metodo);
+                }
+            }
+            // agrego los metodos de la subclase
+            for (RegistroMetodo metodo : clase.getListaMetodos().values()) {
+                if (!nuevosMetodos.containsKey(metodo.getNombre())) {
+                    nuevosMetodos.put(metodo.getNombre(), metodo);
+                }
+            }
+            clase.setListaMetodos(nuevosMetodos);
+        }
     }
+    public void verificarRedefinicionMetodo(RegistroMetodo metodo, RegistroMetodo metodoHijo, RegistroClase padre) throws ErrorSemantico {
+        // si son diferentes (instancia y estatico)
+        if (metodo.esEstatico != metodoHijo.esEstatico){
+            throw new ErrorSemantico(
+                    metodoHijo.getTokenMetodo().getFila(),
+                    metodoHijo.getTokenMetodo().getColumna(),
+                    "El metodo: "+metodoHijo.getNombre()+" no puede redefinirse como de instancia, ni viceversa");
+        }
+        // si el hijo es de instancia
+        if (!metodoHijo.esEstatico){
+            // chequeo parametros y tipos
+            verificarCantParam(metodo, metodoHijo, padre);
+            verificarTiposParam(metodo, metodoHijo, padre);
+            verificarRetorno(metodo, metodoHijo);
+        }
+        // si es estatico el hijo se sobreescribe y me quedo con el del hijo (ya que oculto el del padre)
+    }
+    public void verificarCantParam(RegistroMetodo metodo, RegistroMetodo metodoHijo, RegistroClase padre) throws ErrorSemantico {
+        // chequeo cant parametros
+        if (metodoHijo.getListaParametros().size() != metodo.getListaParametros().size()){ // chequeo cant de parametros
+            throw new ErrorSemantico(metodoHijo.getTokenMetodo().getFila(), metodoHijo.getTokenMetodo().getColumna(),
+                    "El método " + metodoHijo.getNombre() +
+                            " redefine al metodo heredado de la clase: "+padre.getNombre()+" ,con una cantidad distinta de parámetros. " +
+                            "Se esperaban " + metodo.getListaParametros().size() +
+                            " parámetros y se encontraron " + metodoHijo.getListaParametros().size() + ".");
+        }
+    }
+    public void verificarTiposParam(RegistroMetodo metodo, RegistroMetodo metodoHijo, RegistroClase padre) throws ErrorSemantico{
+        // si tiene la misma cant de parametros deben coincidir los tipos
+        Map<String, RegistroParametro> paramsPadre = metodo.getListaParametros();
+        Map<String, RegistroParametro> paramsHijo = metodoHijo.getListaParametros();
+        // iterator es un objeto que recorre una coleccion elemento por elemento
+        Iterator<RegistroParametro> itPadre = paramsPadre.values().iterator();
+        Iterator<RegistroParametro> itHijo = paramsHijo.values().iterator();
+
+        while (itPadre.hasNext() && itHijo.hasNext()) {
+
+            RegistroParametro paramPadre = itPadre.next();
+            RegistroParametro paramHijo = itHijo.next();
+
+            if (!paramPadre.getTipo().equals(paramHijo.getTipo())) {
+                throw new ErrorSemantico(
+                        metodoHijo.getTokenMetodo().getFila(),
+                        metodoHijo.getTokenMetodo().getColumna(),
+                        "Para el parámetro " + paramHijo.getNombre() +
+                                " ,se esperaba: "+paramPadre.getTipo().getNombreTipo()+ " y se encontro: "+paramHijo.getTipo().getNombreTipo()
+                );
+            }
+        }
+    }
+    public void verificarRetorno(RegistroMetodo metodo, RegistroMetodo metodoHijo) throws ErrorSemantico{
+        // verifico que el retorno sea el mismo
+        if (!metodo.getTipoRetorno().getNombreTipo()
+                .equals(metodoHijo.getTipoRetorno().getNombreTipo())){
+            throw new ErrorSemantico(
+                    metodoHijo.getTokenMetodo().getFila(),
+                    metodoHijo.getTokenMetodo().getColumna(),
+                    "Se esperaba un retorno de tipo: "+metodo.getTipoRetorno().getNombreTipo()+ " y se encontro: "+metodoHijo.getTipoRetorno().getNombreTipo()
+            );
+        }
+    }
+// -----------------------------------------Fin Metodos-------------------------------------------------------------------------------------------
+// -----------------------------------------Fin Consolidacion-------------------------------------------------------------------------------------
 
     // Inicializar clases predefinidas
     public void inicializarClasesPredefinidas() {

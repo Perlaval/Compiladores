@@ -9,4 +9,18 @@ public abstract class Tipo {
     public abstract boolean esTipoPrimitivo();
     public abstract boolean esTipoReferencia();
     public abstract boolean esTipoArreglo();
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (this == obj)
+            return true;
+
+        if (!(obj instanceof Tipo))
+            return false;
+
+        Tipo otro = (Tipo) obj;
+
+        return this.getNombreTipo().equals(otro.getNombreTipo());
+    }
 }
