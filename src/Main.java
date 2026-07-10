@@ -7,6 +7,7 @@ import java.util.List;
 import lexico.Lexico;
 import lexico.ErrorLexico;
 import lexico.Token;
+import sintactico.Parser;
 import sintactico.Sintactico;
 import sintactico.ErrorSintactico;
 import semantico.ErrorSemantico;
@@ -49,8 +50,10 @@ public class Main {
 
 
 
-            Sintactico analisisSintactico = new Sintactico(analisisLexico);
-            analisisSintactico.analizador();
+            //Sintactico analisisSintactico = new Sintactico(analisisLexico);
+            //analisisSintactico.analizador();
+            Parser parser = new Parser(analisisLexico);
+            parser.analizador();
             System.out.println("CORRECTO: ANALISIS SINTACTICO");
 
         } catch (IOException e) {
