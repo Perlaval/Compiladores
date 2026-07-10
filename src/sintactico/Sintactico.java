@@ -148,6 +148,7 @@ public class Sintactico {
             clase.setDeclarada(true); // la declaro
             // contexto para atributos
             ts.claseActual = clase;
+            System.out.println("Clase: "+ts.claseActual.getNombre());
             match("llaveAbre");
             ArrayList<NodoDeclaracion> listaAtr = listaAtributos(new ArrayList<NodoDeclaracion>()); // si lo que viene es } es porque era lambda
             match("llaveCierra");
@@ -214,6 +215,8 @@ public class Sintactico {
             match("llaveAbre");
             ArrayList<NodoMetodo> listaMiembros = listaMiembros(new ArrayList<NodoMetodo>());
             match("llaveCierra");
+            System.out.println("Sali de miembros del impl, me viene el token: "+token.getLexema());
+
             // salgo de este impl, vuelvo la clase actual a null
             ts.claseActual = null;
             ts.metodoActual = null;
@@ -436,6 +439,8 @@ public class Sintactico {
             }
             // si viene aca es porque estoy en un tipo class, por lo tanto estoy viendo los atributos de la clase
             else {
+                System.out.println("Entro aca con constructor?");
+
                 RegistroAtributo atributo;
                 // atributo de clase
                 // verifico que no este guardado ya en la lista de atributos

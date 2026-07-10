@@ -42,7 +42,7 @@ impl A {
     } //metodo que retorna void
     fn A m4(Int t){t = m3(4,6);} //metodo que retorna un objeto de la clase A
     fn A m5(){}
-    //} MEJPRAR ERROR
+    } //MEJPRAR ERROR
 
 }
 
@@ -50,7 +50,8 @@ impl A {
    .(){
     Bool x;}
     fn Str metodoprueba(){
-        for (Int a in iteratoor) do{
+        for (Int a in iteratoor) do{ // | LINEA  53 (COLUMNA 36) | Se esperaba opIgual y se enontro llaveAbre |
+
 
         }
     }
