@@ -2,6 +2,7 @@ package semantico.nodos;
 
 import lexico.Token;
 import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
 import semantico.registros.RegistroClase;
 import semantico.registros.RegistroVariable;
 import semantico.tipos.Tipo;
@@ -59,7 +60,7 @@ public abstract class Nodo {
     }
 
 
-    //public abstract Tipo chequear() throws ErrorSemantico;
+    public abstract Tipo chequear(TablaSimbolos ts) throws ErrorSemantico;
 
     //public void chequear() throws ErrorSemantico{};
 }

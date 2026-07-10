@@ -1,6 +1,7 @@
 package semantico.nodos.sentencia;
 
 import lexico.Token;
+import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoId;
 import semantico.tipos.Tipo;
 
@@ -39,7 +40,8 @@ public class NodoFor extends NodoSentencia{
     }
 
     @Override
-    public void chequear() {
+    public Tipo chequear(TablaSimbolos ts) {
 
+        return null;
     }
 }

@@ -36,6 +36,11 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
     public RegistroClase getClaseActual() { return this.claseActual;}
 
+    public RegistroMetodo getMetodoActual() { return  this.metodoActual;}
+    public void setMetodoActual(RegistroMetodo metodo){
+        this.metodoActual = metodo;
+    }
+
     /*
     public void imprimirClases(){
         System.out.println("Clases guardadas en la lista de clases de la TS: ");

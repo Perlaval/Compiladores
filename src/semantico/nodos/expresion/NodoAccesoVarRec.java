@@ -1,5 +1,6 @@
 package semantico.nodos.expresion;
 
+import semantico.TablaSimbolos;
 import semantico.nodos.NodoEncadenadoOpt;
 import semantico.tipos.Tipo;
 
@@ -36,7 +37,7 @@ public class NodoAccesoVarRec extends NodoExpresion {
     }
 
     @Override
-    public Tipo chequear() {
+    public Tipo chequear(TablaSimbolos ts) {
 
         return null;
     }

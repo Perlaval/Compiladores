@@ -1,5 +1,6 @@
 package semantico.nodos.expresion;
 
+import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
 
 public class NodoId extends NodoExpresion {
@@ -12,7 +13,7 @@ public class NodoId extends NodoExpresion {
     }
 
     @Override
-    public Tipo chequear() {
+    public Tipo chequear(TablaSimbolos ts) {
 
         return null;
     }

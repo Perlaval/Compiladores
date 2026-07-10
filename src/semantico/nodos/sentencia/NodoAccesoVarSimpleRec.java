@@ -1,7 +1,9 @@
 package semantico.nodos.sentencia;
 
 import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoExpresion;
+import semantico.tipos.Tipo;
 
 public class NodoAccesoVarSimpleRec extends NodoSentencia{
 
@@ -28,7 +30,8 @@ public class NodoAccesoVarSimpleRec extends NodoSentencia{
     }
 
     @Override
-    public void chequear() throws ErrorSemantico {
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
 
+        return null;
     }
 }

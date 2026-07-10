@@ -1,6 +1,9 @@
 package semantico.nodos;
 
 import lexico.Token;
+import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
+import semantico.tipos.Tipo;
 
 import java.util.ArrayList;
 
@@ -23,5 +26,15 @@ public class NodoImpl extends NodoDefinicion{
 
     public ArrayList<NodoMetodo> getListaMiembros() {
         return listaMiembros;
+    }
+
+    @Override
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+        //System.out.println("Chequeo impl");
+
+        for(NodoMetodo metodo : listaMiembros){
+            metodo.chequear(ts);
+        }
+        return null;
     }
 }

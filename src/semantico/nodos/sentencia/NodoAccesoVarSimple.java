@@ -1,6 +1,8 @@
 package semantico.nodos.sentencia;
 
 import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
+import semantico.tipos.Tipo;
 
 public class NodoAccesoVarSimple extends NodoSentencia{
 
@@ -14,8 +16,9 @@ public class NodoAccesoVarSimple extends NodoSentencia{
     }
 
     @Override
-    public void chequear() throws ErrorSemantico {
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
 
+        return null;
     }
 
     public NodoVarEncadenado getNodoId() {

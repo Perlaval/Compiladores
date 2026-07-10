@@ -1,6 +1,7 @@
 package semantico.nodos.expresion;
 
 import lexico.Token;
+import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
 
 public class NodoLlamadaConClassOr extends NodoExpresion {
@@ -19,7 +20,7 @@ public class NodoLlamadaConClassOr extends NodoExpresion {
     }
 
     @Override
-    public Tipo chequear(){
+    public Tipo chequear(TablaSimbolos ts){
 
         return null;
     }

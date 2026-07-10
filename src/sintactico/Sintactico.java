@@ -44,6 +44,7 @@ public class Sintactico {
         this.token = lexico.analizador();
         // Program -> ListaDefiniciones Start
         NodoProgram program = program(); //program es la raiz de mi ast
+        program.chequear(ts);
         // si sale de program es porque hizo match con $ entonces devolver Exito!
 
         ast = new Ast(program);
@@ -62,6 +63,7 @@ public class Sintactico {
 
         // ya arme toda mi TS, antes de seguir voy a consolidar
         ts.consolidar();
+        //NodoRet.chequear();
 
         RegistroStart metodoStart = new RegistroStart();
         NodoStart start = start();
@@ -139,7 +141,6 @@ public class Sintactico {
                     else {
                         // si no esta declarada, la guarde desde impl entonces le seteo la herencia
                         clase.setHeredaDe(padre);
-                        System.out.println("La clase: "+clase.getNombre()+" hereda de: "+clase.heredaDe);
                     }
                 }
             }
@@ -195,7 +196,6 @@ public class Sintactico {
             if (ts.noEstaTs(token.getLexema())){
                 // no esta esa clase, la agrego
                 RegistroClase clase = new RegistroClase(token.getLexema());
-                System.out.println("La clase: "+clase.getNombre()+ "  hereda de: "+clase.getHeredaDe());
                 // le seteo declarada a false porque la guarde desde un impl
                 clase.setDeclarada(false);
                 // le seteo el token por si luego no se declara para lanzar el error
@@ -315,7 +315,7 @@ public class Sintactico {
 
         // voy a ir a bloque metodo con el metodoactual
         //ts.metodoActual.imprimirMetodo(ts.metodoActual, ts.claseActual);
-        return new NodoMetodo(tMetodo, listaArg, bloqueMetodo());
+        return new NodoMetodo(tMetodo, listaArg, bloqueMetodo(), ts.metodoActual);
     }
 
     // formaMetodoOpt -> formaMetodo | lambda
@@ -358,7 +358,7 @@ public class Sintactico {
         ArrayList<NodoDeclaracion> listaArg = argumentosFormales(new ArrayList<NodoDeclaracion>());
 
         //ts.metodoActual.imprimirMetodo(ts.metodoActual, ts.claseActual);
-        return new NodoMetodo(token, listaArg, bloqueMetodo());
+        return new NodoMetodo(token, listaArg, bloqueMetodo(), ts.metodoActual);
         //ts.claseActual.constructor.active = true;
         //ts.claseActual.inConstructor = false;
     }
@@ -469,6 +469,7 @@ public class Sintactico {
 
     // BloqueMetodo -> { ListaDeclaracioVarLocal ListaSentencia }
     private NodoBloqueMetodo bloqueMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        //System.out.println("Entro a bloque metodo con el metodo: ");
         Token tBloqueM = token;
         match("llaveAbre");
         // voy a lista declaracion var local con el metodo actual
@@ -478,6 +479,7 @@ public class Sintactico {
         //System.out.println("El retorno del metodo: "+ts.metodoActual.getNombre()+" es: "+ts.metodoActual.tipoRetorno.getNombreTipo());
         //Tipo tipoRetorno = ts.metodoActual.tipoRetorno; // si es null es de retorno void
         ArrayList<NodoSentencia> listaSent = listaSentencia(new ArrayList<NodoSentencia>());
+        //System.out.println("Lista sentencia dentro de bloque metodo tiene un size: "+listaSent.size());
         match("llaveCierra");
         return new NodoBloqueMetodo(tBloqueM, listaVarLocal, listaSent);
     }
@@ -496,6 +498,7 @@ public class Sintactico {
 
     // ListaSentencia -> Sentencia ListaSentencia | lambda
     private ArrayList<NodoSentencia> listaSentencia(ArrayList<NodoSentencia> listaSent) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        //System.out.println("Estoy en lista sentencia con: "+token.getLexema());
         // mientras este en los primeros de sentencia vuelvo a entrar
         if (esPrimeroSentencia(token)){
             NodoSentencia sentencia = sentencia();
@@ -688,6 +691,7 @@ public class Sintactico {
                             else { // RET
 
                                 if (token.getTipo().equals("prRet")){
+                                    //System.out.println("Estoy en el metodo: "+ts.metodoActual.getNombre()+" tipo retorno: "+ts.metodoActual.getTipoRetorno().getNombreTipo());
                                     // aca rompo si el tipo del metodo es void
                                     //if (tipo.getNombreTipo().equals("Void")){
                                     //    throw new ErrorSemantico(token.getFila(), token.getColumna(), "El tipo de retorno del metodo es void, no puede haber un ret");
@@ -902,7 +906,7 @@ public class Sintactico {
     private NodoExpresion expresionigualRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // voy a repetir siempre que vengan los primros de opIgual
         // Prim(OpIgual) = { == , != }
-        if (token.getTipo().equals("opIgualIgual") | token.getTipo().equals("opDiferente")){
+        if (Operador.esOpIgual(token)){
             Token operador = opIgual();
             NodoExpresion nodoDer = expresionComp();
             //expresionigualRec();
@@ -925,7 +929,7 @@ public class Sintactico {
     private NodoExpresion expresionCompRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // deben venir los primeros de opComp
         // Prim(OpComp) = {<, >, <=, >=}
-        if (esOpComp(token)){
+        if (Operador.esOpComp(token)){
             Token operador = opComp();
             NodoExpresion nodoDer = expresionAd();
 
@@ -945,7 +949,7 @@ public class Sintactico {
     private NodoExpresion expresionAdRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // es recursiva cada vez que venga un opAd vuelvo a entrar
         // Prim(OpAd) = {+ , -}
-        if (esOpAd(token)){
+        if (Operador.esOpAd(token)){
             Token operador = opAd();
             NodoExpresion nodoDer = expresionMul();
             //expresionAdRec();
@@ -965,7 +969,7 @@ public class Sintactico {
     // ExpresionMulRec -> OpMul ExpresionUnario ExpresionMulRec | lambda
     private NodoExpresion expresionMulRec(NodoExpresion nodoIzq) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // simpre que venga un opMul hago recursividad
-        if (esOpMul(token)){
+        if (Operador.esOpMul(token)){
             Token operador = opMul();
             NodoExpresionUnario nodoDer = expresionUnario();
             NodoExpresionBin nodoIzqRec = new NodoExpresionBin(operador, nodoIzq, nodoDer);
@@ -978,7 +982,7 @@ public class Sintactico {
     // ExpresionUnario -> OpUnario ExpresionUnario | Operando
     private NodoExpresionUnario expresionUnario() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // siempre que venga un opUnario vuelvo
-        if (esOpUnario(token)){
+        if (Operador.esOpUnario(token)){
             Token operador = opUnario();
             NodoExpresionUnario nodoExpresionUnario = expresionUnario();
             return new NodoExpresionUnario(operador, nodoExpresionUnario);
@@ -1054,16 +1058,16 @@ public class Sintactico {
         switch (t.getTipo()){
             case "prNil":
                 match("prNil");
-                return new NodoNil(t);
+                return new NodoNil(t.getFila(),t.getColumna(),t.getLexema());
             case "prTrue" , "prFalse":
                 match(token.getTipo());
-                return new NodoBool(t);
+                return new NodoBool(t.getFila(),t.getColumna(),t.getLexema());
             case "literal_entero":
                 match("literal_entero");
-                return new NodoNum(t);
+                return new NodoNum(t.getFila(),t.getColumna(),t.getLexema());
             case "literal_cadena":
                 match("literal_cadena");
-                return new NodoStr(t);
+                return new NodoStr(t.getFila(),t.getColumna(),t.getLexema());
         }
         return null;
     }
@@ -1404,25 +1408,8 @@ public class Sintactico {
     }
 
 // ---------------------------Conjunto operadores-----------------------------------------------------------------------
-    private boolean esOpComp(Token token) {
-        return token.getTipo().equals("opMenor") || token.getTipo().equals("opMenorIgual")
-                || token.getTipo().equals("opMayor") || token.getTipo().equals("opMayorIgual");
-    }
-    private boolean esOpAd(Token token){
-        return token.getTipo().equals("opMas") || token.getTipo().equals("opMenos");
-    }
-    private boolean esOpMul(Token token){
-        return token.getTipo().equals("opPor") || token.getTipo().equals("opdiv");
-    }
-    private boolean esOpUnario(Token token){
-        return token.getTipo().equals("opMas") || token.getTipo().equals("opMenos") ||
-                token.getTipo().equals("opMasMas") || token.getTipo().equals("opMenosMenos") || token.getTipo().equals("opNot");
-    }
-    private Token consumirOperador() throws ErrorSintactico, ErrorLexico {
-        Token operador = token;
-        match(token.getTipo());
-        return operador;
-    }
+
+
 
     private boolean esLiteral(Token token){
         // "prNil" , "prTrue", "prFalse", "literal_entero", "literal_cadena":
@@ -1485,6 +1472,12 @@ public class Sintactico {
         return null;*/
 
     }
+    private Token consumirOperador() throws ErrorSintactico, ErrorLexico {
+        Token operador = token;
+        match(token.getTipo());
+        return operador;
+    }
+
 
 
 }

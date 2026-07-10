@@ -1,5 +1,6 @@
 package semantico.nodos.expresion;
 
+import semantico.TablaSimbolos;
 import semantico.nodos.NodoEncadenadoOpt;
 import semantico.tipos.Tipo;
 
@@ -16,6 +17,8 @@ public class NodoOperando extends NodoExpresion {
     private NodoEncadenadoOpt nodoEncadenadoOpt;
 
     public NodoOperando(NodoLiteral nodoLiteral) {
+        System.out.println("Creo NodoOperando con: "
+                + (nodoLiteral == null ? "NULL" : nodoLiteral.getClass().getSimpleName()));
         this.nodoLiteral = nodoLiteral;
     }
 
@@ -25,8 +28,22 @@ public class NodoOperando extends NodoExpresion {
     }
 
     @Override
-    public Tipo chequear() {
+    public Tipo chequear(TablaSimbolos ts) {
 
+        if (nodoLiteral != null) {
+            return nodoLiteral.chequear(ts);
+        }
+/*
+        if (nodoPrimario != null) {
+            Tipo tipo = nodoPrimario.chequear(ts);
+
+            if (nodoEncadenadoOpt != null) {
+                tipo = nodoEncadenadoOpt.chequear(ts, tipo);
+            }
+
+            return tipo;
+        }
+*/
         return null;
     }
 }

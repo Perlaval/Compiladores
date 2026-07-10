@@ -2,6 +2,8 @@ package semantico.nodos.sentencia;
 
 import lexico.Token;
 import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
+import semantico.tipos.Tipo;
 
 import java.util.ArrayList;
 
@@ -21,7 +23,8 @@ public class NodoBloque extends NodoSentencia{
     }
 
     @Override
-    public void chequear() throws ErrorSemantico {
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
 
+        return null;
     }
 }

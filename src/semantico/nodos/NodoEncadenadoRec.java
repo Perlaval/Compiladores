@@ -1,5 +1,7 @@
 package semantico.nodos;
 
+import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoAccesoVar;
 import semantico.nodos.expresion.NodoLlamadaMetodo;
 import semantico.tipos.Tipo;
@@ -33,4 +35,8 @@ public class NodoEncadenadoRec extends Nodo{
     }
 
 
+    @Override
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+        return null;
+    }
 }

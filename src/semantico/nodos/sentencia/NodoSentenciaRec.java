@@ -1,6 +1,8 @@
 package semantico.nodos.sentencia;
 
 import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
+import semantico.tipos.Tipo;
 
 public class NodoSentenciaRec extends NodoSentencia {
 
@@ -22,7 +24,8 @@ public class NodoSentenciaRec extends NodoSentencia {
     }
 
     @Override
-    public void chequear() throws ErrorSemantico {
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
 
+        return null;
     }
 }

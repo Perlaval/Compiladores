@@ -2,7 +2,9 @@ package semantico.nodos.sentencia;
 
 import lexico.Token;
 import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoExpresion;
+import semantico.tipos.Tipo;
 
 public class NodoAsignacion extends NodoSentencia{
 
@@ -30,5 +32,7 @@ public class NodoAsignacion extends NodoSentencia{
     }
 
     @Override
-    public void chequear() throws ErrorSemantico {}
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+        return null;
+    }
 }

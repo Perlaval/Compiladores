@@ -1,6 +1,7 @@
 package semantico.nodos.expresion;
 
 import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
 import semantico.registros.RegistroAtributo;
 import semantico.tipos.Tipo;
 
@@ -26,7 +27,7 @@ public class NodoAccesoVar extends NodoExpresion {
 
 
     @Override
-    public Tipo chequear() throws ErrorSemantico {
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         //1. No trae tipo heredado pq no viene de encadenado
         if (this.tipoHeredado == null){
             //1. AccesoVarRec -> [Expresion] EncadenadOpt
@@ -65,10 +66,6 @@ public class NodoAccesoVar extends NodoExpresion {
                     throw new ErrorSemantico(nodoId.getNroLinea(), nodoId.getNroColumna(), nodoId.getToken().getNombre() + "no es un atributo -visible- de la clase" + tipoHeredado.getNombre());
                 }
             }
-
-
-
-
 
         }
 

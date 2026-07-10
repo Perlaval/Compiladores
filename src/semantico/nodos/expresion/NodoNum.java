@@ -1,6 +1,7 @@
 package semantico.nodos.expresion;
 
 import lexico.Token;
+import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
 import semantico.tipos.TipoPrimitivo;
 
@@ -9,9 +10,7 @@ public class NodoNum extends NodoLiteral{
         super(nroLinea, nroColumna, lexema);
         this.tipoSintetizado = new TipoPrimitivo("tInt");
     }
-    public NodoNum(Token token){
-        super(token);
-    }
+
 
     @Override
     public void setTipoSintetizado(Tipo tipoSintetizado) {
@@ -19,8 +18,7 @@ public class NodoNum extends NodoLiteral{
     }
 
     @Override
-    public Tipo chequear() {
-
-        return null;
+    public Tipo chequear(TablaSimbolos ts) {
+        return new TipoPrimitivo("tInt");
     }
 }

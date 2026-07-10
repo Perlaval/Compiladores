@@ -2,8 +2,9 @@ package semantico.nodos.sentencia;
 
 import lexico.Token;
 import semantico.ErrorSemantico;
-import semantico.nodos.Nodo;
+import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoExpresion;
+import semantico.tipos.Tipo;
 
 public class NodoIf extends NodoSentencia{
 
@@ -35,7 +36,12 @@ public class NodoIf extends NodoSentencia{
     }
 
     @Override
-    public void chequear() throws ErrorSemantico {
-
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+        // el resultado de la condicion debe ser de tipo bool
+        Tipo tipoCondicion = nodoCondicion.chequear(ts);
+        if (!tipoCondicion.getNombreTipo().equals("tBool")){
+            throw new ErrorSemantico(nroLinea, nroColumna, "La condicionn debe ser de tipo Bool");
+        }
+        return null;
     }
 }

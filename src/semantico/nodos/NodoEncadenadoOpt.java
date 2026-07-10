@@ -1,5 +1,7 @@
 package semantico.nodos;
 
+import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
 
 public class NodoEncadenadoOpt extends Nodo{
@@ -21,4 +23,8 @@ public class NodoEncadenadoOpt extends Nodo{
     }
 
 
+    @Override
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+        return null;
+    }
 }

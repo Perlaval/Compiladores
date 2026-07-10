@@ -2,16 +2,14 @@ package semantico.nodos.expresion;
 
 import lexico.Token;
 import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
 import semantico.nodos.Nodo;
 import semantico.tipos.Tipo;
 
 public abstract class NodoExpresion extends Nodo {
 
-    public NodoExpresion(Token token) {
-        super();
-    }
 
-    public abstract Tipo chequear() throws ErrorSemantico;
+    public abstract Tipo chequear(TablaSimbolos ts) throws ErrorSemantico;
 
     /*public void chequear(int fila, int columna, boolean fromAcceso) throws ErrorSemantico {
         if (fromAcceso){

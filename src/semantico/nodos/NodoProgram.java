@@ -1,6 +1,9 @@
 package semantico.nodos;
 
 import lexico.Token;
+import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
+import semantico.tipos.Tipo;
 
 import java.util.ArrayList;
 
@@ -23,5 +26,19 @@ public class NodoProgram extends Nodo{
 
     public ArrayList<NodoDefinicion> getListaDefiniciones() {
         return listaDefiniciones;
+    }
+
+
+    @Override
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+        // hago recorrido para probar el nodoret
+        //System.out.println("Chequeo program");
+        // voy a chequear los impl de program
+        // primero chequeo todas las definiciones (class e impl)
+        for(NodoDefinicion def : listaDefiniciones) {
+            def.chequear(ts);
+        }
+        nodoStart.chequear(ts);
+        return null;
     }
 }

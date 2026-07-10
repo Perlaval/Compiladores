@@ -44,6 +44,7 @@ public class RegistroMetodo {
         this.tipoRetorno = null; // por default le ponemos retorno null, que seria void
         this.listaParametros = new LinkedHashMap<>();
         this.listaVarLocales = new HashMap<>();
+        this.isConstructor = true;
     }
 
     public int getProxPosVarLocal(){
@@ -76,6 +77,7 @@ public class RegistroMetodo {
     public Map<String, RegistroParametro> getListaParametros() {
         return listaParametros;
     }
+    public boolean isConstructor(){ return this.isConstructor; }
 
     // funcion que me imprime el metodo y sus parametros
     public void imprimirMetodo(RegistroMetodo metodo, RegistroClase claseActual){

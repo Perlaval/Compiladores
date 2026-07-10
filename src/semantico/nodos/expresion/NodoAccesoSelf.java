@@ -1,6 +1,7 @@
 package semantico.nodos.expresion;
 
 import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
 import semantico.nodos.NodoEncadenadoOpt;
 import semantico.tipos.Tipo;
 
@@ -17,7 +18,7 @@ public class NodoAccesoSelf extends NodoExpresion {
     }
 
     @Override
-    public Tipo chequear() throws ErrorSemantico {
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
 
         return null;
     }

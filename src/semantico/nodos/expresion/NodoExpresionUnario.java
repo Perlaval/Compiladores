@@ -1,6 +1,7 @@
 package semantico.nodos.expresion;
 
 import lexico.Token;
+import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
 
 public class NodoExpresionUnario extends NodoExpresion {
@@ -34,8 +35,8 @@ public class NodoExpresionUnario extends NodoExpresion {
     }
 
     @Override
-    public Tipo chequear() {
-
-        return null;
+    public Tipo chequear(TablaSimbolos ts) {
+        return nodoOperando.chequear(ts);
+        //return null;
     }
 }

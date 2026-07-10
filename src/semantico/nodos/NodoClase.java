@@ -1,6 +1,9 @@
 package semantico.nodos;
 
 import lexico.Token;
+import semantico.ErrorSemantico;
+import semantico.TablaSimbolos;
+import semantico.tipos.Tipo;
 
 import java.util.ArrayList;
 
@@ -17,5 +20,10 @@ public class NodoClase extends NodoDefinicion{
 
     public ArrayList<NodoDeclaracion> getNodoListaAtributos() {
         return listaAtributos;
+    }
+
+    @Override
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+        return null;
     }
 }
