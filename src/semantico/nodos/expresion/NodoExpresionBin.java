@@ -5,28 +5,19 @@ import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
 import sintactico.Operador;
-import sintactico.Sintactico;
-
-import java.util.Objects;
 
 public class NodoExpresionBin extends NodoExpresion {
 
-    protected Token operador;
+    //protected Token operador;
     protected NodoExpresion exprIzq;
     protected NodoExpresion exprDer;
 
 
     public NodoExpresionBin(Token operador, NodoExpresion exprIzq, NodoExpresion exprDer) {
-        this.nroLinea = operador.getFila();
-        this.nroColumna = operador.getColumna();
-        this.operador = operador;
+        super(operador);
         this.exprIzq = exprIzq;
         this.exprDer = exprDer;
 
-    }
-
-    public Token getOperador() {
-        return operador;
     }
 
     public NodoExpresion getExprIzq() {
@@ -57,17 +48,17 @@ public class NodoExpresionBin extends NodoExpresion {
         // operador mul: Si o si ambos tInt
         // operadores comparacion: deben ser int si o si
         // operador ad: deben ser int si o si
-        if (Operador.esOpMul(operador) ||Operador.esOpComp(operador) || Operador.esOpAd(operador)){
+        if (Operador.esOpMul(token) ||Operador.esOpComp(token) || Operador.esOpAd(token)){
             if (!tipoIzq.getNombreTipo().equals("tInt") || !tipoDer.getNombreTipo().equals("tInt") ){
-                throw new ErrorSemantico(nroLinea, nroColumna, "Para el operador: "+operador.getLexema()+" ambos lados de la expresion deben ser de tipo Int");
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Para el operador: "+token.getLexema()+" ambos lados de la expresion deben ser de tipo Int");
             }
             return tipoIzq;
         }
         // operador igual: == y !=
         // ambos lados deben ser iguales
-        if (Operador.esOpIgual(operador)){
+        if (Operador.esOpIgual(token)){
             if (!tipoIzq.getNombreTipo().equals(tipoDer.getNombreTipo())){
-                throw new ErrorSemantico(nroLinea, nroColumna, "Para el operador: "+operador.getLexema()+" se deben comparar dos tipos iguales");
+                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Para el operador: "+token.getLexema()+" se deben comparar dos tipos iguales");
             }
             return tipoIzq;
         }

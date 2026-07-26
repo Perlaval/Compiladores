@@ -39,10 +39,10 @@ impl B{
     }
 }
 
-class B: C { // C no existe deberia lanzar error
+/*class B: C { // C no existe deberia lanzar error
 
 }
-/*
+
 class C {}
 impl C{
 .() {}

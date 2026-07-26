@@ -1,7 +1,6 @@
 package semantico;
 
-import semantico.nodos.Nodo;
-import semantico.nodos.NodoProgram;
+import semantico.nodos.programa.NodoProgram;
 
 public class Ast {
 

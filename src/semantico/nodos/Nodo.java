@@ -7,44 +7,29 @@ import semantico.registros.RegistroClase;
 import semantico.registros.RegistroVariable;
 import semantico.tipos.Tipo;
 import semantico.tipos.TipoReferencia;
+import semantico.visitors.Visitor;
 
 public abstract class Nodo {
 
-    protected int nroLinea;
-    protected int nroColumna;
-    protected String lexema;
+    protected final Token token;
 
     //Durante la construccion del ast no necesito estos 3 atr---------
-    protected RegistroVariable token;
-    protected Tipo tipoSintetizado;
-    protected RegistroClase tipoHeredado;
+    //protected RegistroVariable token;
+    //protected Tipo tipoSintetizado;
+    //protected RegistroClase tipoHeredado;
+
     //----------------------------------------------------
+    protected Nodo(Token token) {
+        this.token = token;
+    }
 
-
-   public RegistroVariable getToken() {
+    public Token getToken(){
         return token;
     }
 
+    /*public RegistroVariable getToken() { return token;}
     public int getNroLinea() {
         return nroLinea;
-    }
-
-    public void setNroLinea(int nroLinea) {
-        this.nroLinea = nroLinea;
-    }
-
-    public int getNroColumna() {
-        return nroColumna;
-    }
-
-    public String getLexema() { return lexema; }
-
-    public void setNroColumna(int nroColumna) {
-        this.nroColumna = nroColumna;
-    }
-
-    public void setToken(RegistroVariable token) {
-        this.token = token;
     }
 
     public Tipo getTipoSintetizado() {
@@ -57,10 +42,10 @@ public abstract class Nodo {
 
     public void setTipoHeredado(RegistroClase tipoHeredado) {
         this.tipoHeredado = tipoHeredado;
-    }
-
+    }*/
 
     public abstract Tipo chequear(TablaSimbolos ts) throws ErrorSemantico;
 
+    //public abstract <T> T aceptar(Visitor<T> visitor);
     //public void chequear() throws ErrorSemantico{};
 }

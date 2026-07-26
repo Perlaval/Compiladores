@@ -4,9 +4,11 @@ import lexico.ErrorLexico;
 import lexico.Token;
 import semantico.ErrorSemantico;
 import semantico.nodos.expresion.NodoExpresion;
-import semantico.nodos.expresion.NodoId;
+import semantico.nodos.expresion.encadenables.primario.acceso.NodoAcceso;
+import semantico.nodos.expresion.encadenables.primario.acceso.NodoAccesoSelf;
 import semantico.nodos.sentencia.*;
 import semantico.tipos.Tipo;
+import sintactico.auxiliares.AuxRamasIf;
 
 import java.util.ArrayList;
 
@@ -53,7 +55,7 @@ public class ParserSentencias {
                     //System.out.println("Voy a expresion con: "+token.getTipo());
                     NodoExpresion condicion = parser.getParserExpresiones().expresion(); //devuelvo la condicion
                     parser.match("parCierra");
-                    NodoSentenciaRec sentenciaRec = sentenciaRec(); // me devuelve 2 nodos sentencia (then y else del if actual)
+                    AuxRamasIf sentenciaRec = sentenciaRec(); // me devuelve 2 nodos sentencia (then y else del if actual)
                     return new NodoIf(tIf, condicion, sentenciaRec.getSentenciaThen(), sentenciaRec.getSentenciaElse());
                 }
                 else { // WHILE
@@ -72,15 +74,15 @@ public class ParserSentencias {
                             parser.match("prFor");
                             parser.match("parAbre");
                             Tipo tipoVar = parser.getParserDeclaraciones().tipoPrimitivo();
-                            NodoId variable = new NodoId(parser.token().getFila(), parser.token().getColumna(), parser.token().getLexema());
+                            Token tVariable = parser.token();
                             parser.match("idMetVar"); //en chequeo de sentencias se chequea que la variable no haya sido declarada como una variable local / param del metodo actual (no se si tambien atr de la clase actual)
                             parser.match("prIn");
                             // en chequeo verifico que sea de tipo Array
-                            NodoId iterador = new NodoId(parser.token().getFila(), parser.token().getColumna(), parser.token().getLexema());
+                            Token tIterador = parser.token();
                             parser.match("idMetVar");
                             parser.match("parCierra");
                             NodoSentencia cuerpoFor = sentencia();
-                            return new NodoFor(tFor, tipoVar, variable, iterador, cuerpoFor);
+                            return new NodoFor(tFor, tipoVar, tVariable, tIterador, cuerpoFor);
                         }
                         else { // BLOQUE
                             if (parser.token().getTipo().equals("llaveAbre")){
@@ -96,7 +98,7 @@ public class ParserSentencias {
                                     Token tRet = parser.token();
                                     parser.match("prRet");
                                     //expresionOpt();
-                                    return new NodoRet(tRet, parser.getParserExpresiones().expresionOpt());
+                                    return new NodoRetorno(tRet, parser.getParserExpresiones().expresionOpt());
 
                                 }
                                 else { //ASIGNACIÓN
@@ -134,10 +136,10 @@ public class ParserSentencias {
     // SENTENCIA REC:
     //      - SentenciaRec -> Sentencia RecursivoElse
     //------------------------------------------------------------------------------------------------------------
-    private NodoSentenciaRec sentenciaRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+    private AuxRamasIf sentenciaRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         NodoSentencia nodoThen = sentencia();
         NodoSentencia nodoElse = recursivoElse();
-        return new NodoSentenciaRec(nodoThen, nodoElse);
+        return new AuxRamasIf(nodoThen, nodoElse);
     }
 
     //------------------------------------------------------------------------------------------------------------
@@ -173,7 +175,7 @@ public class ParserSentencias {
         // si esta en los primeros de acceso var simple entro
         // Prim(AccesoVarSimple) = {id}
         if (parser.token().getTipo().equals("idMetVar")){
-            NodoAccesoVarSimple nodoAccesoVarSimple = parser.getParserExpresiones().accesoVarSimple(); //NODO IZQ
+            NodoAcceso nodoAccesoVarSimple = parser.getParserExpresiones().accesoVarSimple(); //NODO IZQ
             Token tAsig = parser.token();
             parser.match("opIgual");
             NodoExpresion nodoExpresion = parser.getParserExpresiones().expresion(); //NODO DER
@@ -183,7 +185,7 @@ public class ParserSentencias {
             // si esta en los primeros de acceso self simple entro
             // Prim(AccesoVarSimple) = {self}
             if (parser.token().getTipo().equals("prSelf")){
-                NodoAccesoSelfSimple nodoAccesoSelfSimple = parser.getParserExpresiones().accesoSelfSimple();
+                NodoAccesoSelf nodoAccesoSelfSimple = parser.getParserExpresiones().accesoSelfSimple();
                 Token tAsig = parser.token();
                 parser.match("opIgual");
                 NodoExpresion nodoExpresion = parser.getParserExpresiones().expresion();

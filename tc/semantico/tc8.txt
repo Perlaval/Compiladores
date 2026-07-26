@@ -2,7 +2,7 @@
 
 
 class A {
-    Int;
+    Int x;
     Bool z;
     Array Int a; //Array a; //linea 7 columna 11 se esperaba un tipo primitivo - ERROR!
 }
@@ -18,7 +18,7 @@ impl A {
 
     fn C m5(){} //No crea la clase C
 
-    st fn Int m2(Int c, Str y, Array Str hola,){ //Se esperaba un tipo para el parametro: ) -> se encontraba un tipo y se encontro )
+    st fn Int m2(Int c, Str y, Array Str hola /*,*/){ //Se esperaba un tipo para el parametro: ) -> se encontraba un tipo y se encontro )
         // defino variables locales para probar
         Bool d; //se pierde el comentario multilinea al entrar al comentario simple: Se esperaba llaveCierra y se enontro tBool
         Int v;
@@ -43,7 +43,7 @@ impl A {
 
 class B : A {
 
-    Str x; //Se esperaba llave que cierra y se encontro idMetVar
+    Str y; //Se esperaba llave que cierra y se encontro idMetVar
 
 }
 impl B{
@@ -54,5 +54,5 @@ impl B{
     st fn Str m7(){}
 }
 
-class C : A {}
+//class C : A {}
 start{}

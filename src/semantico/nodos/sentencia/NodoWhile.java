@@ -12,9 +12,7 @@ public class NodoWhile extends NodoSentencia{
     private NodoSentencia nodoSentencia;
 
     public NodoWhile(Token tWhile, NodoExpresion nodoExpresion, NodoSentencia nodoSentencia) {
-        this.nroLinea = tWhile.getFila();
-        this.nroColumna = tWhile.getColumna();
-        this.lexema = tWhile.getLexema();
+        super(tWhile);
         this.nodoExpresion = nodoExpresion;
         this.nodoSentencia = nodoSentencia;
     }

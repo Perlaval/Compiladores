@@ -6,15 +6,8 @@ import semantico.tipos.Tipo;
 import semantico.tipos.TipoPrimitivo;
 
 public class NodoNum extends NodoLiteral{
-    public NodoNum(int nroLinea, int nroColumna, String lexema /* "literal_entero" */) {
-        super(nroLinea, nroColumna, lexema);
-        this.tipoSintetizado = new TipoPrimitivo("tInt");
-    }
-
-
-    @Override
-    public void setTipoSintetizado(Tipo tipoSintetizado) {
-        super.setTipoSintetizado(tipoSintetizado);
+    public NodoNum(Token token) {
+        super(token);
     }
 
     @Override

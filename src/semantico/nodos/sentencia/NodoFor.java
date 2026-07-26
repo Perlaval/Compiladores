@@ -2,24 +2,21 @@ package semantico.nodos.sentencia;
 
 import lexico.Token;
 import semantico.TablaSimbolos;
-import semantico.nodos.expresion.NodoId;
 import semantico.tipos.Tipo;
 
 public class NodoFor extends NodoSentencia{
 
     // for ( tipoPrim i in iterador)
     private Tipo tipoVar;
-    private NodoId nodoVariable;
-    private NodoId nodoIterador;
+    private Token variable;
+    private Token iterador;
     private NodoSentencia cuerpo;
 
-    public NodoFor(Token tFor, Tipo tipoVar, NodoId variable, NodoId iterador, NodoSentencia cuerpo) {
-        this.nroLinea = tFor.getFila();
-        this.nroColumna = tFor.getColumna();
-        this.lexema = tFor.getLexema();
+    public NodoFor(Token tFor, Tipo tipoVar, Token variable, Token iterador, NodoSentencia cuerpo) {
+        super(tFor);
         this.tipoVar = tipoVar;
-        this.nodoVariable = variable;
-        this.nodoIterador = iterador;
+        this.variable = variable;
+        this.iterador = iterador;
         this.cuerpo = cuerpo;
     }
 
@@ -27,12 +24,12 @@ public class NodoFor extends NodoSentencia{
         return tipoVar;
     }
 
-    public NodoId getNodoVariable() {
-        return nodoVariable;
+    public Token getNodoVariable() {
+        return variable;
     }
 
-    public NodoId getNodoIterador() {
-        return nodoIterador;
+    public Token getNodoIterador() {
+        return iterador;
     }
 
     public NodoSentencia getCuerpo() {

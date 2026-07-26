@@ -1,25 +1,22 @@
 package semantico.nodos.expresion;
 
+import lexico.Token;
 import semantico.TablaSimbolos;
-import semantico.nodos.NodoEncadenadoOpt;
+import semantico.nodos.expresion.encadenables.NodoEncadenable;
+import semantico.nodos.expresion.encadenables.primario.NodoPrimario;
 import semantico.tipos.Tipo;
 
-public class NodoExpresionParentizada extends NodoExpresion {
+public class NodoExpresionParentizada extends NodoPrimario {
 
     private NodoExpresion nodoExpresion;
-    private NodoEncadenadoOpt nodoEncadenadoOpt;
 
-    public NodoExpresionParentizada(NodoExpresion nodoExpresion, NodoEncadenadoOpt nodoEncadenadoOpt) {
+    public NodoExpresionParentizada(Token token, NodoExpresion nodoExpresion) {
+        super(token);
         this.nodoExpresion = nodoExpresion;
-        this.nodoEncadenadoOpt = nodoEncadenadoOpt;
     }
 
     public NodoExpresion getNodoExpresion() {
         return nodoExpresion;
-    }
-
-    public NodoEncadenadoOpt getNodoEncadenadoOpt() {
-        return nodoEncadenadoOpt;
     }
 
     @Override

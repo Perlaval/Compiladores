@@ -4,26 +4,25 @@ import lexico.Token;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoExpresion;
+import semantico.nodos.expresion.encadenables.primario.acceso.NodoAcceso;
 import semantico.tipos.Tipo;
 
 public class NodoAsignacion extends NodoSentencia{
 
 
-    private NodoSentencia nodoAcceso;
+    private NodoAcceso nodoAcceso;
     private NodoExpresion nodoExpresion;
     //private NodoAccesoSelfSimple nodoAccesoSelfSimple;
 
     //1. Asignacion -> AccesoVarSimple = Expresion
     //2. Asignacion -> AccesoSelfSimple = Expresion
-    public NodoAsignacion(Token tAsig, NodoSentencia nodoAcceso, NodoExpresion nodoExpresion) {
-        this.nroLinea = tAsig.getFila();
-        this.nroColumna = tAsig.getColumna();
-        this.lexema = tAsig.getLexema();
+    public NodoAsignacion(Token tAsig, NodoAcceso nodoAcceso, NodoExpresion nodoExpresion) {
+        super(tAsig);
         this.nodoAcceso = nodoAcceso;
         this.nodoExpresion = nodoExpresion;
     }
 
-    public NodoSentencia getNodoAcceso() {
+    public NodoAcceso getNodoAcceso() {
         return nodoAcceso;
     }
 

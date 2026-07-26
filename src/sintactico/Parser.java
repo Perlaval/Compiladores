@@ -5,11 +5,12 @@ import lexico.Lexico;
 import lexico.Token;
 import semantico.Ast;
 import semantico.ErrorSemantico;
+import semantico.GestorDeclaraciones;
 import semantico.TablaSimbolos;
-import semantico.nodos.NodoBloqueMetodo;
-import semantico.nodos.NodoDefinicion;
-import semantico.nodos.NodoProgram;
-import semantico.nodos.NodoStart;
+import semantico.nodos.declaraciones.NodoBloqueMetodo;
+import semantico.nodos.definiciones.NodoDefinicion;
+import semantico.nodos.programa.NodoProgram;
+import semantico.nodos.programa.NodoStart;
 //import semantico.registros.RegistroStart;
 
 import java.util.ArrayList;
@@ -21,7 +22,10 @@ public class Parser {
     private Token next;
     private boolean lookahead = false;
     private final TablaSimbolos ts = new TablaSimbolos();
+    private final GestorDeclaraciones gestorDeclaraciones = new GestorDeclaraciones(ts);
     private Ast ast;
+
+
 
     private final ParserExpresiones parserExpresiones;
     private final ParserSentencias parserSentencias;
@@ -36,6 +40,7 @@ public class Parser {
 
     public Token token(){return this.token;}
     public TablaSimbolos ts(){return this.ts;}
+    public GestorDeclaraciones gestorDeclaraciones(){return this.gestorDeclaraciones;}
     public Ast ast(){return this.ast;}
 
     public ParserExpresiones getParserExpresiones() {

@@ -12,9 +12,7 @@ public class NodoBloque extends NodoSentencia{
     private ArrayList<NodoSentencia> listaSentencias;
 
     public NodoBloque(Token tBloque, ArrayList<NodoSentencia> listaSent) {
-        this.nroLinea = tBloque.getFila();
-        this.nroColumna = tBloque.getColumna();
-        this.lexema = tBloque.getLexema(); // lexema = "{"
+        super(tBloque);
         this.listaSentencias = listaSent;
     }
 

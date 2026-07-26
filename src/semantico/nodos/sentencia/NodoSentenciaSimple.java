@@ -11,9 +11,7 @@ public class NodoSentenciaSimple extends NodoSentencia{
     private NodoExpresion nodoExpresion;
 
     public NodoSentenciaSimple(Token token, NodoExpresion nodoExpresion) {
-        this.nroLinea = token.getFila();
-        this.nroColumna = token.getColumna();
-        this.lexema = token.getLexema();
+        super(token);
         this.nodoExpresion = nodoExpresion;
     }
 

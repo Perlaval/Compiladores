@@ -7,7 +7,6 @@ public interface ValidarDeclaracion {
 
     enum Definicion{
         METODO,
-        CLASE,
         VAR
     }
 }

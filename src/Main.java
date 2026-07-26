@@ -1,14 +1,10 @@
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.SQLOutput;
-import java.util.List;
+
 import lexico.Lexico;
 import lexico.ErrorLexico;
-import lexico.Token;
 import sintactico.Parser;
-import sintactico.Sintactico;
 import sintactico.ErrorSintactico;
 import semantico.ErrorSemantico;
 

@@ -9,7 +9,9 @@ import semantico.tipos.Tipo;
 public abstract class NodoExpresion extends Nodo {
 
 
-    public abstract Tipo chequear(TablaSimbolos ts) throws ErrorSemantico;
+    protected NodoExpresion(Token token) {
+        super(token);
+    }
 
     /*public void chequear(int fila, int columna, boolean fromAcceso) throws ErrorSemantico {
         if (fromAcceso){

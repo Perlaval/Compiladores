@@ -15,9 +15,7 @@ public class NodoIf extends NodoSentencia{
     private NodoSentencia nodoSentenciaElse;
 
     public NodoIf(Token token, NodoExpresion nodoCondicion, NodoSentencia nodoSentenciaThen, NodoSentencia nodoSentenciaElse) {
-        this.nroLinea = token.getFila();
-        this.nroColumna = token.getColumna();
-        this.lexema = token.getLexema();
+        super(token);
         this.nodoCondicion = nodoCondicion;
         this.nodoSentenciaThen = nodoSentenciaThen;
         this.nodoSentenciaElse = nodoSentenciaElse;
@@ -40,7 +38,7 @@ public class NodoIf extends NodoSentencia{
         // el resultado de la condicion debe ser de tipo bool
         Tipo tipoCondicion = nodoCondicion.chequear(ts);
         if (!tipoCondicion.getNombreTipo().equals("tBool")){
-            throw new ErrorSemantico(nroLinea, nroColumna, "La condicionn debe ser de tipo Bool");
+            throw new ErrorSemantico(token.getFila(), token.getColumna(), "La condicionn debe ser de tipo Bool");
         }
         return null;
     }
