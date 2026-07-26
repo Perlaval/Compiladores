@@ -10,7 +10,8 @@ import semantico.nodos.NodoBloqueMetodo;
 import semantico.nodos.NodoDefinicion;
 import semantico.nodos.NodoProgram;
 import semantico.nodos.NodoStart;
-//import semantico.registros.RegistroStart;
+import semantico.registros.RegistroStart;
+
 
 import java.util.ArrayList;
 
@@ -71,14 +72,21 @@ public class Parser {
         Token tProgram = token;
         ArrayList<NodoDefinicion> listaDefiniciones = parserDeclaraciones.listaDefiniciones(new ArrayList<NodoDefinicion>());
         // si es lambda va directo a start
+        /*
         System.out.println("FILA:" + token.getFila());
         System.out.println("COLUMNA:" + token.getColumna());
         System.out.println("LEXEMA:" + token.getLexema());
+        */
+
         // ya arme toda mi TS, antes de seguir voy a consolidar
         ts.consolidar();
 
         //RegistroStart metodoStart = new RegistroStart();
         NodoStart start = start();
+
+        // consolido star, para verificar las var locales
+        ts.consolidarStart();
+
         match("EOF");
         return new NodoProgram(tProgram, listaDefiniciones, start);
 
@@ -92,7 +100,13 @@ public class Parser {
             Token tStart = token;
             // deberia matchear idMetVar, porque start al no ser reservada la toma como idMetVar
             match("idMetVar");
+
+            // Creo el registro start para el contexto del bloque de este metodo
+            RegistroStart registroStart = new RegistroStart();
+            ts.setBloqueStart(registroStart);
+
             NodoBloqueMetodo bloqueMetodo = parserDeclaraciones.bloqueMetodo();
+
             return new NodoStart(tStart, bloqueMetodo);
         }
         else {
@@ -119,7 +133,7 @@ public class Parser {
             }
         }
         else {
-            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba "+tipoEsperado+" y se enontro "+token.getTipo());
+            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba '"+tipoEsperado+"' y se enontro '"+token.getTipo()+"'");
         }
     }
 

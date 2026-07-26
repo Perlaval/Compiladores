@@ -38,10 +38,11 @@ public class NodoIf extends NodoSentencia{
     @Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         // el resultado de la condicion debe ser de tipo bool
+        /*
         Tipo tipoCondicion = nodoCondicion.chequear(ts);
         if (!tipoCondicion.getNombreTipo().equals("tBool")){
             throw new ErrorSemantico(nroLinea, nroColumna, "La condicionn debe ser de tipo Bool");
-        }
+        }*/
         return null;
     }
 }

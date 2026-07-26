@@ -51,6 +51,8 @@ public class NodoExpresionBin extends NodoExpresion {
         + | - | ++ | -- | !
         * | /
          */
+
+        /*
         Tipo tipoIzq = exprIzq.chequear(ts);
         Tipo tipoDer = exprDer.chequear(ts);
 
@@ -61,7 +63,7 @@ public class NodoExpresionBin extends NodoExpresion {
             if (!tipoIzq.getNombreTipo().equals("tInt") || !tipoDer.getNombreTipo().equals("tInt") ){
                 throw new ErrorSemantico(nroLinea, nroColumna, "Para el operador: "+operador.getLexema()+" ambos lados de la expresion deben ser de tipo Int");
             }
-            return tipoIzq;
+            //return tipoIzq;
         }
         // operador igual: == y !=
         // ambos lados deben ser iguales
@@ -69,10 +71,10 @@ public class NodoExpresionBin extends NodoExpresion {
             if (!tipoIzq.getNombreTipo().equals(tipoDer.getNombreTipo())){
                 throw new ErrorSemantico(nroLinea, nroColumna, "Para el operador: "+operador.getLexema()+" se deben comparar dos tipos iguales");
             }
-            return tipoIzq;
+           // return tipoIzq;
         }
         // + | - | ++ | -- | !
-
+        */
         return null;
     }
 }

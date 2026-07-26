@@ -326,7 +326,6 @@ public class ParserExpresiones {
     //      - AccesoSelfSimple -> self ListaEncadenadoSimple
     //------------------------------------------------------------------------------------------------------------
     public NodoAccesoSelfSimple accesoSelfSimple() throws ErrorSintactico, ErrorLexico {
-        System.out.println("Estoy en AccesoSelfSimple con el metodo actual: " + parser.ts().metodoActual.getNombre());
         NodoVarEncadenado selfEncadenado = new NodoVarEncadenado(parser.token().getFila(), parser.token().getColumna(), parser.token().getLexema());
         parser.match("prSelf");
         NodoVarEncadenado varEncadenado = null; //inicializo el nodo en null
@@ -437,6 +436,10 @@ public class ParserExpresiones {
     private NodoEncadenado encadenado() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         parser.match("pto");
         NodoEncadenadoRec nodoEncadenadoRec = encadenadoRec();
+        /*
+        if (nodoEncadenadoRec == null){
+            return null;
+        }*/
         return new NodoEncadenado(nodoEncadenadoRec);
     }
 
@@ -446,6 +449,7 @@ public class ParserExpresiones {
     //------------------------------------------------------------------------------------------------------------
     private NodoEncadenadoOpt encadenadoOpt() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si es pto va a encadendo, Prim(Encadenado) = { . }
+        //System.out.println("Vine a encadenado opt con: "+parser.token().getLexema());
         if (parser.token().getTipo().equals("pto")){
             NodoEncadenado nodoEncadenado = encadenado();
             return new NodoEncadenadoOpt(nodoEncadenado);
@@ -605,11 +609,19 @@ public class ParserExpresiones {
     //      - LlamadaMetdo -> id ArgumentosActuales EncadenadoOpt
     //------------------------------------------------------------------------------------------------------------
     private NodoLlamadaMetodo llamadaMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
+        // resolver cuando estoy en start
+        /*
+        if (parser.ts().bloqueStart != null){
+            // estoy en start, cambia el contexto
+        } */
+        // simplemente en llamada metodo creo el nodo y durante el ast verifico que ese metodo exista y pertenezca a la clase que estoy llamando
+        // lo hago ahi porque si lo dejo aca se puede romper cuando la clase sea null
+        /*
         if (parser.ts().noEstaMetodoTs(parser.token().getLexema())){
-            throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "El id no fue declarado");
+            throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "El metodo '"+parser.token().getLexema()+"' no fue declarado");
         }
-        else {
-            RegistroVariable id = parser.ts().getVariable(parser.token().getLexema());
+        else {*/
+            //RegistroVariable id = parser.ts().getVariable(parser.token().getLexema());
             // creo el nodo id
             NodoId nodoId = new NodoId(parser.token().getFila(), parser.token().getColumna(), parser.token().getLexema());
             // aca pierdo el id, se matchea
@@ -617,12 +629,15 @@ public class ParserExpresiones {
 
             ArrayList<NodoExpresion> listaArgumentosActuales = argumentosActuales();
             // en chaqueo de sentencias debo verificar que el tam de argumentos actuales y el tam de id coinciden
-
+            //System.out.println("Se rompe aca?, con el token: "+parser.token().getLexema());
+            //System.out.println("Fila: "+parser.token().getFila());
             // si encadenado es null creo el nodo llamada metodo solo con arg actuales y el id
             NodoEncadenadoOpt nodoEncOpt = encadenadoOpt();
+            //System.out.println("Ahora tengo: "+parser.token().getLexema());
+            //System.out.println("NOdoEncOpt "+nodoEncOpt);
             // si no tiene encadenado se pone null
             return new NodoLlamadaMetodo(nodoId, listaArgumentosActuales, nodoEncOpt);
-        }
+       // }
     }
 
     //------------------------------------------------------------------------------------------------------------
@@ -631,10 +646,12 @@ public class ParserExpresiones {
     //------------------------------------------------------------------------------------------------------------
     private NodoLlamadaMetodoEstatico llamadaMetodoEstatico() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // voy a buscar el idClass a mi TS
+        // esto rompe todo cuando el idclass es declarado mas abajo en el codigo
+        /*
         if (parser.ts().noEstaTs(parser.token().getLexema())){
             throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "El id de clase: "+parser.token().getLexema()+" no ha sido declarado");
         }
-        else {
+        else {*/
             // obtengo el id
             //RegistroClase idClase = ts.getClase(token.getLexema());
             NodoId nodoId = new NodoId(parser.token().getFila(), parser.token().getColumna(), parser.token().getLexema());
@@ -645,7 +662,7 @@ public class ParserExpresiones {
 
             // si no tiene encadenado se pone null
             return new NodoLlamadaMetodoEstatico(nodoId, nodoLlamadaMetodo, nodoEncadenadoOpt);
-        }
+       // }
     }
 
     //------------------------------------------------------------------------------------------------------------
@@ -664,13 +681,15 @@ public class ParserExpresiones {
     //------------------------------------------------------------------------------------------------------------
     private NodoLlamadaConClassOrRec llamadaConClassorRec() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // es igual a llamada metodo, solo que recibe una clase
-        // por lo tanot hago lo mismo que en llamada metodo
+        // por lo tanto hago lo mismo que en llamada metodo
         //Este metodo devuelve un nodoExpresion que puede ser llamadaMetodo o un NodoExpresion con un tipo
         if (parser.token().getTipo().equals("idClass")){
+            // este chequeo no esta bien aca, se rompe si declaro esa clase mas abajo
+            /*
             if (parser.ts().noEstaTs(parser.token().getLexema())){
-                throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "El id de clase: "+parser.token().getLexema()+" no ha sido declarado");
+                throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "(Estoy aca) El id de clase: "+parser.token().getLexema()+" no ha sido declarado");
             }
-            else {
+            else { */
                 // obtengo el id
                 //RegistroClase idclase = ts.getClase(token.getLexema());
                 NodoId nodoId = new NodoId(parser.token().getFila(), parser.token().getColumna(), parser.token().getLexema());
@@ -679,7 +698,7 @@ public class ParserExpresiones {
                 NodoEncadenadoOpt nodoEncadenadoOpt = encadenadoOpt();
                 // si no tiene encadenado se pone null
                 return new NodoLlamadaConClassOrRec(nodoId, listaArgumentosActuales, nodoEncadenadoOpt);
-            }
+            //}
         }
         else {
             Tipo tipo = parser.getParserDeclaraciones().tipoPrimitivo();
@@ -687,7 +706,6 @@ public class ParserExpresiones {
             //tipoPrimitivo();
             parser.match("corcheteAbre");
             NodoExpresion nodoExpresion = expresion();
-            NodoExpresion nodoE = expresion();
             parser.match("corcheteCierra");
 
             // VER BIEN QUE DEVOLVER ACA

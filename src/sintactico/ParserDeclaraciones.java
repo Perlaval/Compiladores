@@ -80,7 +80,6 @@ public class ParserDeclaraciones {
                     else {
                         // si no esta declarada, la guarde desde impl entonces le seteo la herencia
                         clase.setHeredaDe(padre);
-                        System.out.println("La clase: "+clase.getNombre()+" hereda de: "+clase.heredaDe);
                     }
                 }
             }
@@ -171,7 +170,6 @@ public class ParserDeclaraciones {
             if (parser.ts().noEstaTs(parser.token().getLexema())){
                 // no esta esa clase, la agrego
                 RegistroClase clase = new RegistroClase(parser.token().getLexema());
-                System.out.println("La clase: "+clase.getNombre()+ "  hereda de: "+clase.getHeredaDe());
                 // le seteo declarada a false porque la guarde desde un impl
                 clase.setDeclarada(false);
                 // le seteo el token por si luego no se declara para lanzar el error
@@ -371,6 +369,9 @@ public class ParserDeclaraciones {
                     return tipoArreglo();
                 }
                 else{
+                    if (parser.ts().bloqueStart != null){
+                        //System.out.println("Voy a tipo referencia con: "+parser.token().getLexema());
+                    }
                     return tipoReferencia();
                 }
             }
@@ -475,7 +476,7 @@ public class ParserDeclaraciones {
             }
         }
         else {
-            throw new ErrorSintactico(parser.token().getFila(), parser.token().getColumna(), "Se esperaba un idMetVar y se recibio"+parser.token().getTipo());
+            throw new ErrorSintactico(parser.token().getFila(), parser.token().getColumna(), "Se esperaba un idMetVar y se recibio: "+parser.token().getTipo());
         }
     }
 
@@ -535,6 +536,12 @@ public class ParserDeclaraciones {
     public NodoBloqueMetodo bloqueMetodo() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         Token tBloqueM = parser.token();
         parser.match("llaveAbre");
+
+        /*
+        if (parser.ts().bloqueStart != null){
+            System.out.println("Estoy entrando a start con: "+parser.token().getLexema());
+        }*/
+
         // voy a lista declaracion var local con el metodo actual
         ArrayList<NodoDeclaracion> listaVarLocal = listaDeclaracionVarLocal(new ArrayList<NodoDeclaracion>());
         //System.out.println(ts.metodoActual.listaVarLocales.toString());
@@ -589,6 +596,7 @@ public class ParserDeclaraciones {
             // variable del metodo
 
             if (parser.ts().metodoActual != null){
+                // declarando variables locales del metodo
                 // estoy en metodo
                 // busco el idmetvar que voy a agregar en la lista de los parametros y si existe largo error, no pueden llamarse igual
 
@@ -601,31 +609,47 @@ public class ParserDeclaraciones {
                     RegistroVariable varLocal;
                     varLocal = parser.ts().crearRegVar(parser.token().getLexema(), tipo);
                     varLocal.setPos(parser.ts().metodoActual.getProxPosVarLocal());
+                    varLocal.setTokenVarLocal(parser.token());
                     parser.ts().metodoActual.listaVarLocales.put(varLocal.getNombre(), varLocal);
                     listaDec.add(new NodoDecLocal(parser.token()));
                     //System.out.println("Guardo en la lista de variables del metodo: "+ts.metodoActual.getNombre()+ " la variable: "+varLocal.getNombre());
                 }
             }
-            // si viene aca es porque estoy en un tipo class, por lo tanto estoy viendo los atributos de la clase
             else {
-                //SE ROMPE CUANDO EVALUAMOS EL START (METODOACTUAL = NULL - CLASEACTUAL = NULL)
-                //System.out.println("FILA:" + parser.token().getFila());
-                //System.out.println("COLUMNA:" + parser.token().getColumna());
-                //System.out.println("TOKEN:" + parser.token().getLexema());
-                RegistroAtributo atributo;
-                // atributo de clase
-                // verifico que no este guardado ya en la lista de atributos
-                if (parser.ts().claseActual.listaAtributos.containsKey(parser.token().getLexema())){
-                    // si ya esta, lanzo error semantico
-                    throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "Atributo: "+parser.token().getLexema()+" ,repetido");
+                if (parser.ts().bloqueStart != null){
+                    // estoy en bloque start
+                    if (parser.ts().bloqueStart.listaVariables.containsKey(parser.token().getLexema())){
+                        throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(),
+                                "El nombre de la variable '"+parser.token().getLexema()+ "' ya fue asignado");
+                    }
+                    // variables locales de start
+                    RegistroVariable varLocal;
+                    varLocal = parser.ts().crearRegVar(parser.token().getLexema(), tipo);
+                    varLocal.setPos(parser.ts().bloqueStart.getProxPosVarLocal());
+                    varLocal.setTokenVarLocal(parser.token()); // le seteo el token para luego lanzar bien errores
+                    parser.ts().bloqueStart.listaVariables.put(varLocal.getNombre(), varLocal);
+                    listaDec.add(new NodoDecLocal(parser.token()));
                 }
                 else {
-                    atributo = parser.ts().crearRegAtributo(parser.token().getLexema(), tipo, vis);
-                    atributo.setPos(parser.ts().claseActual.getProxPosAtributo());
-                    parser.ts().claseActual.listaAtributos.put(atributo.getNombre(), atributo);
-                    listaDec.add(new NodoDecAtr(parser.token()));
+                    // Atributos de una clase
+                    RegistroAtributo atributo;
+                    // atributo de clase
+                    // verifico que no este guardado ya en la lista de atributos
+                    if (parser.ts().claseActual.listaAtributos.containsKey(parser.token().getLexema())){
+                        // si ya esta, lanzo error semantico
+                        throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "Atributo: "+parser.token().getLexema()+" ,repetido");
+                    }
+                    else {
+                        atributo = parser.ts().crearRegAtributo(parser.token().getLexema(), tipo, vis);
+                        atributo.setPos(parser.ts().claseActual.getProxPosAtributo());
+                        atributo.setTokenAtributo(parser.token()); // le seteo el token para luego lanzar bien errores
+                        parser.ts().claseActual.listaAtributos.put(atributo.getNombre(), atributo);
+                        listaDec.add(new NodoDecAtr(parser.token()));
+                    }
+
                 }
             }
+
             parser.match("idMetVar");
         }
         else {

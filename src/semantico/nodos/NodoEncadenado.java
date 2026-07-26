@@ -10,7 +10,11 @@ public class NodoEncadenado extends Nodo{
 
     public NodoEncadenado(NodoEncadenadoRec nodoEncadenadoRec) {
         this.nodoEncadenadoRec = nodoEncadenadoRec;
-        this.tipoSintetizado = nodoEncadenadoRec.tipoSintetizado;
+
+        if (nodoEncadenadoRec != null) {
+            this.tipoSintetizado = nodoEncadenadoRec.tipoSintetizado;
+        }
+        //this.tipoSintetizado = nodoEncadenadoRec.tipoSintetizado;
     }
 
     public Tipo chequear() {

@@ -44,10 +44,9 @@ public class NodoRet extends NodoSentencia{
         //System.out.println("Expresion del ret: " + nodoExpresionOpt.getClass().getSimpleName());
 
         Tipo tipoExpresion = nodoExpresionOpt.chequear(ts);
-
         if (tipoExpresion == null){
             throw new ErrorSemantico(getNroLinea(), getNroColumna(),
-                    "El metodo: "+ts.getMetodoActual().getNombre()+", deberia retornar: "+ts.getMetodoActual().getTipoRetorno().getNombreTipo());
+                    "El metodo: "+ts.getMetodoActual().getNombre()+", deberia retornar: "+ts.getMetodoActual().getTipoRetorno().getNombreTipo()+" y retorna null");
         }
         //System.out.println("Retorno de la expresion: "+tipoExpresion.getNombreTipo());
         // si no devuelve null debe devolver el mismo tipo

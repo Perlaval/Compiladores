@@ -17,8 +17,8 @@ public class NodoOperando extends NodoExpresion {
     private NodoEncadenadoOpt nodoEncadenadoOpt;
 
     public NodoOperando(NodoLiteral nodoLiteral) {
-        System.out.println("Creo NodoOperando con: "
-                + (nodoLiteral == null ? "NULL" : nodoLiteral.getClass().getSimpleName()));
+        //System.out.println("Creo NodoOperando con: "
+          //      + (nodoLiteral == null ? "NULL" : nodoLiteral.getClass().getSimpleName()));
         this.nodoLiteral = nodoLiteral;
     }
 

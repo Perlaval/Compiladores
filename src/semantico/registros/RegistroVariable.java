@@ -1,5 +1,6 @@
 package semantico.registros;
 
+import lexico.Token;
 import semantico.tipos.Tipo;
 
 // con una variable guardo lo mismo que con un parametro mas la posicion
@@ -8,6 +9,8 @@ public class RegistroVariable{
     public int pos; // posicion del atributo
     public String nombre; // nombre
     public Tipo tipo; // tipo
+
+    public Token tokenVarLocal;
 
     public RegistroVariable(String nombre){
         this.nombre = nombre;
@@ -19,6 +22,7 @@ public class RegistroVariable{
     public void setTipo(Tipo t){
         this.tipo = t;
     }
+    public void setTokenVarLocal(Token t){this.tokenVarLocal = t;}
 
     public int getPos(){
         return this.pos;
@@ -29,6 +33,7 @@ public class RegistroVariable{
     public String getNombre(){
         return this.nombre;
     }
+    public Token getTokenVarLocal(){return this.tokenVarLocal;}
 
     @Override
     public String toString() {

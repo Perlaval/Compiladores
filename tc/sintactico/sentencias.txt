@@ -1,0 +1,42 @@
+class Nodo {
+    Int val;
+    Nodo sig;
+}
+
+impl Nodo{
+
+    .(){
+    }
+
+    fn Int get(){
+        // ret val; // este caso da error porque no tengo implementado el nodo chequear de acceso variable
+
+    }
+
+    fn Bool test(Int x){
+
+        if(val>x){
+            while(sig!=nil){
+                sig=sig.sig;
+            }
+            ret f();
+        }
+        else{
+            val=0;
+        }
+
+        ret true;
+    }
+}
+
+start{
+    //f();
+    Nodo n;
+
+    n=new Nodo();
+
+    if(n!=nil && n.get()>0){
+        (IO.out_int(n.get()));
+    }
+
+}

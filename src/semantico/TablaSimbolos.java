@@ -29,17 +29,46 @@ public class TablaSimbolos implements ValidarDeclaracion{
         //this.inicializarClasesPredefinidas();
     }
 
-    // metodo para obtener la clase
+    // Getters
     public RegistroClase getClase(String nombre){
         return tablaClases.get(nombre);
     }
-
     public RegistroClase getClaseActual() { return this.claseActual;}
-
     public RegistroMetodo getMetodoActual() { return  this.metodoActual;}
+    public RegistroVariable getVariable(String id){
+
+        //1. Buscos en el met actual
+        if (this.metodoActual.listaParametros.containsKey(id)){
+            return this.metodoActual.listaParametros.get(id);
+        }
+
+        if (this.metodoActual.listaVarLocales.containsKey(id)){
+            return this.metodoActual.listaVarLocales.get(id);
+        }
+
+        //2. Busco en la clase actual
+        if (this.claseActual.listaAtributos.containsKey(id)){
+
+            return this.claseActual.listaAtributos.get(id);
+        }
+
+        return null;
+    }
+
+    //NO LO USO
+    public RegistroVariable getAtrDeClase(RegistroClase clase, String id){
+        if (clase.listaAtributos.containsKey(id)){
+            return clase.listaAtributos.get(id);
+        }
+        return null;
+
+    }
+
+    // Setters
     public void setMetodoActual(RegistroMetodo metodo){
         this.metodoActual = metodo;
     }
+    public void setBloqueStart(RegistroStart bloqueStart){this.bloqueStart = bloqueStart;}
 
     /*
     public void imprimirClases(){
@@ -107,8 +136,15 @@ public class TablaSimbolos implements ValidarDeclaracion{
     }
 
     public boolean noEstaMetodoTs(String nombreMetodo){
-        RegistroMetodo metodo = this.claseActual.listaMetodos.get(nombreMetodo);
-        return (metodo == null);
+        /*if (bloqueStart != null){
+            // si estoy en el bloque start seguramente estoy haciendo algo asi: IO.out_str ..., debo verificar que esa metodo existe
+           // RegistroMetodo metodo = this..get(nombreMetodo);
+        }
+        else {*/
+            RegistroMetodo metodo = this.claseActual.listaMetodos.get(nombreMetodo);
+            return (metodo == null);
+       // }
+
 
         /*RegistroAtributo atr = clase.listaAtributos.get(id);
         if (atr == null){
@@ -116,35 +152,6 @@ public class TablaSimbolos implements ValidarDeclaracion{
         }
         return !atr.isVisibilidad();*/
     }
-
-    public RegistroVariable getVariable(String id){
-
-        //1. Buscos en el met actual
-        if (this.metodoActual.listaParametros.containsKey(id)){
-            return this.metodoActual.listaParametros.get(id);
-        }
-
-        if (this.metodoActual.listaVarLocales.containsKey(id)){
-            return this.metodoActual.listaVarLocales.get(id);
-        }
-
-        //2. Busco en la clase actual
-        if (this.claseActual.listaAtributos.containsKey(id)){
-
-            return this.claseActual.listaAtributos.get(id);
-        }
-
-        return null;
-    }
-
-    //NO LO USO
-    public RegistroVariable getAtrDeClase(RegistroClase clase, String id){
-    if (clase.listaAtributos.containsKey(id)){
-        return clase.listaAtributos.get(id);
-    }
-    return null;
-
-}
 
 // -----------------------------------------Crear Registros-------------------------------------------------------------------------------------------
     // creo un registro de clase
@@ -217,6 +224,20 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
         }
     }
+    public void consolidarStart() throws ErrorSemantico {
+        // verifico que de todas las variables que declare los tipos existan
+        for (RegistroVariable variable: bloqueStart.listaVariables.values()){
+            if (variable.tipo.esTipoReferencia()){
+                String nombreClase = variable.tipo.getNombreTipo();
+                if (noEstaTs(nombreClase)){
+                    throw new ErrorSemantico(variable.getTokenVarLocal().getFila(), variable.getTokenVarLocal().getColumna(),
+                            "La clase: '"+nombreClase+"' nunca fue definida");
+                }
+            }
+
+        }
+    }//
+
     public void verificarDeclarada(RegistroClase clase) throws ErrorSemantico{
         if (!clase.getDeclarada()) {
             throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
@@ -291,14 +312,27 @@ public class TablaSimbolos implements ValidarDeclaracion{
                 clase.getListaAtributos().put(atributo.getNombre(), atributo);
             }
         }
+        // si tengo un atributo de este estilo: A c; debo verificar que la clase A exista en mi ts
+        for (RegistroAtributo atributo: clase.getListaAtributos().values()){
+            if (atributo.tipo.esTipoReferencia()){
+                // si es de tipo referencia (idClass) entonces es una clase, la busco en mi ts
+                String nombreClase = atributo.tipo.getNombreTipo();
+                if (noEstaTs(nombreClase)){
+                    throw new ErrorSemantico(atributo.getTokenAtributo().getFila(), atributo.getTokenAtributo().getColumna(),
+                            "La clase: '"+nombreClase+"' nunca fue definida");
+                }
+            }
+        }
     }
-// ------------------------------------METODOS-----------------------------------------------------------------------------------------------------
-    // si un metodo de instancia tiene el mismo nombre que uno heredado lo puedo reescribir solo si:
-    // - misma cantidad de parametros (OK)
-    // - mismos tipos de parametros (OK)
-    // - el tipo de retorno es igual (OK)
-    // Un metodo de instancia (fn) se puede sobreescribir
-    // Un metodo estatico (st) no se puede sobreescribir
+
+
+// ------------------------------------METODOS EN CONSOLIDACION-----------------------------------------------------------------------------------------------------
+// si un metodo de instancia tiene el mismo nombre que uno heredado lo puedo reescribir solo si:
+// - misma cantidad de parametros (OK)
+// - mismos tipos de parametros (OK)
+// - el tipo de retorno es igual (OK)
+// Un metodo de instancia (fn) se puede sobreescribir
+// Un metodo estatico (st) no se puede sobreescribir
     public void consolidarMetodos(RegistroClase clase) throws ErrorSemantico {
         LinkedHashMap<String, RegistroMetodo> nuevosMetodos = new LinkedHashMap<>();
         if (!clase.heredaDe.equals("Object")){
@@ -320,6 +354,18 @@ public class TablaSimbolos implements ValidarDeclaracion{
                 }
             }
             clase.setListaMetodos(nuevosMetodos);
+        }
+        // para cada metodo verifico las var locales, si tengo alguna de este estilo: A c; debo verificar que A exista en mi TS
+        for (RegistroMetodo metodo: clase.getListaMetodos().values()){
+            for (RegistroVariable varLocal: metodo.getListaVarLocales().values()){
+                if (varLocal.tipo.esTipoReferencia()){
+                    String nombreClase = varLocal.tipo.getNombreTipo();
+                    if (noEstaTs(nombreClase)){
+                        throw new ErrorSemantico(varLocal.getTokenVarLocal().getFila(), varLocal.getTokenVarLocal().getColumna(),
+                                "La clase: '"+nombreClase+"' nunca fue definida");
+                    }
+                }
+            }
         }
     }
     public void verificarRedefinicionMetodo(RegistroMetodo metodo, RegistroMetodo metodoHijo, RegistroClase padre) throws ErrorSemantico {

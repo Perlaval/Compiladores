@@ -22,7 +22,7 @@ self .hola = "hola";
 }
 impl B{
 fn Bool getX() {
-ret self .x;
+ret self .x; // aca me devuelve error pero x es Bool
 }
 }
 start {
@@ -32,5 +32,5 @@ Int b;
 b=3;
 a=10;
 c=a+b; //esto NO devuelve error de tipo
-(IO.print_Int(c));
+//(IO.print_Int(c));
 }

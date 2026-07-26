@@ -38,7 +38,7 @@ public class NodoMetodo extends Nodo{
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         //System.out.println("Chequeo metodo: " + metodoActual.getNombre());
         if (!metodoActual.isConstructor()){
-            System.out.println("retorno: "+metodoActual.getTipoRetorno().getNombreTipo());
+            //System.out.println("retorno: "+metodoActual.getTipoRetorno().getNombreTipo());
         }
         //System.out.println("retorno: "+metodoActual.getTipoRetorno().getNombreTipo());
         ts.setMetodoActual(metodoActual);
