@@ -51,6 +51,7 @@ public class Main {
             Parser parser = new Parser(analisisLexico);
             parser.analizador();
             System.out.println("CORRECTO: ANALISIS SINTACTICO");
+            System.out.println("CORRECTO: ANALISIS SEMANTICO");
 
         } catch (IOException e) {
             System.out.println("Error al leer el archivo " + e.getMessage());

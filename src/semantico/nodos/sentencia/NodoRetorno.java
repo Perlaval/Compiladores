@@ -42,7 +42,6 @@ public class NodoRetorno extends NodoSentencia{
         //System.out.println("Expresion del ret: " + nodoExpresionOpt.getClass().getSimpleName());
 
         Tipo tipoExpresion = nodoExpresionOpt.chequear(ts);
-
         if (tipoExpresion == null){
             throw new ErrorSemantico(token.getFila(), token.getColumna(),
                     "El metodo: "+ts.getMetodoActual().getNombre()+", deberia retornar: "+ts.getMetodoActual().getTipoRetorno().getNombreTipo());

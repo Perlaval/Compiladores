@@ -51,7 +51,7 @@ impl A {
    .(){
     Bool x;}
     fn Str metodoprueba(){
-        for (Int a in iteratoor){
+        for (Int a in iteratoor) do{ // | LINEA  53 (COLUMNA 36) | Se esperaba opIgual y se enontro llaveAbre |
 
         }
     }

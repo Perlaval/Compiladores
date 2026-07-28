@@ -15,8 +15,9 @@ start {
     n.sig = new Nodo();
     n.sig.val = lista + 1; // Acceso encadenado complejo
 
-    if (n.sig.val != nil && n.val < lista.length()) {
+/*
+    if (n.sig.val != nil && n.val < lista.length()) { // se me rompe aca el nodo encadenado, ARREGLAR QUE PASA CUANDO ES NULL
        // (IO.out_str("Correcto")); // este no larga error
        (IO.out_int(5, )); // deberia largar error
-    }
+    } */
 }

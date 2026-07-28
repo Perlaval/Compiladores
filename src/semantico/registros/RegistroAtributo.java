@@ -1,5 +1,6 @@
 package semantico.registros;
 
+import lexico.Token;
 import semantico.tipos.Tipo;
 
 public class RegistroAtributo extends RegistroVariable {
@@ -8,6 +9,8 @@ public class RegistroAtributo extends RegistroVariable {
     // false priv
     public boolean visibilidad;
 
+    private Token tokenAtributo;
+
     public void setVisibilidad(boolean vis) {
         this.visibilidad = vis;
     }
@@ -15,6 +18,13 @@ public class RegistroAtributo extends RegistroVariable {
     public RegistroAtributo(String nombre) {
         super(nombre);
         this.visibilidad = false; //por defecto es privado, a no ser que se indique lo contrari
+    }
+
+    public void setTokenAtributo(Token tokenAtributo){
+        this.tokenAtributo = tokenAtributo;
+    }
+    public Token getTokenAtributo(){
+        return this.tokenAtributo;
     }
 
     @Override

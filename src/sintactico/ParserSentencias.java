@@ -33,17 +33,24 @@ public class ParserSentencias {
 
     //------------------------------------------------------------------------------------------------------------
     // SENTENCIA:
-    //      - Sentencia -> ; | Asignacion | SentenciaSimple ; | if ( Expresion ) SentenciaRec | while ( Expresion ) Sentencia |
-    //          for ( TipoPrimitivo idMetAt in idMetAt) Sentencia | Bloque | ret ExpresionOpt
+    //      - Sentencia -> ; | Asignacion ; | SentenciaSimple ; | if ( Expresion ) SentenciaRec | while ( Expresion ) Sentencia |
+    //          for ( TipoPrimitivo idMetAt in idMetAt) Sentencia | Bloque | ret ExpresionOpt ;
     //------------------------------------------------------------------------------------------------------------
     private NodoSentencia sentencia(/*Tipo tipo*/) throws ErrorSintactico, ErrorLexico, ErrorSemantico {
-
         if (parser.token().getTipo().equals("ptoComa")){
             parser.match("ptoComa");
         }
         else {// SENTENCIA SIMPLE
             if (parser.token().getTipo().equals("parAbre")){
                 NodoSentenciaSimple sentenciaSimple = sentenciaSimple();
+                //REVISAR
+                if (!parser.token().getTipo().equals("ptoComa")) {
+                    throw new ErrorSintactico(
+                            parser.token().getFila(),
+                            parser.token().getColumna(),
+                            "Falta ';' al final de la sentencia simple"
+                    );
+                }
                 parser.match("ptoComa");
                 return sentenciaSimple;
             }
@@ -97,6 +104,15 @@ public class ParserSentencias {
                                     //}
                                     Token tRet = parser.token();
                                     parser.match("prRet");
+                                    //REVISAR
+                                    if (!parser.token().getTipo().equals("ptoComa")) {
+                                        throw new ErrorSintactico(
+                                                parser.token().getFila(),
+                                                parser.token().getColumna(),
+                                                "Falta ';' al final de la sentencia ret"
+                                        );
+                                    }
+                                    parser.match("ptoComa");
                                     //expresionOpt();
                                     return new NodoRetorno(tRet, parser.getParserExpresiones().expresionOpt());
 
@@ -104,6 +120,15 @@ public class ParserSentencias {
                                 else { //ASIGNACIÓN
                                     // con idMetVar o con self voy a asignacion
                                     if (parser.token().getTipo().equals("idMetVar") | parser.token().getTipo().equals("prSelf")){
+                                        //REVISAR
+                                        if (!parser.token().getTipo().equals("ptoComa")) {
+                                            throw new ErrorSintactico(
+                                                    parser.token().getFila(),
+                                                    parser.token().getColumna(),
+                                                    "Falta ';' al final de la asignacion"
+                                            );
+                                        }
+                                        parser.match("ptoComa");
                                         return asignacion();
                                     }
                                 }
