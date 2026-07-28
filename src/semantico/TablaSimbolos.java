@@ -230,7 +230,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
             if (variable.tipo.esTipoReferencia()){
                 String nombreClase = variable.tipo.getNombreTipo();
                 if (noEstaTs(nombreClase)){
-                    throw new ErrorSemantico(variable.getTokenVarLocal().getFila(), variable.getTokenVarLocal().getColumna(),
+                    throw new ErrorSemantico(variable.getTokenVarLocal(),
                             "La clase: '"+nombreClase+"' nunca fue definida");
                 }
             }
@@ -240,30 +240,30 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
     public void verificarDeclarada(RegistroClase clase) throws ErrorSemantico{
         if (!clase.getDeclarada()) {
-            throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+            throw new ErrorSemantico(clase.getTokenClase(),
                     "La clase " + clase.getNombre() + " no fue declarada");
         }
     }
     public void verificarImplementada(RegistroClase clase) throws ErrorSemantico{
         if (!clase.getImplementada()){
-            throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+            throw new ErrorSemantico(clase.getTokenClase(),
                     "La clase "+clase.getNombre()+" debe tener al menos un impl");
         }
     }
     public void verificarConstructor(RegistroClase clase) throws ErrorSemantico{
         if (!clase.inConstructor){
-            throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+            throw new ErrorSemantico(clase.getTokenClase(),
                     "La clase "+clase.getNombre()+" no posee constructor");
         }
     }
     public void verificarHerenciaDeclarada(RegistroClase clase, String padre) throws ErrorSemantico{
         if (padre != null && !tablaClases.containsKey(padre)){
-            throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+            throw new ErrorSemantico(clase.getTokenClase(),
                     "La clase "+padre+" no fue declarada");
         }
         // si hereda de si misma
         if (padre != null && clase.getHeredaDe().equals(clase.getNombre())){
-            throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+            throw new ErrorSemantico(clase.getTokenClase(),
                     "La clase "+padre+" no puede heredar de si misma");
         }
         // le asigno object si no tiene herencia declarada
@@ -283,8 +283,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
         while(!claseActual.getNombre().equals("Object")){
             if (visitadas.contains(claseActual.getNombre())) {
                 throw new ErrorSemantico(
-                        clase.getTokenClase().getFila(),
-                        clase.getTokenClase().getColumna(),
+                        clase.getTokenClase(),
                         "La clase '" + clase.getNombre() +
                                 "' posee herencia circular."
                 );
@@ -306,7 +305,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
             for (RegistroAtributo atributo : padre.getListaAtributos().values()) {
                 // si el atributo ya esta en la clase hija error, sino lo agrego
                 if (clase.getListaAtributos().containsKey(atributo.getNombre())) {
-                    throw new ErrorSemantico(clase.getTokenClase().getFila(), clase.getTokenClase().getColumna(),
+                    throw new ErrorSemantico(clase.getTokenClase(),
                             "Atributo " + atributo.getNombre() + " redefinido en la clase " + clase.getNombre());
                 }
                 clase.getListaAtributos().put(atributo.getNombre(), atributo);
@@ -318,7 +317,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
                 // si es de tipo referencia (idClass) entonces es una clase, la busco en mi ts
                 String nombreClase = atributo.tipo.getNombreTipo();
                 if (noEstaTs(nombreClase)){
-                    throw new ErrorSemantico(atributo.getTokenAtributo().getFila(), atributo.getTokenAtributo().getColumna(),
+                    throw new ErrorSemantico(atributo.getTokenAtributo(),
                             "La clase: '"+nombreClase+"' nunca fue definida");
                 }
             }
@@ -361,7 +360,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
                 if (varLocal.tipo.esTipoReferencia()){
                     String nombreClase = varLocal.tipo.getNombreTipo();
                     if (noEstaTs(nombreClase)){
-                        throw new ErrorSemantico(varLocal.getTokenVarLocal().getFila(), varLocal.getTokenVarLocal().getColumna(),
+                        throw new ErrorSemantico(varLocal.getTokenVarLocal(),
                                 "La clase: '"+nombreClase+"' nunca fue definida");
                     }
                 }
@@ -372,8 +371,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
         // si son diferentes (instancia y estatico)
         if (metodo.esEstatico != metodoHijo.esEstatico){
             throw new ErrorSemantico(
-                    metodoHijo.getTokenMetodo().getFila(),
-                    metodoHijo.getTokenMetodo().getColumna(),
+                    metodoHijo.getTokenMetodo(),
                     "El metodo: "+metodoHijo.getNombre()+" no puede redefinirse como de instancia, ni viceversa");
         }
         // si el hijo es de instancia
@@ -388,7 +386,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
     public void verificarCantParam(RegistroMetodo metodo, RegistroMetodo metodoHijo, RegistroClase padre) throws ErrorSemantico {
         // chequeo cant parametros
         if (metodoHijo.getListaParametros().size() != metodo.getListaParametros().size()){ // chequeo cant de parametros
-            throw new ErrorSemantico(metodoHijo.getTokenMetodo().getFila(), metodoHijo.getTokenMetodo().getColumna(),
+            throw new ErrorSemantico(metodoHijo.getTokenMetodo(),
                     "El método " + metodoHijo.getNombre() +
                             " redefine al metodo heredado de la clase: "+padre.getNombre()+" ,con una cantidad distinta de parámetros. " +
                             "Se esperaban " + metodo.getListaParametros().size() +
@@ -410,8 +408,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
             if (!paramPadre.getTipo().equals(paramHijo.getTipo())) {
                 throw new ErrorSemantico(
-                        metodoHijo.getTokenMetodo().getFila(),
-                        metodoHijo.getTokenMetodo().getColumna(),
+                        metodoHijo.getTokenMetodo(),
                         "Para el parámetro " + paramHijo.getNombre() +
                                 " ,se esperaba: "+paramPadre.getTipo().getNombreTipo()+ " y se encontro: "+paramHijo.getTipo().getNombreTipo()
                 );
@@ -423,8 +420,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
         if (!metodo.getTipoRetorno().getNombreTipo()
                 .equals(metodoHijo.getTipoRetorno().getNombreTipo())){
             throw new ErrorSemantico(
-                    metodoHijo.getTokenMetodo().getFila(),
-                    metodoHijo.getTokenMetodo().getColumna(),
+                    metodoHijo.getTokenMetodo(),
                     "Se esperaba un retorno de tipo: "+metodo.getTipoRetorno().getNombreTipo()+ " y se encontro: "+metodoHijo.getTipoRetorno().getNombreTipo()
             );
         }

@@ -5,6 +5,8 @@ import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.nodos.Nodo;
 import semantico.tipos.Tipo;
+import semantico.visitor.Visitor;
+
 
 public abstract class NodoSentencia extends Nodo {
     protected NodoSentencia(Token token) {
@@ -14,6 +16,6 @@ public abstract class NodoSentencia extends Nodo {
     //Guarda la pos de la sentencia dentro del metodo
     //protected int pos;
 
-    public abstract Tipo chequear(TablaSimbolos ts) throws ErrorSemantico;
+    public abstract void accept(Visitor visitor) throws ErrorSemantico;
 
 }

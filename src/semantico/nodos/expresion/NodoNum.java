@@ -1,6 +1,7 @@
 package semantico.nodos.expresion;
 
 import lexico.Token;
+import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
 import semantico.tipos.TipoPrimitivo;
@@ -14,4 +15,5 @@ public class NodoNum extends NodoLiteral{
     public Tipo chequear(TablaSimbolos ts) {
         return new TipoPrimitivo("tInt");
     }
+
 }

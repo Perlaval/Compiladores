@@ -46,8 +46,7 @@ public class ParserSentencias {
                 //REVISAR
                 if (!parser.token().getTipo().equals("ptoComa")) {
                     throw new ErrorSintactico(
-                            parser.token().getFila(),
-                            parser.token().getColumna(),
+                            parser.token(),
                             "Falta ';' al final de la sentencia simple"
                     );
                 }
@@ -105,16 +104,16 @@ public class ParserSentencias {
                                     Token tRet = parser.token();
                                     parser.match("prRet");
                                     //REVISAR
-                                    if (!parser.token().getTipo().equals("ptoComa")) {
+                                    /*if (!parser.token().getTipo().equals("ptoComa")) {
                                         throw new ErrorSintactico(
-                                                parser.token().getFila(),
-                                                parser.token().getColumna(),
+                                                parser.token(),
                                                 "Falta ';' al final de la sentencia ret"
                                         );
-                                    }
+                                    }*/
+                                    NodoExpresion nodoExpresion = parser.getParserExpresiones().expresionOpt();
                                     parser.match("ptoComa");
                                     //expresionOpt();
-                                    return new NodoRetorno(tRet, parser.getParserExpresiones().expresionOpt());
+                                    return new NodoRetorno(tRet, nodoExpresion);
 
                                 }
                                 else { //ASIGNACIÓN
@@ -123,8 +122,7 @@ public class ParserSentencias {
                                         //REVISAR
                                         if (!parser.token().getTipo().equals("ptoComa")) {
                                             throw new ErrorSintactico(
-                                                    parser.token().getFila(),
-                                                    parser.token().getColumna(),
+                                                    parser.token(),
                                                     "Falta ';' al final de la asignacion"
                                             );
                                         }

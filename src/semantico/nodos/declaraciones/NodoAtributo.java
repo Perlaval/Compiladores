@@ -4,6 +4,7 @@ import lexico.Token;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
+import semantico.visitor.Visitor;
 
 public class NodoAtributo extends NodoDeclaracion{
     public NodoAtributo(Token tdeclaracion) {
@@ -14,4 +15,5 @@ public class NodoAtributo extends NodoDeclaracion{
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         return null;
     }
+
 }

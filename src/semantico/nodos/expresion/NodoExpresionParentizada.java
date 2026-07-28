@@ -1,8 +1,8 @@
 package semantico.nodos.expresion;
 
 import lexico.Token;
+import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
-import semantico.nodos.expresion.encadenables.NodoEncadenable;
 import semantico.nodos.expresion.encadenables.primario.NodoPrimario;
 import semantico.tipos.Tipo;
 
@@ -24,4 +24,5 @@ public class NodoExpresionParentizada extends NodoPrimario {
 
         return null;
     }
+
 }

@@ -6,6 +6,8 @@ import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoExpresion;
 import semantico.registros.RegistroMetodo;
 import semantico.tipos.Tipo;
+import semantico.visitor.Visitor;
+
 
 public class NodoRetorno extends NodoSentencia{
 
@@ -20,7 +22,7 @@ public class NodoRetorno extends NodoSentencia{
         return nodoExpresionOpt;
     }
 
-    @Override
+    /*@Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         //System.out.println("Entre a chequear de ret");
         RegistroMetodo metodo = ts.getMetodoActual();
@@ -30,7 +32,7 @@ public class NodoRetorno extends NodoSentencia{
         if (nodoExpresionOpt == null){
             // verifico que el retorno sea void
             if (!tipoRet.getNombreTipo().equals("Void")){
-                throw new ErrorSemantico(token.getFila(), token.getColumna(),
+                throw new ErrorSemantico(token,
                         "El metodo: "+metodo.getNombre()+ " deberia retornar: "+metodo.getTipoRetorno().getNombreTipo());
             }
             return tipoRet;
@@ -43,16 +45,22 @@ public class NodoRetorno extends NodoSentencia{
 
         Tipo tipoExpresion = nodoExpresionOpt.chequear(ts);
         if (tipoExpresion == null){
-            throw new ErrorSemantico(token.getFila(), token.getColumna(),
+            throw new ErrorSemantico(token,
                     "El metodo: "+ts.getMetodoActual().getNombre()+", deberia retornar: "+ts.getMetodoActual().getTipoRetorno().getNombreTipo());
         }
         //System.out.println("Retorno de la expresion: "+tipoExpresion.getNombreTipo());
         // si no devuelve null debe devolver el mismo tipo
         if (!tipoRet.getNombreTipo().equals(tipoExpresion.getNombreTipo())){
-            throw new ErrorSemantico(token.getFila(), token.getColumna(),
+            throw new ErrorSemantico(token,
                     "Se esperaba un retorno: "+ts.getMetodoActual().getTipoRetorno().getNombreTipo()+", y se recibio: "
                             +tipoExpresion.getNombreTipo());
         }
         return tipoRet;
+    }*/
+
+    @Override
+    public void accept(Visitor visitor) throws ErrorSemantico {
+        visitor.visit(this);
     }
+
 }

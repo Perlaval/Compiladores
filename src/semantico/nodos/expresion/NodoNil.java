@@ -1,6 +1,7 @@
 package semantico.nodos.expresion;
 
 import lexico.Token;
+import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
 
@@ -14,4 +15,5 @@ public class NodoNil extends NodoLiteral{
     public Tipo chequear(TablaSimbolos ts) {
         return null;
     }
+
 }

@@ -24,4 +24,5 @@ public class NodoAccesoArreglo extends NodoAcceso{
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         return null;
     }
+
 }

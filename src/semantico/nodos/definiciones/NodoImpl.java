@@ -5,6 +5,7 @@ import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.nodos.miembro.NodoMetodo;
 import semantico.tipos.Tipo;
+import semantico.visitor.Visitor;
 
 import java.util.ArrayList;
 
@@ -27,7 +28,7 @@ public class NodoImpl extends NodoDefinicion {
         return listaMiembros;
     }
 
-    @Override
+    /*@Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         //System.out.println("Chequeo impl");
 
@@ -35,5 +36,10 @@ public class NodoImpl extends NodoDefinicion {
             metodo.chequear(ts);
         }
         return null;
+    }*/
+
+    @Override
+    public void accept(Visitor visitor) throws ErrorSemantico {
+        visitor.visit(this);
     }
 }

@@ -20,4 +20,5 @@ public abstract class NodoExpresion extends Nodo {
             }
         }
     }*/
+    public abstract Tipo chequear(TablaSimbolos ts) throws ErrorSemantico;
 }

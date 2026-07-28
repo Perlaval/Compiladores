@@ -16,4 +16,5 @@ public class NodoVariableLocal extends NodoDeclaracion{
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         return null;
     }
+
 }

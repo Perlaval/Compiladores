@@ -4,7 +4,6 @@ import lexico.Token;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoExpresion;
-import semantico.nodos.expresion.encadenables.primario.NodoPrimario;
 import semantico.tipos.Tipo;
 
 import java.util.ArrayList;
@@ -34,4 +33,5 @@ public class NodoLlamadaMetodo extends NodoAcceso {
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         return null;
     }
+
 }

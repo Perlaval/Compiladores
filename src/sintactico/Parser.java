@@ -12,6 +12,7 @@ import semantico.nodos.definiciones.NodoDefinicion;
 import semantico.nodos.programa.NodoProgram;
 import semantico.nodos.programa.NodoStart;
 import semantico.registros.RegistroStart;
+import semantico.visitor.VisitorSentencias;
 //import semantico.registros.RegistroStart;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class Parser {
     private Token next;
     private boolean lookahead = false;
     private final TablaSimbolos ts = new TablaSimbolos();
-    private final GestorDeclaraciones gestorDeclaraciones = new GestorDeclaraciones(ts);
+    private final VisitorSentencias visitorSentencias = new VisitorSentencias(ts);
     private Ast ast;
 
     private final ParserExpresiones parserExpresiones;
@@ -39,7 +40,7 @@ public class Parser {
 
     public Token token(){return this.token;}
     public TablaSimbolos ts(){return this.ts;}
-    public GestorDeclaraciones gestorDeclaraciones(){return this.gestorDeclaraciones;}
+    //public GestorDeclaraciones gestorDeclaraciones(){return this.gestorDeclaraciones;}
     public Ast ast(){return this.ast;}
 
     public ParserExpresiones getParserExpresiones() {
@@ -61,7 +62,9 @@ public class Parser {
         this.token = lexico.analizador();
         // Program -> ListaDefiniciones Start
         NodoProgram program = program(); //program es la raiz de mi ast
-        program.chequear(ts);
+        //program.chequear(ts);
+        program.accept(visitorSentencias);
+
         // si sale de program es porque hizo match con $ entonces devolver Exito!
 
         ast = new Ast(program);
@@ -113,7 +116,7 @@ public class Parser {
             return new NodoStart(tStart, bloqueMetodo);
         }
         else {
-            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba start y se enontro "+token.getTipo());
+            throw new ErrorSintactico(token, "Se esperaba start y se enontro "+token.getTipo());
         }
 
     }
@@ -136,7 +139,7 @@ public class Parser {
             }
         }
         else {
-            throw new ErrorSintactico(token.getFila(), token.getColumna(), "Se esperaba '"+tipoEsperado+"' y se encontro '"+token.getTipo()+"'");
+            throw new ErrorSintactico(token, "Se esperaba '"+tipoEsperado+"' y se encontro '"+token.getTipo()+"'");
         }
     }
 

@@ -5,6 +5,8 @@ import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoExpresion;
 import semantico.tipos.Tipo;
+import semantico.visitor.Visitor;
+
 
 public class NodoSentenciaSimple extends NodoSentencia{
 
@@ -19,9 +21,14 @@ public class NodoSentenciaSimple extends NodoSentencia{
         return nodoExpresion;
     }
 
-    @Override
+    /*@Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
 
         return null;
+    }*/
+
+    @Override
+    public void accept(Visitor visitor) throws ErrorSemantico {
+        visitor.visit(this);
     }
 }

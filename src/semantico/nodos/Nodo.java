@@ -3,11 +3,7 @@ package semantico.nodos;
 import lexico.Token;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
-import semantico.registros.RegistroClase;
-import semantico.registros.RegistroVariable;
 import semantico.tipos.Tipo;
-import semantico.tipos.TipoReferencia;
-import semantico.visitors.Visitor;
 
 public abstract class Nodo {
 
@@ -44,8 +40,7 @@ public abstract class Nodo {
         this.tipoHeredado = tipoHeredado;
     }*/
 
-    public abstract Tipo chequear(TablaSimbolos ts) throws ErrorSemantico;
+    //public abstract Tipo chequear(TablaSimbolos ts) throws ErrorSemantico;
 
-    //public abstract <T> T aceptar(Visitor<T> visitor);
     //public void chequear() throws ErrorSemantico{};
 }

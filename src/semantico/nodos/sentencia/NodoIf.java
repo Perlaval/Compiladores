@@ -5,6 +5,8 @@ import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoExpresion;
 import semantico.tipos.Tipo;
+import semantico.visitor.Visitor;
+
 
 public class NodoIf extends NodoSentencia{
 
@@ -33,7 +35,7 @@ public class NodoIf extends NodoSentencia{
         return nodoSentenciaElse;
     }
 
-    @Override
+    /*@Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         // el resultado de la condicion debe ser de tipo bool
         /*
@@ -43,6 +45,12 @@ public class NodoIf extends NodoSentencia{
         }
             throw new ErrorSemantico(nroLinea, nroColumna, "La condicionn debe ser de tipo Bool");
         }*/
-        return null;
+        //return null;
+    //}
+
+    @Override
+    public void accept(Visitor visitor) throws ErrorSemantico {
+        visitor.visit(this);
     }
+
 }

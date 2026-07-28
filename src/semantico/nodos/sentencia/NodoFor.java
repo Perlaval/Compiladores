@@ -1,8 +1,11 @@
 package semantico.nodos.sentencia;
 
 import lexico.Token;
+import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
+import semantico.visitor.Visitor;
+
 
 public class NodoFor extends NodoSentencia{
 
@@ -36,9 +39,15 @@ public class NodoFor extends NodoSentencia{
         return cuerpo;
     }
 
-    @Override
+    /*@Override
     public Tipo chequear(TablaSimbolos ts) {
 
         return null;
+    }*/
+
+    @Override
+    public void accept(Visitor visitor) throws ErrorSemantico {
+        visitor.visit(this);
     }
+
 }

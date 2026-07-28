@@ -6,10 +6,11 @@ import semantico.TablaSimbolos;
 import semantico.nodos.Nodo;
 import semantico.nodos.sentencia.NodoSentencia;
 import semantico.tipos.Tipo;
+import semantico.visitor.Visitor;
 
 import java.util.ArrayList;
 
-public class NodoBloqueMetodo extends Nodo {
+public class NodoBloqueMetodo extends Nodo {//hereda de nodoDeclaracion?
 
     private ArrayList<NodoDeclaracion> listaDecVarLocal;
     private ArrayList<NodoSentencia> listaSent;
@@ -28,7 +29,7 @@ public class NodoBloqueMetodo extends Nodo {
         return listaSent;
     }
 
-    //@Override
+    /*@Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         // para llegar a nodoRet hago esto
         // Primero chequeo declaraciones de variables locales
@@ -37,14 +38,20 @@ public class NodoBloqueMetodo extends Nodo {
         }
 
         // Después chequeo las sentencias
-        /*
+
         System.out.println("Bloque del metodo actual: "
                 + ts.getMetodoActual().getNombre()
                 + " cantidad sentencias: "
-                + listaSent.size());*/
+                + listaSent.size());
         for (NodoSentencia sentencia : listaSent) {
             sentencia.chequear(ts);
         }
         return null;
+    }*/
+
+    public void accept(Visitor visitor) throws ErrorSemantico {
+        visitor.visit(this);
     }
+
+
 }

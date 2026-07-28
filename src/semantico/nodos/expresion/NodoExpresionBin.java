@@ -4,7 +4,6 @@ import lexico.Token;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
-import sintactico.Operador;
 
 public class NodoExpresionBin extends NodoExpresion {
 
@@ -68,4 +67,5 @@ public class NodoExpresionBin extends NodoExpresion {
         */
         return null;
     }
+
 }

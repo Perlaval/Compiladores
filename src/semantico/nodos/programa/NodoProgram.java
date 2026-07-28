@@ -6,6 +6,7 @@ import semantico.TablaSimbolos;
 import semantico.nodos.Nodo;
 import semantico.nodos.definiciones.NodoDefinicion;
 import semantico.tipos.Tipo;
+import semantico.visitor.Visitor;
 
 import java.util.ArrayList;
 
@@ -29,7 +30,7 @@ public class NodoProgram extends Nodo {
     }
 
 
-    @Override
+    /*@Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         // hago recorrido para probar el nodoret
         //System.out.println("Chequeo program");
@@ -40,5 +41,10 @@ public class NodoProgram extends Nodo {
         }
         nodoStart.chequear(ts);
         return null;
+    }*/
+
+    public void accept(Visitor visitor) throws ErrorSemantico {
+        visitor.visit(this);
     }
+
 }

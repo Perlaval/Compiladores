@@ -4,7 +4,7 @@ import lexico.Token;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
-import semantico.visitors.Visitor;
+import semantico.visitor.Visitor;
 
 public class NodoArgumento extends NodoDeclaracion {
     public NodoArgumento(Token tdeclaracion) {
@@ -16,8 +16,4 @@ public class NodoArgumento extends NodoDeclaracion {
         return null;
     }
 
-    /*@Override
-    public <T> T aceptar(Visitor<T> visitor) {
-        return visitor.visit(this);
-    }*/
-}
+ }

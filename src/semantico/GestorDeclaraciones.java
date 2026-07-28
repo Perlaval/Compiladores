@@ -19,7 +19,7 @@ public class GestorDeclaraciones {
     public RegistroClase registrarClaseTs(Token id, String herencia) throws ErrorSemantico{
         // si el id esta en las clases predefinidas -> error
         if (ts.isNombreClasePredefinida(id.getLexema())){
-            throw new ErrorSemantico(id.getFila(), id.getColumna(), "La clase: "+id.getLexema()+" No se puede redefinir, es una clase predefinida");
+            throw new ErrorSemantico(id, "La clase: "+id.getLexema()+" No se puede redefinir, es una clase predefinida");
         }
         RegistroClase clase;
         if (ts.noEstaTs(id.getLexema())){ // no esta guardada la clase en la TS
@@ -33,7 +33,7 @@ public class GestorDeclaraciones {
             if (herencia != null){
                 if (clase.declarada){
                     if (!clase.heredaDe.equals(herencia)){
-                        throw new ErrorSemantico(id.getFila(), id.getColumna(),
+                        throw new ErrorSemantico(id,
                                 "Redefinicion de herencia para la clase: "+clase.getNombre());
                     }
                 }

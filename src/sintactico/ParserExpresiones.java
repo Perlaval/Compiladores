@@ -216,7 +216,7 @@ public class ParserExpresiones {
                 //return new NodoExpresionUnario(operando);
                 return operando();
             } else {
-                throw new ErrorSintactico(parser.token().getFila(), parser.token().getColumna(), "Se esperaba un operando y se encontro " + parser.token().getTipo());
+                throw new ErrorSintactico(parser.token(), "Se esperaba un operando y se encontro " + parser.token().getTipo());
             }
             //operando();
         }
@@ -593,7 +593,7 @@ public class ParserExpresiones {
                 // verifico que no este en un contexto estatico
                 //System.out.println("Metodo actual: "+ts.metodoActual.getNombre());
                 if (parser.ts().metodoActual.esEstatico){
-                    throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "No se puede acceder a una variable de instancia en un contexto estatico");
+                    throw new ErrorSemantico(parser.token(), "No se puede acceder a una variable de instancia en un contexto estatico");
                 }
                 NodoAccesoSelf nodoAccesoSelf = accesoSelf();
                 return nodoAccesoSelf;
@@ -648,7 +648,7 @@ public class ParserExpresiones {
 
         //Trini comenta este if-else: linea 650 hasta 653
         if (parser.ts().noEstaMetodoTs(parser.token().getLexema())){
-            throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "El metodo '"+parser.token().getLexema()+"' no fue declarado");
+            throw new ErrorSemantico(parser.token(), "El metodo '"+parser.token().getLexema()+"' no fue declarado");
         }
         else {
             //RegistroVariable id = parser.ts().getVariable(parser.token().getLexema());
@@ -691,7 +691,7 @@ public class ParserExpresiones {
         }
         else {*/
         if (parser.ts().noEstaTs(parser.token().getLexema())){
-            throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "El id de clase: "+parser.token().getLexema()+" no ha sido declarado");
+            throw new ErrorSemantico(parser.token(), "El id de clase: "+parser.token().getLexema()+" no ha sido declarado");
         }
         else {
             // obtengo el id
@@ -736,7 +736,7 @@ public class ParserExpresiones {
             }
             else {*/
             if (parser.ts().noEstaTs(parser.token().getLexema())){
-                throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "El id de clase: "+parser.token().getLexema()+" no ha sido declarado");
+                throw new ErrorSemantico(parser.token(), "El id de clase: "+parser.token().getLexema()+" no ha sido declarado");
             }
             else {
                 // obtengo el id

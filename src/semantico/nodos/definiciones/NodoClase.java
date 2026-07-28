@@ -5,6 +5,7 @@ import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.nodos.declaraciones.NodoDeclaracion;
 import semantico.tipos.Tipo;
+import semantico.visitor.Visitor;
 
 import java.util.ArrayList;
 
@@ -21,8 +22,13 @@ public class NodoClase extends NodoDefinicion {
         return listaAtributos;
     }
 
-    @Override
+    /*@Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
         return null;
+    }*/
+
+    @Override
+    public void accept(Visitor visitor) throws ErrorSemantico {
+        visitor.visit(this);
     }
 }

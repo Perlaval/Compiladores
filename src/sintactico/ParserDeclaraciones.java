@@ -39,7 +39,7 @@ public class ParserDeclaraciones {
             }
         }
         if (!parser.token().getLexema().equals("start")){
-            throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "Se esperaba impl, class o start y se encontró '"+parser.token().getLexema()+"'");
+            throw new ErrorSemantico(parser.token(), "Se esperaba impl, class o start y se encontró '"+parser.token().getLexema()+"'");
         }
         return listaDef;
     }
@@ -52,7 +52,7 @@ public class ParserDeclaraciones {
         parser.match("prClass");
         // si el id esta en las clases predefinidas -> error
         if (parser.ts().isNombreClasePredefinida(parser.token().getLexema())){
-            throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "La clase: "+parser.token().getLexema()+" No se puede redefinir, es una clase predefinida");
+            throw new ErrorSemantico(parser.token(), "La clase: "+parser.token().getLexema()+" No se puede redefinir, es una clase predefinida");
         }
         if (parser.token().getTipo().equals("idClass")){
             Token id = parser.token(); // guardo el token para guardarlo en la ts, porque cuando matcheo avanzo entonces lo pierdo
@@ -76,7 +76,7 @@ public class ParserDeclaraciones {
                     // si esta declarada la firme debe coincidir porque la guarde desde class
                     if (clase.declarada){
                         if (!clase.heredaDe.equals(padre)){
-                            throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(),
+                            throw new ErrorSemantico(parser.token(),
                                     "Redefinicion de herencia para la clase: "+clase.getNombre());
                         }
                     }
@@ -99,7 +99,7 @@ public class ParserDeclaraciones {
             return new NodoClase(id, listaAtr);
         }
         else {
-            throw new ErrorSintactico(parser.token().getFila(), parser.token().getColumna(), "Se esperaba un idClass y se recibio: "+parser.token().getTipo());
+            throw new ErrorSintactico(parser.token(), "Se esperaba un idClass y se recibio: "+parser.token().getTipo());
         }
     }
 
@@ -136,11 +136,11 @@ public class ParserDeclaraciones {
                 superClase = tipoSuperClase.getNombreTipo();
             }
             else {
-                throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "Es un error heredar de la clase: " +parser.token().getLexema());
+                throw new ErrorSemantico(parser.token(), "Es un error heredar de la clase: " +parser.token().getLexema());
             }
         }
         else {
-            throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "Se esperaba un id de clase y se encontro: "+parser.token().getLexema());
+            throw new ErrorSemantico(parser.token(), "Se esperaba un id de clase y se encontro: "+parser.token().getLexema());
         }
         return superClase;
     }
@@ -169,7 +169,7 @@ public class ParserDeclaraciones {
         Token tImpl = parser.token();
         parser.match("prImpl");
         if (parser.ts().isNombreClasePredefinida(parser.token().getLexema())){
-            throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "La clase: "+parser.token().getLexema()+" No se puede redefinir, es una clase predefinida");
+            throw new ErrorSemantico(parser.token(), "La clase: "+parser.token().getLexema()+" No se puede redefinir, es una clase predefinida");
         }
         if (parser.token().getTipo().equals("idClass")){
             if (parser.ts().noEstaTs(parser.token().getLexema())){
@@ -201,7 +201,7 @@ public class ParserDeclaraciones {
             return new NodoImpl(tImpl, clase.nombre, listaMiembros);
         }
         else {
-            throw new ErrorSintactico(parser.token().getFila(), parser.token().getColumna(), "Se esperaba un idClass");
+            throw new ErrorSintactico(parser.token(), "Se esperaba un idClass");
         }
     }
 
@@ -232,7 +232,7 @@ public class ParserDeclaraciones {
         else {
             // si va a constructor verifico si esa clase ya tiene constructor, si es asi largo error
             if (parser.ts().claseActual.constructor != null){
-                throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "El constructor de la clase: " + parser.ts().claseActual.nombre + " ya ha sido declarado");
+                throw new ErrorSemantico(parser.token(), "El constructor de la clase: " + parser.ts().claseActual.nombre + " ya ha sido declarado");
             }
             return constructor();
 
@@ -274,14 +274,14 @@ public class ParserDeclaraciones {
         if (parser.token().getTipo().equals("idMetVar")){
 
             if (!parser.ts().validarNombre(ValidarDeclaracion.Definicion.METODO, parser.token().getLexema())){
-                throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "El nombre: "
+                throw new ErrorSemantico(parser.token(), "El nombre: "
                         +parser.token().getLexema()+" no es válido ya que representa un tipo especial");
             }
 
             // analizar los casos de redefinicion, de metodos heredados
             // en la misma clase no puedo tener dos metodos con el mismo nombre
             if (parser.ts().claseActual.listaMetodos.containsKey(parser.token().getLexema())){
-                throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "Ya existe un metodo con el nombre: "
+                throw new ErrorSemantico(parser.token(), "Ya existe un metodo con el nombre: "
                         +parser.token().getLexema()+" en el impl de la clase: "+parser.ts().claseActual.getNombre());
             }
             // caso base agregar el metodo a la lista de metodos de la clase
@@ -294,7 +294,7 @@ public class ParserDeclaraciones {
             //System.out.println("Metodo: "+metodo.getNombre());
         }
         else {
-            throw new ErrorSintactico(parser.token().getFila(), parser.token().getColumna(), "Se esperaba un idMetVar y se recibio: "+parser.token().getTipo());
+            throw new ErrorSintactico(parser.token(), "Se esperaba un idMetVar y se recibio: "+parser.token().getTipo());
         }
         // ya guarde el metodo en la ts.claseactual.listametodos, ahora voy a sus parametros y varlocales
         // voy a argumentos formales con el metodoactual
@@ -397,7 +397,7 @@ public class ParserDeclaraciones {
             return new TipoPrimitivo(tipo);
         }
         else {
-            throw new ErrorSintactico(parser.token().getFila(), parser.token().getColumna(),
+            throw new ErrorSintactico(parser.token(),
                     "Se esperaba un tipo primitivo (Int, Str, Bool), y se recibio: "+parser.token().getLexema());
         }
     }
@@ -465,12 +465,12 @@ public class ParserDeclaraciones {
         Tipo tipo = tipo();
         Token tArgu = parser.token();
         if (tipo == null){
-            throw new ErrorSintactico(parser.token().getFila(), parser.token().getColumna(), "Se esperaba un tipo para el parametro: "+parser.token().getLexema());
+            throw new ErrorSintactico(parser.token(), "Se esperaba un tipo para el parametro: "+parser.token().getLexema());
         }
         if (parser.token().getTipo().equals("idMetVar")){
             // no pueden haber dos parametros que se llamen igual para el mismo metodo
             if (parser.ts().metodoActual.listaParametros.containsKey(parser.token().getLexema())){
-                throw new ErrorSintactico(parser.token().getFila(), parser.token().getColumna(), "Ya existe un parametro con nombre: " + parser.token().getLexema());
+                throw new ErrorSintactico(parser.token(), "Ya existe un parametro con nombre: " + parser.token().getLexema());
             }
             else {
                 // creo un argumento formal
@@ -483,7 +483,7 @@ public class ParserDeclaraciones {
             }
         }
         else {
-            throw new ErrorSintactico(parser.token().getFila(), parser.token().getColumna(), "Se esperaba un idMetVar y se recibio: "+parser.token().getTipo());
+            throw new ErrorSintactico(parser.token(), "Se esperaba un idMetVar y se recibio: "+parser.token().getTipo());
         }
     }
 
@@ -608,7 +608,7 @@ public class ParserDeclaraciones {
                 // busco el idmetvar que voy a agregar en la lista de los parametros y si existe largo error, no pueden llamarse igual
 
                 if (parser.ts().metodoActual.listaParametros.containsKey(parser.token().getLexema())){
-                    throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(),
+                    throw new ErrorSemantico(parser.token(),
                             "El nombre de la variable: "+parser.token().getLexema()+ " ya fue asignado para un parametro");
                 }
                 else{
@@ -626,7 +626,7 @@ public class ParserDeclaraciones {
                 if (parser.ts().bloqueStart != null){
                     // estoy en bloque start
                     if (parser.ts().bloqueStart.listaVariables.containsKey(parser.token().getLexema())){
-                        throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(),
+                        throw new ErrorSemantico(parser.token(),
                                 "El nombre de la variable '"+parser.token().getLexema()+ "' ya fue asignado");
                     }
                     // variables locales de start
@@ -644,7 +644,7 @@ public class ParserDeclaraciones {
                     // verifico que no este guardado ya en la lista de atributos
                     if (parser.ts().claseActual.listaAtributos.containsKey(parser.token().getLexema())){
                         // si ya esta, lanzo error semantico
-                        throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "Atributo: "+parser.token().getLexema()+" ,repetido");
+                        throw new ErrorSemantico(parser.token(), "Atributo: "+parser.token().getLexema()+" ,repetido");
                     }
                     else {
                         atributo = parser.ts().crearRegAtributo(parser.token().getLexema(), tipo, vis);
@@ -659,7 +659,7 @@ public class ParserDeclaraciones {
             parser.match("idMetVar");
         }
         else {
-            throw new ErrorSintactico(parser.token().getFila(), parser.token().getColumna(), "Se esperaba un idMetVar y se recibio: "+parser.token().getTipo());
+            throw new ErrorSintactico(parser.token(), "Se esperaba un idMetVar y se recibio: "+parser.token().getTipo());
         }
         return listaDeclaracionVarRec(vis, tipo, listaDec);
     }

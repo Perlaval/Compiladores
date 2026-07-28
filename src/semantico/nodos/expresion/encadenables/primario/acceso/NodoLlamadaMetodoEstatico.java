@@ -24,4 +24,5 @@ public class NodoLlamadaMetodoEstatico extends NodoPrimario {
     public NodoLlamadaMetodo getNodoLL() {
         return nodoLL;
     }
+
 }
