@@ -14,12 +14,13 @@ impl Nodo{
     }
 
     fn Bool test(Int x){
+        Bool z;
 
         if(val>x){
             while(sig!=nil){
                 sig=sig.sig;
             }
-            ret f();
+            //ret f();
         }
         else{
             val=0;
@@ -30,13 +31,16 @@ impl Nodo{
 }
 
 start{
+
+/*
     //f();
     Nodo n;
 
     n=new Nodo();
 
     if(n!=nil && n.get()>0){
-        (IO.out_int(n.get()));
+       // (IO.out_int(n.get()));
     }
 
+*/
 }

@@ -20,9 +20,10 @@ public class NodoExpresionParentizada extends NodoPrimario {
     }
 
     @Override
-    public Tipo chequear(TablaSimbolos ts){
-
-        return null;
+    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+        // devuelvo el tipo de la expresion
+        return nodoExpresion.chequear(ts);
+        //return null;
     }
 
 }

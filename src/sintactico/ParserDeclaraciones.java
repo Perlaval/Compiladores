@@ -175,7 +175,7 @@ public class ParserDeclaraciones {
             if (parser.ts().noEstaTs(parser.token().getLexema())){
                 // no esta esa clase, la agrego
                 RegistroClase clase = new RegistroClase(parser.token().getLexema());
-                System.out.println("La clase: "+clase.getNombre()+ "  hereda de: "+clase.getHeredaDe());
+                //System.out.println("La clase: "+clase.getNombre()+ "  hereda de: "+clase.getHeredaDe());
                 // le seteo declarada a false porque la guarde desde un impl
                 clase.setDeclarada(false);
                 // le seteo el token por si luego no se declara para lanzar el error
@@ -548,7 +548,9 @@ public class ParserDeclaraciones {
         if (parser.ts().bloqueStart != null){
             System.out.println("Estoy entrando a start con: "+parser.token().getLexema());
         }*/
-
+        if (parser.ts().bloqueStart != null){
+            //System.out.println("Estoy en start y leo: "+parser.token().getLexema());
+        }
         // voy a lista declaracion var local con el metodo actual
         ArrayList<NodoDeclaracion> listaVarLocal = listaDeclaracionVarLocal(new ArrayList<NodoDeclaracion>());
         //System.out.println(ts.metodoActual.listaVarLocales.toString());

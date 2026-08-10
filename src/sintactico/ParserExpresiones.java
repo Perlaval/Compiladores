@@ -40,6 +40,7 @@ public class ParserExpresiones {
     public NodoExpresion expresion() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         //NodoExpresion nodoExpresionOr = expresionOr();
         //return nodoExpresionOr;
+        //System.out.println("Voy a expresion or con: "+parser.token().getLexema());
         return expresionOr();
 
     }
@@ -50,6 +51,7 @@ public class ParserExpresiones {
     //------------------------------------------------------------------------------------------------------------
     private NodoExpresion expresionOr() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         NodoExpresion nodoExpresionAnd = expresionAnd();
+        //System.out.println("Voy a expresion or rec con: "+parser.token().getLexema());
         return expresionOrRec(nodoExpresionAnd);
     }
 
@@ -63,7 +65,10 @@ public class ParserExpresiones {
             parser.match("opOr");
             NodoExpresion nodoDer = expresionAnd();
             NodoExpresionBin nodoIzqRec = new NodoExpresionBin(operador, nodoIzq,nodoDer);
+            //System.out.println("Entre al if de expresionOrRec con: "+parser.token().getLexema());
+            //System.out.println("retorno: "+nodoIzqRec.getToken().getLexema());
             return expresionOrRec(nodoIzqRec);
+
         }
         return nodoIzq;
     }
@@ -208,6 +213,8 @@ public class ParserExpresiones {
         if (Operador.esOpUnario(parser.token())){
             Token operador = opUnario();
             NodoExpresion expresion = expresionUnario();
+            //System.out.println("Entre a expresionUnario con el token: "+operador.getLexema());
+            //System.out.println("Armo el nodo expresion unario y le mando: "+operador.getLexema()+" y la expresion: "+expresion.getToken().getLexema());
             return new NodoExpresionUnario(operador, expresion);
         } else { // si no es opMas ni opMenos es un operando
             // si lo que viene no esta en los prim de operando no voy
@@ -332,7 +339,7 @@ public class ParserExpresiones {
     //      - AccesoSelfSimple -> self ListaEncadenadoSimple
     //------------------------------------------------------------------------------------------------------------
     public NodoAccesoSelf accesoSelfSimple() throws ErrorSintactico, ErrorLexico {
-        System.out.println("Estoy en AccesoSelfSimple con el metodo actual: " + parser.ts().metodoActual.getNombre());
+        //System.out.println("Estoy en AccesoSelfSimple con el metodo actual: " + parser.ts().metodoActual.getNombre());
         NodoAccesoSelf selfEncadenado = new NodoAccesoSelf(parser.token());
         parser.match("prSelf");
         NodoAccesoVar varEncadenado = null; //inicializo el nodo en null

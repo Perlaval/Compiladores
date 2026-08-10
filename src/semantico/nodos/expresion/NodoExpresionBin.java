@@ -4,10 +4,12 @@ import lexico.Token;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.tipos.Tipo;
+import semantico.tipos.TipoPrimitivo;
+import sintactico.Operador;
 
 public class NodoExpresionBin extends NodoExpresion {
 
-    //protected Token operador;
+    protected Token operador;
     protected NodoExpresion exprIzq;
     protected NodoExpresion exprDer;
 
@@ -16,6 +18,7 @@ public class NodoExpresionBin extends NodoExpresion {
         super(operador);
         this.exprIzq = exprIzq;
         this.exprDer = exprDer;
+        this.operador = operador;
 
     }
 
@@ -41,30 +44,59 @@ public class NodoExpresionBin extends NodoExpresion {
         + | - | ++ | -- | !
         * | /
          */
-
-        /*
+        //System.out.println("Vine al chequear de expresion bin con el token: "+token.getLexema());
+        //System.out.println("Expresion Izquierda: "+getExprIzq().getToken().getLexema());
         Tipo tipoIzq = exprIzq.chequear(ts);
+        //System.out.println("Exp izq " + exprIzq.getToken().getLexema() + " de tipo: " + tipoIzq.getNombreTipo());
         Tipo tipoDer = exprDer.chequear(ts);
+        //System.out.println("Exp der " + exprDer.getToken().getLexema() + " de tipo: " + tipoIzq.getNombreTipo());
 
-        // operador mul: Si o si ambos tInt
-        // operadores comparacion: deben ser int si o si
-        // operador ad: deben ser int si o si
-        if (Operador.esOpMul(token) ||Operador.esOpComp(token) || Operador.esOpAd(token)){
-            if (!tipoIzq.getNombreTipo().equals("tInt") || !tipoDer.getNombreTipo().equals("tInt") ){
-                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Para el operador: "+token.getLexema()+" ambos lados de la expresion deben ser de tipo Int");
+        // RESOLVER CUANDO ESTOY EN UN IF Y DEVO DEVOLVER QUE LA CONDICION ES BOOL
+
+        // operador mul: Si o si ambos tInt -> devuelvo int
+        // operadores comparacion: deben ser int si o si -> devuelvo bool
+        // operador ad: deben ser int si o si -> devuelvo bool
+        if (Operador.esOpMul(operador) ||Operador.esOpComp(operador) || Operador.esOpAd(operador)) {
+
+            if (!tipoIzq.getNombreTipo().equals("tInt") || !tipoDer.getNombreTipo().equals("tInt")) {
+                throw new ErrorSemantico(token, "Para el operador: " + token.getLexema() + " ambos lados de la expresion deben ser de tipo Int");
             }
-            //return tipoIzq;
+            if (Operador.esOpComp(operador)) {
+                return new TipoPrimitivo("tBool");
+            }
+
+            if (Operador.esOpMul(operador) || Operador.esOpAd(operador)){
+                return new TipoPrimitivo("tInt");
+            }
         }
+
         // operador igual: == y !=
         // ambos lados deben ser iguales
-        if (Operador.esOpIgual(token)){
+        if (Operador.esOpIgual(operador)){
             if (!tipoIzq.getNombreTipo().equals(tipoDer.getNombreTipo())){
-                throw new ErrorSemantico(token.getFila(), token.getColumna(), "Para el operador: "+token.getLexema()+" se deben comparar dos tipos iguales");
+                throw new ErrorSemantico(token, "Para el operador: "+token.getLexema()+" se deben comparar dos tipos iguales");
             }
-           // return tipoIzq;
+            return new TipoPrimitivo("tBool"); // devuelvo tbool
         }
-        // + | - | ++ | -- | !
-        */
+        // op unario:  + | - | ++ | -- | !
+        // + y - tomados en opAd
+        if (Operador.esOpUnario(operador)){
+            // ! exige bool y devuelve bool
+            if (!tipoIzq.getNombreTipo().equals("tBool") || !tipoDer.getNombreTipo().equals("tBool")){
+                throw new ErrorSemantico(token, "Para el operador: "+token.getLexema()+" ambos lados de la expresion deben ser de tipo bool");
+            }
+        }
+
+        // && || -> ambos lados bool y devuelvo bool
+        if (operador.getLexema().equals("&&") || operador.getLexema().equals("||")){
+            if (!tipoIzq.getNombreTipo().equals("tBool") || !tipoDer.getNombreTipo().equals("tBool")){
+                throw new ErrorSemantico(token, "Para el operador: "+token.getLexema()+" ambos lados de la expresion deben ser de tipo bool");
+            }
+            //System.out.println("Entre aca el operador es: "+operador);
+            return new TipoPrimitivo("tBool");
+
+        }
+
         return null;
     }
 

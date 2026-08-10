@@ -9,7 +9,7 @@ public class Operador {
     //---------------------
 
     //------------------------------------------------------------------------------------------------------------------
-    // OPERADOR COMPARACION
+    // OPERADOR COMPARACION ( < <= > >= )
     //------------------------------------------------------------------------------------------------------------------
     public static boolean esOpComp(Token token) {
         return token.getTipo().equals("opMenor") || token.getTipo().equals("opMenorIgual")
@@ -17,21 +17,21 @@ public class Operador {
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    // OPERADOR AD
+    // OPERADOR AD ( + - )
     //------------------------------------------------------------------------------------------------------------------
     public static boolean esOpAd(Token token){
         return token.getTipo().equals("opMas") || token.getTipo().equals("opMenos");
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    // OPERADOR MUL
+    // OPERADOR MUL (* / )
     //------------------------------------------------------------------------------------------------------------------
     public static boolean esOpMul(Token token){
         return token.getTipo().equals("opPor") || token.getTipo().equals("opdiv");
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    // OPERADOR UNARIO
+    // OPERADOR UNARIO ( + - ++ -- ! )
     //------------------------------------------------------------------------------------------------------------------
     public static boolean esOpUnario(Token token){
         return token.getTipo().equals("opMas") || token.getTipo().equals("opMenos") ||
@@ -39,7 +39,7 @@ public class Operador {
     }
 
     //------------------------------------------------------------------------------------------------------------------
-    // OPERADOR IGUAL
+    // OPERADOR IGUAL ( == =! )
     //------------------------------------------------------------------------------------------------------------------
     public static boolean esOpIgual(Token token){
         return token.getTipo().equals("opIgualIgual") || token.getTipo().equals("opDiferente") ;

@@ -58,7 +58,7 @@ public class ParserSentencias {
                     Token tIf = parser.token();
                     parser.match(("prIf"));
                     parser.match("parAbre");
-                    //System.out.println("Voy a expresion con: "+token.getTipo());
+                    //System.out.println("Voy a expresion con: "+parser.token().getTipo()+"FILA: "+parser.token().getFila());
                     NodoExpresion condicion = parser.getParserExpresiones().expresion(); //devuelvo la condicion
                     parser.match("parCierra");
                     AuxRamasIf sentenciaRec = sentenciaRec(); // me devuelve 2 nodos sentencia (then y else del if actual)
@@ -119,15 +119,20 @@ public class ParserSentencias {
                                 else { //ASIGNACIÓN
                                     // con idMetVar o con self voy a asignacion
                                     if (parser.token().getTipo().equals("idMetVar") | parser.token().getTipo().equals("prSelf")){
-                                        //REVISAR
+                                        NodoAsignacion nodoAsignacion = asignacion();
+
+                                        // salgo de asignacion, punto y coma si o si (con el match ya marcamos bien el error,
+                                        // pero agregamos este if para que el error quede en la linea de la asignacion)
+
                                         if (!parser.token().getTipo().equals("ptoComa")) {
                                             throw new ErrorSintactico(
                                                     parser.token(),
                                                     "Falta ';' al final de la asignacion"
                                             );
                                         }
+                                        // se rompe si pongo return REVISAR
                                         parser.match("ptoComa");
-                                        return asignacion();
+                                        return nodoAsignacion;
                                     }
                                 }
                             }

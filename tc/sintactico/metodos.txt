@@ -45,6 +45,6 @@ start {
 
     n = new Nodo();
 
-    (n.test());
+    //(n.test());
 
 }

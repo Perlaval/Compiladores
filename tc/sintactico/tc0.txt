@@ -10,16 +10,17 @@ impl Calculadora {
         estado = true;  // aca me devuelve error, arreglarlo
     }
 
-    fn Int calcular(Int x, Int y) {
+    fn Int calcular(Int x, Int y, Bool t) {
         // Prueba de precedencia
-        if ((x + y) * 2 / -5 > 10 && !estado || x == y) {
+        if ((x + y) + 2 / -5 > 10 && !estado || x == y ) {
             ret ++x; // Operador unario prefijo
         } else {
             ret --y;
         }
+/*
         if(x>2) while(x<2){
             ret true;
-        }
+        }*/
 
     }
 }

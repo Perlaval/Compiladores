@@ -44,6 +44,7 @@ public class VisitorSentencias implements Visitor{
         //System.out.println("Chequeo start");
 
         ts.setMetodoActual(ts.getMetodoActual());
+        //System.out.println("Metodo actual en start ?? "+ts.getMetodoActual().nombre);
         //nodoBloqueMetodo.chequear(ts);
         nodo.getNodoBloqueMetodo().accept(this);
         //return null;
@@ -58,6 +59,11 @@ public class VisitorSentencias implements Visitor{
     @Override
     public void visit(NodoImpl nodo) throws ErrorSemantico {
         //System.out.println("Chequeo impl");
+
+        //System.out.printf("Entre al nodoImpl con la clase: "+nodo.getImplClase()+" ");
+
+        // seteo la clase actual para conexto en chequeos posteriores
+        ts.claseActual = ts.getClase(nodo.getImplClase());
 
         for(NodoMetodo metodo : nodo.getListaMiembros()){
             //metodo.chequear(ts);
@@ -87,10 +93,11 @@ public class VisitorSentencias implements Visitor{
         }
 
         // Después chequeo las sentencias
+        /*
         System.out.println("Bloque del metodo actual: "
                 + nodoBloqueMetodo.getToken().getLexema()
                 + " cantidad sentencias: "
-                + nodoBloqueMetodo.getListaSent().size());
+                + nodoBloqueMetodo.getListaSent().size()); */
         for (NodoSentencia sentencia : nodoBloqueMetodo.getListaSent()) {
             sentencia.accept(this); //en este caso NodoSentencia es NodoRetorno
             //sentencia.chequear(ts);
@@ -118,9 +125,17 @@ public class VisitorSentencias implements Visitor{
     @Override
     public void visit(NodoIf nodo) throws ErrorSemantico {
         // chequear() en la expresión retorna el tipo
+        //System.out.println("Nodo: "+nodo.getToken().getLexema());
         Tipo tipoCond = nodo.getNodoCondicion().chequear(ts);
-        if (!tipoCond.equals("tBool"))
-            throw new ErrorSemantico (nodo.getNodoCondicion().getToken(), "La condicion debe ser de tipo bool");
+
+        //System.out.println("Estoy en un bloque if del impl de la calse: "+ts.getClaseActual().nombre);
+        //System.out.println("Condición: " + nodo.getNodoCondicion().getClass().getName());
+        //System.out.println("Tipo: " + tipoCond.getNombreTipo());
+
+
+        if (!tipoCond.getNombreTipo().equals("tBool"))
+            throw new ErrorSemantico (nodo.getNodoCondicion().getToken(), "La condicion del if debe ser de tipo bool");
+
         nodo.getNodoSentenciaThen().accept(this);
         if (nodo.getNodoSentenciaElse() != null)
             nodo.getNodoSentenciaElse().accept(this);

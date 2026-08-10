@@ -27,6 +27,7 @@ public class RegistroAtributo extends RegistroVariable {
         return this.tokenAtributo;
     }
 
+
     @Override
     public String toString() {
         return "Atributo{" +

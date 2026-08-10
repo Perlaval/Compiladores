@@ -1,5 +1,6 @@
 package semantico;
 
+import lexico.Token;
 import semantico.registros.*;
 import semantico.tipos.*;
 
@@ -141,8 +142,16 @@ public class TablaSimbolos implements ValidarDeclaracion{
            // RegistroMetodo metodo = this..get(nombreMetodo);
         }
         else {*/
+        if (bloqueStart != null){  // estoy en start, depende que lea como resuelvo, ya no tengo contexto de clase actual
+            // HACER !!!!
+            System.out.println("Estoy en start, en el metodo no esta de la ts");
+            return true;
+
+        } else {
             RegistroMetodo metodo = this.claseActual.listaMetodos.get(nombreMetodo);
             return (metodo == null);
+        }
+
        // }
 
 
@@ -184,6 +193,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
         atributo.setVisibilidad(vis);
         return atributo;
     }
+
 
     // creo un registro de una variable
     public RegistroVariable crearRegVar(String id, Tipo tipo){
