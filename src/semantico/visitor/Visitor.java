@@ -22,8 +22,11 @@ public interface Visitor {
     void visit(NodoFor nodo) throws ErrorSemantico;
     void visit(NodoIf nodo) throws ErrorSemantico;
     void visit(NodoRetorno nodo) throws ErrorSemantico;
-    void visit(NodoSentencia nodo) throws ErrorSemantico;
+    //void visit(NodoSentencia nodo) throws ErrorSemantico;
     void visit(NodoSentenciaSimple nodo) throws ErrorSemantico;
     void visit(NodoWhile nodo) throws ErrorSemantico;
 
+    // COMENTARIO DE ORDEN ----------------------------------------------------------------
+    // SENTENCIAS -> ACCEPT Y VISIT
+    // EXPRESIONES -> CHEQUEAR
 }

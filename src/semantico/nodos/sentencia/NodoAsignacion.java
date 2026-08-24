@@ -38,6 +38,7 @@ public class NodoAsignacion extends NodoSentencia{
 
     @Override
     public void accept(Visitor visitor) throws ErrorSemantico {
+        //System.out.println("Entre al visit de nodoasignacion");
         visitor.visit(this);
     }
 

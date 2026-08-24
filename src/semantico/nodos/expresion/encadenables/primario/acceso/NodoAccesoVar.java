@@ -3,8 +3,10 @@ package semantico.nodos.expresion.encadenables.primario.acceso;
 import lexico.Token;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
+import semantico.nodos.expresion.encadenables.NodoEncadenable;
 import semantico.registros.*;
 import semantico.tipos.Tipo;
+import semantico.tipos.TipoReferencia;
 
 public class NodoAccesoVar extends NodoAcceso{
 
@@ -26,32 +28,33 @@ public class NodoAccesoVar extends NodoAcceso{
         // obtengo el tipo
         // devuelvo ese tipo
 
-        // si estoy aca estoy verificando por ejemplo un if de un impl
+        // la funcion continuar cadena se encuentra en NodoEncadenable
+
         // por lo tanto busco en la clase de ese impl si tengo esa variable
 
         RegistroClase claseActual = ts.getClaseActual();
         String id = token.getLexema(); //expresion a buscar en la ts
-        RegistroAtributo atributo = claseActual.getListaAtributos().get(id);
+        //System.out.println("El id que estoy buscando en nodoAccesoVar es: "+id);
 
-        if (claseActual.getListaAtributos().containsKey(id)){
-            // obtengo el tipo del atributo
-            Tipo tipoAtributo = atributo.getTipo();
-            //System.out.printf("Tipo val: "+tipoAtributo.getNombreTipo());
-            return tipoAtributo;
+        //ATRIBUTO ----------------------------------------------------------------------------
+        RegistroAtributo atributo = claseActual.getListaAtributos().get(id);
+        if (atributo != null){
+            return continuarCadena(ts,atributo.getTipo());
         }
-        // si no es atributo puede estar en los parametros del metodo que tiene el if
+
+        // si no es atributo puede estar en los parametros del metodo
+        // PARAMETROS METODO ------------------------------------------------------------------
         RegistroMetodo metodoActual = ts.getMetodoActual();
         RegistroParametro parametro = metodoActual.getListaParametros().get(id);
-        if (metodoActual.getListaParametros().containsKey(id)){
-            Tipo tipoParam = parametro.getTipo();
-            return tipoParam;
+        if (parametro != null){
+            return continuarCadena(ts, parametro.getTipo());
         }
 
         // Puede ser var local del metodo
+        // VAR LOCAL METODO --------------------------------------------------------------------
         RegistroVariable variableLocal = metodoActual.getListaVarLocales().get(id);
-        if (metodoActual.getListaVarLocales().containsKey(id)){
-            Tipo tipoVarLocal = variableLocal.getTipo();
-            return tipoVarLocal;
+        if (variableLocal != null){
+            return continuarCadena(ts, variableLocal.getTipo());
         }
 
         // si no es ni atributo de la clase, ni parametro del metodo ni var local del metodo -> ERROR

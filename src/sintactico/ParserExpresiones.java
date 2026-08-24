@@ -321,7 +321,11 @@ public class ParserExpresiones {
         // si esta en los primeros de lista enadenado simple entro ahi
         // Prim(ListaEncadenadoSimple) = {. , lambda}
         if (parser.token().getTipo().equals("pto")) {
-            listaEncadenadoSimple(varEncadenado); //en este metodo anido todos los encadenados a el id principal varEncadendo
+            NodoAccesoVar resto = listaEncadenadoSimple(); // no le paso nada
+            if (resto != null){
+                varEncadenado.setProxEncadenado(resto);
+            }
+            //listaEncadenadoSimple(varEncadenado); //en este metodo anido todos los encadenados a el id principal varEncadendo
             return varEncadenado;
         } else {
             if (parser.token().getTipo().equals("corcheteAbre")) {
@@ -341,28 +345,40 @@ public class ParserExpresiones {
     public NodoAccesoSelf accesoSelfSimple() throws ErrorSintactico, ErrorLexico {
         //System.out.println("Estoy en AccesoSelfSimple con el metodo actual: " + parser.ts().metodoActual.getNombre());
         NodoAccesoSelf selfEncadenado = new NodoAccesoSelf(parser.token());
+        //System.out.println("Estoy en acceso self simple con: "+parser.token().getLexema());
         parser.match("prSelf");
-        NodoAccesoVar varEncadenado = null; //inicializo el nodo en null
-        listaEncadenadoSimple(varEncadenado); //este metodo va agregando los nodos del encadenados
+        //System.out.println("Matchee self y estoy en constructor?? "+parser.ts().metodoActual.isConstructor());
+        NodoAccesoVar varEncadenado = listaEncadenadoSimple();
+
+        //System.out.println("El var encadenado es: "+varEncadenado.getToken().getLexema());
+        //System.out.println("Matchee self y viene: "+parser.token().getLexema());
+        //NodoAccesoVar varEncadenado = null; //inicializo el nodo en null
+        //listaEncadenadoSimple(varEncadenado); //este metodo va agregando los nodos del encadenados
+        //System.out.println("Var encadenado es: "+varEncadenado.getProxEncadenado().getToken().getLexema());
         //Si hay encadenado varEncadenado != nul -> selfEncadenado = self y varEncadenado = id1.id1.id3
         selfEncadenado.setProxEncadenado(varEncadenado);
+
+        //System.out.println("self prox encadenado: "+selfEncadenado.getProxEncadenado().getToken().getLexema());
         return selfEncadenado;
     }
 
     //------------------------------------------------------------------------------------------------------------
     // ACCESO SELF:
     //      - AccesoSelf -> self EncadenadoOpt
-    //      - Si el metood es estatico no puedo acceder a una variable de instancia (self)
+    //      - Si el metodo es estatico no puedo acceder a una variable de instancia (self)
     //------------------------------------------------------------------------------------------------------------
     private NodoAccesoSelf accesoSelf() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         Token tokenSelf = parser.token();
         parser.match("prSelf");
+        //System.out.println("Despues de self veo: "+parser.token().getLexema());
 
         NodoAccesoSelf nodoAccesoSelf = new NodoAccesoSelf(tokenSelf);
         NodoAcceso encadenadoOpt = encadenadoOpt();
         if (encadenadoOpt != null){
+            //System.out.println("Entro a encadenadoOpt con: "+parser.token().getLexema());
             nodoAccesoSelf.setProxEncadenado(encadenadoOpt);
         }
+        //System.out.println("Estoy por ir a nodoAccesoSelf y veo: "+parser.token().getLexema());
         return nodoAccesoSelf;
     }
 
@@ -432,18 +448,32 @@ public class ParserExpresiones {
     //      - ListaEncadenadoSimple -> EncadenadoSimpple ListaEncadenadoSimple | lambda
     //      - En esta clase se hacen los chequeos de tipos del encadenado en la 2da pasada
     //------------------------------------------------------------------------------------------------------------
-    private void listaEncadenadoSimple(NodoAccesoVar varEncadenado) throws ErrorSintactico, ErrorLexico {
+    private NodoAccesoVar /*void*/ listaEncadenadoSimple(/*NodoAccesoVar varEncadenado*/) throws ErrorSintactico, ErrorLexico {
         // es recursiva por lo tanto cada vez que viene un primero de encadenado simple vuelvo a entrar
         // Prim(EncadenadoSimple) = {.}
+        //System.out.println("Entre a lista Encadenado simple con: "+parser.token().getLexema());
         if (parser.token().getTipo().equals("pto")) {
             NodoAccesoVar nuevaVarEnc = encadenadoSimple();
-            if (varEncadenado != null) { //si varEncadenado == null entonces recien voy a setear el varEncadeno de id2
-                varEncadenado.setProxEncadenado(nuevaVarEnc);
+            //System.out.println("Encadenado nueva: "+nuevaVarEnc.getToken().getLexema());
+            NodoAccesoVar resto = listaEncadenadoSimple();
+            //System.out.println("Resto: "+resto.toString());
+            //System.out.println("Sali de encadenado simple con: "+parser.token().getLexema());
+            //if (varEncadenado != null) { //si varEncadenado == null entonces recien voy a setear el varEncadeno de id2
+            if (resto != null){
+                //System.out.println("Entre a var encadenado == null");
+                nuevaVarEnc.setProxEncadenado(resto);
+                //varEncadenado.setProxEncadenado(nuevaVarEnc);
             }
+
+            //System.out.println("Retorno en nodoaccesovar: "+nuevaVarEnc.getToken().getLexema());
+            return nuevaVarEnc;
             //Sino ya pase el id2
             //Aqui deberia chequear la correctitud semnatica del encadenado!
-            listaEncadenadoSimple(nuevaVarEnc);
+            //System.out.println("estoy por salir de listaEncadenadosimple con: "+parser.token().getLexema());
+            //listaEncadenadoSimple(nuevaVarEnc);
+
         }
+        return null; // ya no hay encadenado
     }
 
     //------------------------------------------------------------------------------------------------------------
@@ -452,8 +482,9 @@ public class ParserExpresiones {
     //------------------------------------------------------------------------------------------------------------
     private NodoAccesoVar encadenadoSimple() throws ErrorSintactico, ErrorLexico {
         parser.match("pto");
+        //System.out.println("Entre a encadenado simple y leo: "+parser.token().getLexema());
         NodoAccesoVar varEncadenado = new NodoAccesoVar(parser.token());
-        parser.match("idMetVar"); //sueldo
+        parser.match("idMetVar");
         return varEncadenado;
     }
 
@@ -499,6 +530,7 @@ public class ParserExpresiones {
         else {
             //NodoAccesoVar nodoAccesoVar = accesoVar();
             //return new AuxEncadenado(nodoAccesoVar);
+            //System.out.println("Voy a accesoVar con: "+parser.token().getLexema());
             return accesoVar();
 
         }
@@ -552,11 +584,11 @@ public class ParserExpresiones {
         }
         if (parser.esPrimario(parser.token())){
             NodoPrimario primario = primario();
-            NodoAcceso encadenadoOpt = encadenadoOpt();
+            //NodoAcceso encadenadoOpt = encadenadoOpt();
 
-            primario.setProxEncadenado(encadenadoOpt);
+            //primario.setProxEncadenado(encadenadoOpt);
 
-            return primario;
+            return primario; //primario() ya devielve el nodo con su cadena completa
         }
         return null;
     }
@@ -599,9 +631,9 @@ public class ParserExpresiones {
             case "prSelf":
                 // verifico que no este en un contexto estatico
                 //System.out.println("Metodo actual: "+ts.metodoActual.getNombre());
-                if (parser.ts().metodoActual.esEstatico){
-                    throw new ErrorSemantico(parser.token(), "No se puede acceder a una variable de instancia en un contexto estatico");
-                }
+                //if (parser.ts().metodoActual.esEstatico){
+                //    throw new ErrorSemantico(parser.token(), "No se puede acceder a una variable de instancia en un contexto estatico");
+                //}
                 NodoAccesoSelf nodoAccesoSelf = accesoSelf();
                 return nodoAccesoSelf;
             // Prim(AccesoVar) = { id } y Prim(LlamadaMetodo) = { id }
@@ -654,35 +686,39 @@ public class ParserExpresiones {
         // lo hago ahi porque si lo dejo aca se puede romper cuando la clase sea null
 
         //Trini comenta este if-else: linea 650 hasta 653
+        /*
         if (parser.ts().noEstaMetodoTs(parser.token().getLexema())){
+            System.out.println("La clase actual es: "+parser.ts().claseActual.getNombre());
             throw new ErrorSemantico(parser.token(), "El metodo '"+parser.token().getLexema()+"' no fue declarado");
         }
-        else {
+        else {*/
             //RegistroVariable id = parser.ts().getVariable(parser.token().getLexema());
             // creo el nodo id
-            Token tId = parser.token();
-            // aca pierdo el id, se matchea
-            parser.match("idMetVar");
 
-            ArrayList<NodoExpresion> listaArgumentosActuales = argumentosActuales();
-            // en chaqueo de sentencias debo verificar que el tam de argumentos actuales y el tam de id coinciden
-            //System.out.println("Se rompe aca?, con el token: "+parser.token().getLexema());
-            //System.out.println("Fila: "+parser.token().getFila());
-            // si encadenado es null creo el nodo llamada metodo solo con arg actuales y el id
 
-            NodoLlamadaMetodo nodoLlamadaMetodo = new NodoLlamadaMetodo(tId, listaArgumentosActuales);
+        Token tId = parser.token();
+        // aca pierdo el id, se matchea
+        parser.match("idMetVar");
 
-            NodoAcceso encadenadoOpt = encadenadoOpt();
-            //System.out.println("Ahora tengo: "+parser.token().getLexema());
-            //System.out.println("NOdoEncOpt "+nodoEncOpt);
-            // si no tiene encadenado se pone null
+        ArrayList<NodoExpresion> listaArgumentosActuales = argumentosActuales();
+        // en chaqueo de sentencias debo verificar que el tam de argumentos actuales y el tam de id coinciden
+        //System.out.println("Se rompe aca?, con el token: "+parser.token().getLexema());
+        //System.out.println("Fila: "+parser.token().getFila());
+        // si encadenado es null creo el nodo llamada metodo solo con arg actuales y el id
 
-            if (encadenadoOpt != null){
-                nodoLlamadaMetodo.setProxEncadenado(encadenadoOpt);
-            }
+        NodoLlamadaMetodo nodoLlamadaMetodo = new NodoLlamadaMetodo(tId, listaArgumentosActuales);
 
-            return nodoLlamadaMetodo;
+        NodoAcceso encadenadoOpt = encadenadoOpt();
+        //System.out.println("Ahora tengo: "+parser.token().getLexema());
+        //System.out.println("NOdoEncOpt "+nodoEncOpt);
+        // si no tiene encadenado se pone null
+
+        if (encadenadoOpt != null){
+            nodoLlamadaMetodo.setProxEncadenado(encadenadoOpt);
         }
+
+        return nodoLlamadaMetodo;
+
     }
 
     //------------------------------------------------------------------------------------------------------------
@@ -696,26 +732,31 @@ public class ParserExpresiones {
         if (parser.ts().noEstaTs(parser.token().getLexema())){
             throw new ErrorSemantico(parser.token().getFila(), parser.token().getColumna(), "El id de clase: "+parser.token().getLexema()+" no ha sido declarado");
         }
-        else {*/
+        else {
         if (parser.ts().noEstaTs(parser.token().getLexema())){
             throw new ErrorSemantico(parser.token(), "El id de clase: "+parser.token().getLexema()+" no ha sido declarado");
         }
-        else {
+        else { */
             // obtengo el id
             //RegistroClase idClase = ts.getClase(token.getLexema());
-            Token tLlamadaMetodoEstatico = parser.token();
-            parser.match("idClass");
-            parser.match("pto");
-            NodoLlamadaMetodo nodoLlamadaMetodo  = llamadaMetodo();
 
-            NodoAcceso encadenadoOpt = encadenadoOpt();
-            NodoLlamadaMetodoEstatico nodoLlamadaMetodoEstatico = new NodoLlamadaMetodoEstatico(tLlamadaMetodoEstatico, nodoLlamadaMetodo);
 
+        Token tLlamadaMetodoEstatico = parser.token();
+        parser.match("idClass");
+        parser.match("pto");
+        NodoLlamadaMetodo nodoLlamadaMetodo  = llamadaMetodo();
+
+        NodoLlamadaMetodoEstatico nodoLlamadaMetodoEstatico = new NodoLlamadaMetodoEstatico(tLlamadaMetodoEstatico, nodoLlamadaMetodo);
+
+        NodoAcceso encadenadoOpt = encadenadoOpt();
+        if (encadenadoOpt != null){
             nodoLlamadaMetodoEstatico.setProxEncadenado(encadenadoOpt);
-
-            // si no tiene encadenado se pone null
-            return nodoLlamadaMetodoEstatico;
         }
+        //nodoLlamadaMetodoEstatico.setProxEncadenado(encadenadoOpt);
+
+        // si no tiene encadenado se pone null
+        return nodoLlamadaMetodoEstatico;
+
     }
 
     //------------------------------------------------------------------------------------------------------------

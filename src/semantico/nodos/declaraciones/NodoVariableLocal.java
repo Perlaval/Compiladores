@@ -14,6 +14,7 @@ public class NodoVariableLocal extends NodoDeclaracion{
 
     @Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+        //System.out.println("Entre al chequear de nodo variable local de declaracion");
         return null;
     }
 

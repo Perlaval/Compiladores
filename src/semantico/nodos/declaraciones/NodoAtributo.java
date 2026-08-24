@@ -13,6 +13,7 @@ public class NodoAtributo extends NodoDeclaracion{
 
     @Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+        //System.out.println("Entre alc hequear de nodo atributo?");
         return null;
     }
 
