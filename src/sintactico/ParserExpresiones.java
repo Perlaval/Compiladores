@@ -373,6 +373,7 @@ public class ParserExpresiones {
         //System.out.println("Despues de self veo: "+parser.token().getLexema());
 
         NodoAccesoSelf nodoAccesoSelf = new NodoAccesoSelf(tokenSelf);
+        //System.out.println("cree el nodo acceso self y veo: "+parser.token().getLexema());
         NodoAcceso encadenadoOpt = encadenadoOpt();
         if (encadenadoOpt != null){
             //System.out.println("Entro a encadenadoOpt con: "+parser.token().getLexema());
@@ -396,6 +397,7 @@ public class ParserExpresiones {
         // Pasamos null porque el tipo de 'v1' aún no se conoce (se infiere en la pasada 2).
         //AuxAccesoVar auxAccesoVar = accesoVarRec(nodoId);
         //return new NodoAccesoVar(nodoId, nodoAccesoVarRec);
+        //System.out.println("Voy a acceso var rec con: "+parser.token().getLexema());
         return accesoVarRec(tokenId);
     }
 
@@ -407,10 +409,11 @@ public class ParserExpresiones {
 
         if (parser.token().getTipo().equals("corcheteAbre")) {
             parser.match("corcheteAbre");
+            //System.out.println("Matchee corchete abre y leo en acces var rec: "+parser.token().getLexema());
             // Construimos el nodo de la expresión del índice
             NodoExpresion nodoExpresion = expresion();
 
-            NodoAccesoArreglo nodoAccesoArreglo = new NodoAccesoArreglo(tokenId, expresion());
+            NodoAccesoArreglo nodoAccesoArreglo = new NodoAccesoArreglo(tokenId, nodoExpresion);
 
             parser.match("corcheteCierra");
 
@@ -496,6 +499,7 @@ public class ParserExpresiones {
         // si es pto va a encadendo, Prim(Encadenado) = { . }
         //System.out.println("Vine a encadenado opt con: "+parser.token().getLexema());
         if (parser.token().getTipo().equals("pto")){
+            //System.out.println("voy a encadenado: "+parser.token().getLexema());
             //NodoEncadenado nodoEncadenado = encadenado();
             //return new NodoEncadenadoOpt(nodoEncadenado);
             return encadenado();
@@ -509,6 +513,7 @@ public class ParserExpresiones {
     //------------------------------------------------------------------------------------------------------------
     private NodoAcceso encadenado() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         parser.match("pto");
+        //System.out.println("Estoy en encadenado, matcheo el punto y leo: "+parser.token().getLexema());
         //AuxEncadenado encadenadoRec = encadenadoRec();
         //return new NodoEncadenado(nodoEncadenadoRec);
         return encadenadoRec();

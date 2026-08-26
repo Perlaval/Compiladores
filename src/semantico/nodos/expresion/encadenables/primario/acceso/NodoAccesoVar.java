@@ -36,32 +36,51 @@ public class NodoAccesoVar extends NodoAcceso{
         String id = token.getLexema(); //expresion a buscar en la ts
         //System.out.println("El id que estoy buscando en nodoAccesoVar es: "+id);
 
+        RegistroMetodo metodoActual = ts.getMetodoActual();
+
+
+        // puede ser un parametro o una var local
+        if (metodoActual != null){
+            // PARAMETROS METODO ------------------------------------------------------------------
+            RegistroParametro parametro = metodoActual.getListaParametros().get(id);
+            if (parametro != null){
+                return continuarCadena(ts, parametro.getTipo());
+            }
+
+            // Puede ser var local del metodo
+            // VAR LOCAL METODO --------------------------------------------------------------------
+            RegistroVariable variableLocal = metodoActual.getListaVarLocales().get(id);
+            if (variableLocal != null){
+                return continuarCadena(ts, variableLocal.getTipo());
+            }
+        }
+        // sino puede ser un atributo
         //ATRIBUTO ----------------------------------------------------------------------------
         RegistroAtributo atributo = claseActual.getListaAtributos().get(id);
         if (atributo != null){
             return continuarCadena(ts,atributo.getTipo());
         }
 
-        // si no es atributo puede estar en los parametros del metodo
-        // PARAMETROS METODO ------------------------------------------------------------------
-        RegistroMetodo metodoActual = ts.getMetodoActual();
-        RegistroParametro parametro = metodoActual.getListaParametros().get(id);
-        if (parametro != null){
-            return continuarCadena(ts, parametro.getTipo());
+        //START ----------------------------------------------------------------------------
+        // puedo estar en start, asique busco en las var locales de start
+        if (ts.bloqueStart != null && metodoActual == null){
+            RegistroVariable varEnStart = ts.bloqueStart.listaVariables.get(id);
+            if (varEnStart != null){
+                // devuelvo el tipo de esa var
+                return continuarCadena(ts, varEnStart.getTipo());
+            }
         }
 
-        // Puede ser var local del metodo
-        // VAR LOCAL METODO --------------------------------------------------------------------
-        RegistroVariable variableLocal = metodoActual.getListaVarLocales().get(id);
-        if (variableLocal != null){
-            return continuarCadena(ts, variableLocal.getTipo());
-        }
+        // si no es ni atributo de la clase, ni parametro del metodo ni var local del metodo, ni esta en start -> ERROR
+        if (ts.bloqueStart != null && metodoActual == null){
+            throw new ErrorSemantico(token, "Id: '"+id+"' no declarado en start");
 
-        // si no es ni atributo de la clase, ni parametro del metodo ni var local del metodo -> ERROR
+        }
         else {
             throw new ErrorSemantico(token, "Id: '"+id+"' no declarado en la clase: "+claseActual.nombre);
         }
-       // return null;
+
+
     }
 
 }

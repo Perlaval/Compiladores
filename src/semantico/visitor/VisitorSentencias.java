@@ -122,7 +122,8 @@ public class VisitorSentencias implements Visitor{
         //System.out.println("Nodo Expresion tipo: "+tipoExpresion.getNombreTipo());
 
         if (!acceso.equals(expresion)){ // deben ser mismos tipos
-            throw new ErrorSemantico(nodo.getToken(), "Ambos lados de la asignacion deben tener el mismo tipo");
+            throw new ErrorSemantico(nodo.getToken(), "En la asignacion se esperaba un tipo: "+acceso+" y se recibio: "+expresion);
+            //throw new ErrorSemantico(nodo.getToken(), "Ambos lados de la asignacion deben tener el mismo tipo");
         }
 
     }
