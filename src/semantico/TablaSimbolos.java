@@ -436,8 +436,21 @@ public class TablaSimbolos implements ValidarDeclaracion{
             );
         }
     }
-// -----------------------------------------Fin Metodos-------------------------------------------------------------------------------------------
-// -----------------------------------------Fin Consolidacion-------------------------------------------------------------------------------------
+// -----------------------------------------Fin Consolidacion-----------------------------------------------------------
+
+// -----------------------------------------Metodos de conformacion de tipos--------------------------------------------
+    //Este metodo me sirve para determinar si hay polimorfismo al declarar un argumento como parametro de un metodo/constructor -> lo llamo en el metodo chequear de NodoNewObjeto
+    public boolean conforma(String tipoDeclarado, String tipoEsperado){
+        RegistroClase claseDeclarada = this.getClase(tipoDeclarado);
+
+        if (!claseDeclarada.heredaDe.equals("Object")){
+            if(!claseDeclarada.getHeredaDe().equals(tipoEsperado)){
+                return conforma(claseDeclarada.getHeredaDe(),tipoEsperado);
+            }
+        }
+        return tipoDeclarado.equals(tipoEsperado);
+    }
+// -----------------------------------------FIN Metodos de conformacion de tipos----------------------------------------
 
     // Inicializar clases predefinidas
     public void inicializarClasesPredefinidas() {

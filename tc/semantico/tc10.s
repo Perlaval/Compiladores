@@ -16,4 +16,5 @@ start {
     A c;
     Int a;
     Str b;
+
 }

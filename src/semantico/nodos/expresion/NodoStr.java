@@ -11,7 +11,7 @@ public class NodoStr extends NodoLiteral{
         super(token);
     }
 
-    @Override
+    @Override //puede ser tanto tipo primitivo como tipoReferencia
     public Tipo chequear(TablaSimbolos ts) {
         return new TipoPrimitivo("tStr");
     }

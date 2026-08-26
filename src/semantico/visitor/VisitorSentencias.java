@@ -53,20 +53,23 @@ public class VisitorSentencias implements Visitor{
 
     @Override
     public void visit(NodoClase nodo) throws ErrorSemantico {
-        // verificar si hace falta algun chequeo de clase adicional, sino dejarlo vacio
+        //Que deberia devolver el chequear de un nodo declaracion?
+        for (NodoDeclaracion listaAtr: nodo.getNodoListaAtributos()){
+            listaAtr.chequear(ts);
+        }
+
     }
 
     @Override
     public void visit(NodoImpl nodo) throws ErrorSemantico {
         //System.out.println("Chequeo impl");
 
-        //System.out.println("Entre al nodoImpl con la clase: "+nodo.getImplClase());
+        //System.out.printf("Entre al nodoImpl con la clase: "+nodo.getImplClase()+" ");
 
         // seteo la clase actual para conexto en chequeos posteriores
         ts.claseActual = ts.getClase(nodo.getImplClase());
 
         for(NodoMetodo metodo : nodo.getListaMiembros()){
-            //System.out.println("Entro al for de nodoImpl");
             //metodo.chequear(ts);
             metodo.accept(this);
         }
@@ -77,7 +80,6 @@ public class VisitorSentencias implements Visitor{
     public void visit(NodoMetodo nodo) throws ErrorSemantico {
         //System.out.println("Chequeo metodo: " + metodoActual.getNombre());
         if (!nodo.getMetodoActual().isConstructor()){
-           // System.out.println("Entro a nodo metodo constructor");
             //System.out.println("retorno: "+metodoActual.getTipoRetorno().getNombreTipo());
         }
         //System.out.println("retorno: "+metodoActual.getTipoRetorno().getNombreTipo());
@@ -102,30 +104,24 @@ public class VisitorSentencias implements Visitor{
                 + nodoBloqueMetodo.getListaSent().size()); */
         for (NodoSentencia sentencia : nodoBloqueMetodo.getListaSent()) {
             sentencia.accept(this); //en este caso NodoSentencia es NodoRetorno
-            //sentencia.chequear(ts);
+
         }
-        //return null;
+
 
     }
 
     @Override
     public void visit(NodoAsignacion nodo) throws ErrorSemantico {
-        // nodo asignacion tiene: nodo acceso = nodo expresion
-        // reviso ambos tipos y verifico que sean ==
 
         Tipo tipoAcceso = nodo.getNodoAcceso().chequear(ts);
-        String acceso = tipoAcceso.getNombreTipo();
+
         Tipo tipoExpresion = nodo.getNodoExpresion().chequear(ts);
-        String expresion = tipoExpresion.getNombreTipo();
 
-        //System.out.println("Nodo acceso tipo: "+tipoAcceso.getNombreTipo());
-        //System.out.println("Nodo Expresion tipo: "+tipoExpresion.getNombreTipo());
-
-        if (!acceso.equals(expresion)){ // deben ser mismos tipos
-            throw new ErrorSemantico(nodo.getToken(), "En la asignacion se esperaba un tipo: "+acceso+" y se recibio: "+expresion);
-            //throw new ErrorSemantico(nodo.getToken(), "Ambos lados de la asignacion deben tener el mismo tipo");
-        }
-
+        if (!tipoAcceso.equals(tipoExpresion)) throw new ErrorSemantico(nodo.getToken(), "Error Semantico, tipos incompatibles en la asignación. "
+                + "Se esperaba un valor de tipo "
+                + tipoAcceso.getNombreTipo()
+                + " pero se obtuvo un valor de tipo "
+                + tipoExpresion.getNombreTipo());
     }
 
     @Override
@@ -164,11 +160,9 @@ public class VisitorSentencias implements Visitor{
 
     @Override
     public void visit(NodoRetorno nodo) throws ErrorSemantico {
-        //System.out.println("Entre a chequear de ret");
+        System.out.println("Entre a chequear de ret");
         RegistroMetodo metodo = ts.getMetodoActual();
-        //System.out.println("EL metodo actuaql es: "+metodo.getNombre());
         Tipo tipoRet = metodo.getTipoRetorno();
-        //System.out.println("Su retorno es: "+tipoRet.getNombreTipo());
 
         // ret;
         if (nodo.getNodoExpresionOpt() == null){
@@ -181,9 +175,8 @@ public class VisitorSentencias implements Visitor{
         }
         else {
             // el ret de expresionOpt debe coincidir con tipoRet
-            //System.out.println("Expresion del ret: " + nodo.getNodoExpresionOpt().getClass().getSimpleName());
+            System.out.println("Expresion del ret: " + nodo.getNodoExpresionOpt().getClass().getSimpleName());
             Tipo tipoExpresion = nodo.getNodoExpresionOpt().chequear(ts);
-            //System.out.println(nodo.getNodoExpresionOpt());
             if (tipoExpresion == null){
                 throw new ErrorSemantico(nodo.getToken(),
                         "El metodo: "+ts.getMetodoActual().getNombre()+", deberia retornar: "+ts.getMetodoActual().getTipoRetorno().getNombreTipo());
