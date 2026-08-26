@@ -53,6 +53,10 @@ public class VisitorSentencias implements Visitor{
 
     @Override
     public void visit(NodoClase nodo) throws ErrorSemantico {
+        //Que deberia devolver el chequear de un nodo declaracion?
+        for (NodoDeclaracion listaAtr: nodo.getNodoListaAtributos()){
+            listaAtr.chequear(ts);
+        }
 
     }
 
@@ -109,7 +113,15 @@ public class VisitorSentencias implements Visitor{
     @Override
     public void visit(NodoAsignacion nodo) throws ErrorSemantico {
 
+        Tipo tipoAcceso = nodo.getNodoAcceso().chequear(ts);
 
+        Tipo tipoExpresion = nodo.getNodoExpresion().chequear(ts);
+
+        if (!tipoAcceso.equals(tipoExpresion)) throw new ErrorSemantico(nodo.getToken(), "Error Semantico, tipos incompatibles en la asignación. "
+                + "Se esperaba un valor de tipo "
+                + tipoAcceso.getNombreTipo()
+                + " pero se obtuvo un valor de tipo "
+                + tipoExpresion.getNombreTipo());
     }
 
     @Override
