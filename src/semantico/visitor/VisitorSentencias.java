@@ -100,9 +100,9 @@ public class VisitorSentencias implements Visitor{
                 + nodoBloqueMetodo.getListaSent().size()); */
         for (NodoSentencia sentencia : nodoBloqueMetodo.getListaSent()) {
             sentencia.accept(this); //en este caso NodoSentencia es NodoRetorno
-            //sentencia.chequear(ts);
+
         }
-        //return null;
+
 
     }
 

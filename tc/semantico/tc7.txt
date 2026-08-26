@@ -36,7 +36,7 @@ impl A {
     }
 
     fn Int getM2(){
-        ret self.m2
+        ret self.m2;
     }
 
     fn Int getZ(){
@@ -48,8 +48,15 @@ impl A {
 impl A {
     //.(){}
 }
+
+class B{
+    A prueba;
+}
+
 impl B{
-    .(){}
+    .(){
+        prueba = new A(4,true);
+    }
     st fn Int m6(Int x){
         Bool a;
         ret x;

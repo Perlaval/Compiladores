@@ -7,7 +7,9 @@ class A {
     Array Int a; //Array a; //linea 7 columna 11 se esperaba un tipo primitivo - ERROR!
 }
 
-class A {}
+class A {
+
+}
 
 impl A {
     .(Int b, Bool z){

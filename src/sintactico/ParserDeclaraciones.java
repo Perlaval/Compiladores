@@ -231,7 +231,7 @@ public class ParserDeclaraciones {
         }
         else {
             // si va a constructor verifico si esa clase ya tiene constructor, si es asi largo error
-            if (parser.ts().claseActual.constructor != null){
+            if (parser.ts().claseActual.getConstructor() != null){
                 throw new ErrorSemantico(parser.token(), "El constructor de la clase: " + parser.ts().claseActual.nombre + " ya ha sido declarado");
             }
             return constructor();
@@ -249,8 +249,9 @@ public class ParserDeclaraciones {
         Token tConst = parser.token();
         parser.match("pto");
         parser.ts().claseActual.inConstructor = true; // seteo la clase actual como el constructor
-        parser.ts().claseActual.constructor = new Constructor(); // lo creo
-        parser.ts().metodoActual = parser.ts().claseActual.constructor; // actualizo el metodo actual
+        //parser.ts().claseActual.constructor = new Constructor(); // lo creo
+        parser.ts().claseActual.setConstructor(new Constructor()); // lo creo
+        parser.ts().metodoActual = parser.ts().claseActual.getConstructor(); // actualizo el metodo actual
 
         ArrayList<NodoDeclaracion> listaArg = argumentosFormales(new ArrayList<NodoDeclaracion>());
 

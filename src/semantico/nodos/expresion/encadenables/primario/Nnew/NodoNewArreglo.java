@@ -19,6 +19,10 @@ public class NodoNewArreglo extends NodoNew {
 
     @Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
-        return null;
+        if (!tipo.esTipoPrimitivo()) throw new ErrorSemantico(token, "Error Semántico, tipo esperado: int, str, bool - tipo declarado: " + tipo.getNombreTipo());
+
+        if (!dimension.chequear(ts).getNombreTipo().equals("Int")) throw new ErrorSemantico(token, "Error Semántico, la dimension del arreglo que desea declarar debe ser de tipo Int");
+
+        return tipo;
     }
 }

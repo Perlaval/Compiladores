@@ -32,7 +32,7 @@ public class RegistroClase {
 
     // constructor de la clase
     // es un metodo porque tmb va a tener parametros y var locales, y el tipo de retorno va a ser void
-    public Constructor constructor;
+    private Constructor constructor;
 
     public boolean inConstructor = false;
 
@@ -47,10 +47,12 @@ public class RegistroClase {
         //this.heredaDe = "Object"; // por default
         this.listaMetodos = new LinkedHashMap<>();
         this.listaAtributos = new LinkedHashMap<>();
+
         //this.constructor = null;
 
     }
 
+    public void setConstructor(Constructor constructor){this.constructor = constructor;}
     public void setDeclarada(boolean esdeclarada){
         this.declarada = esdeclarada;
     }
@@ -65,6 +67,7 @@ public class RegistroClase {
         this.listaMetodos = metodos;
     }
 
+    public Constructor getConstructor(){return this.constructor;}
     public boolean getDeclarada(){
         return this.declarada;
     }
