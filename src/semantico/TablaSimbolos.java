@@ -154,13 +154,26 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
        // }
 
-
         /*RegistroAtributo atr = clase.listaAtributos.get(id);
         if (atr == null){
             return true;
         }
         return !atr.isVisibilidad();*/
     }
+
+    public boolean existeMetodo(String nombreClase, String nombreMetodo){
+        RegistroClase clase = this.getClase(nombreClase);
+        RegistroMetodo metodo = clase.listaMetodos.get(nombreMetodo);
+        return !metodo.equals(null);
+    }
+
+    public RegistroMetodo buscarMetodo(String nombreClase, String nombreMetodo){
+        RegistroClase clase = this.getClase(nombreClase);
+        RegistroMetodo metodo = clase.listaMetodos.get(nombreMetodo);
+        //Si no existe el metodo va a devolver Null
+        return metodo;
+    }
+
 
 // -----------------------------------------Crear Registros-------------------------------------------------------------------------------------------
     // creo un registro de clase

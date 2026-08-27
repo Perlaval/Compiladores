@@ -654,35 +654,35 @@ public class ParserExpresiones {
         // lo hago ahi porque si lo dejo aca se puede romper cuando la clase sea null
 
         //Trini comenta este if-else: linea 650 hasta 653
-        if (parser.ts().noEstaMetodoTs(parser.token().getLexema())){
+        /*if (parser.ts().noEstaMetodoTs(parser.token().getLexema())){
             throw new ErrorSemantico(parser.token(), "El metodo '"+parser.token().getLexema()+"' no fue declarado");
         }
-        else {
-            //RegistroVariable id = parser.ts().getVariable(parser.token().getLexema());
-            // creo el nodo id
-            Token tId = parser.token();
-            // aca pierdo el id, se matchea
-            parser.match("idMetVar");
+        else {*/
+        //RegistroVariable id = parser.ts().getVariable(parser.token().getLexema());
+        // creo el nodo id
+        Token tId = parser.token();
+        // aca pierdo el id, se matchea
+        parser.match("idMetVar");
 
-            ArrayList<NodoExpresion> listaArgumentosActuales = argumentosActuales();
-            // en chaqueo de sentencias debo verificar que el tam de argumentos actuales y el tam de id coinciden
-            //System.out.println("Se rompe aca?, con el token: "+parser.token().getLexema());
-            //System.out.println("Fila: "+parser.token().getFila());
-            // si encadenado es null creo el nodo llamada metodo solo con arg actuales y el id
+        ArrayList<NodoExpresion> listaArgumentosActuales = argumentosActuales();
+        // en chaqueo de sentencias debo verificar que el tam de argumentos actuales y el tam de id coinciden
+        //System.out.println("Se rompe aca?, con el token: "+parser.token().getLexema());
+        //System.out.println("Fila: "+parser.token().getFila());
+        // si encadenado es null creo el nodo llamada metodo solo con arg actuales y el id
 
-            NodoLlamadaMetodo nodoLlamadaMetodo = new NodoLlamadaMetodo(tId, listaArgumentosActuales);
+        NodoLlamadaMetodo nodoLlamadaMetodo = new NodoLlamadaMetodo(tId, listaArgumentosActuales);
 
-            NodoAcceso encadenadoOpt = encadenadoOpt();
-            //System.out.println("Ahora tengo: "+parser.token().getLexema());
-            //System.out.println("NOdoEncOpt "+nodoEncOpt);
-            // si no tiene encadenado se pone null
+        NodoAcceso encadenadoOpt = encadenadoOpt();
+        //System.out.println("Ahora tengo: "+parser.token().getLexema());
+        //System.out.println("NOdoEncOpt "+nodoEncOpt);
+        // si no tiene encadenado se pone null
 
-            if (encadenadoOpt != null){
-                nodoLlamadaMetodo.setProxEncadenado(encadenadoOpt);
-            }
-
-            return nodoLlamadaMetodo;
+        if (encadenadoOpt != null){
+            nodoLlamadaMetodo.setProxEncadenado(encadenadoOpt);
         }
+
+        return nodoLlamadaMetodo;
+        //}
     }
 
     //------------------------------------------------------------------------------------------------------------

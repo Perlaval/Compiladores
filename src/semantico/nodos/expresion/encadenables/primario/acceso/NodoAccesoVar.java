@@ -3,12 +3,14 @@ package semantico.nodos.expresion.encadenables.primario.acceso;
 import lexico.Token;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
+import semantico.nodos.expresion.encadenables.Encadenable;
 import semantico.registros.*;
 import semantico.tipos.Tipo;
 
-public class NodoAccesoVar extends NodoAcceso{
+public class NodoAccesoVar extends NodoAcceso implements Encadenable {
 
     //private final NodoId id;
+    private Encadenable proxEncadenado;
 
     public NodoAccesoVar(Token token /*NodoId id*/) {
         super(token); // token.getLexema = "." - AccesoVar: id.encadenado
@@ -61,4 +63,16 @@ public class NodoAccesoVar extends NodoAcceso{
        // return null;
     }
 
+    //Como eslabón (viene de un encadenado)
+    @Override
+    public Tipo chequear(TablaSimbolos ts, Tipo tipoHeredado) throws ErrorSemantico {
+        return null;
+    }
+
+    protected Tipo continuarCadena(TablaSimbolos ts, Tipo tipoActual)
+            throws ErrorSemantico {
+        if (proxEncadenado != null)
+            return proxEncadenado.chequear(ts, tipoActual);
+        return tipoActual;
+    }
 }

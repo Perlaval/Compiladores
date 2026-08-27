@@ -7,7 +7,7 @@ impl Mundo{
     .(Str saludo, Int num){ a = 42;}
     fn Int get_a(){ ret a; }
     st fn imprimo_algo(){
-        //(IO.out_str("hola mundo"));
+        (IO.out_str1("hola mundo"));
     }
 }
 
@@ -27,7 +27,7 @@ impl Prueba{
         //y = c.b; // Acceso correcto al atributo de la clase
         //z = c.a; // Acceso incorrecto al atributo de la clase
         //z = c.get_a(); // Acceso correcto al atributo de la clase
-        //(c.imprimo_algo());
+        (c.imprimo_algo());
     }
 }
 

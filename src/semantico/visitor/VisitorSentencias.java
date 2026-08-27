@@ -7,6 +7,8 @@ import semantico.nodos.declaraciones.NodoDeclaracion;
 import semantico.nodos.definiciones.NodoClase;
 import semantico.nodos.definiciones.NodoDefinicion;
 import semantico.nodos.definiciones.NodoImpl;
+import semantico.nodos.expresion.encadenables.primario.acceso.NodoLlamadaMetodo;
+import semantico.nodos.expresion.encadenables.primario.acceso.NodoLlamadaMetodoEstatico;
 import semantico.nodos.miembro.NodoMetodo;
 import semantico.nodos.programa.NodoProgram;
 import semantico.nodos.programa.NodoStart;
@@ -193,6 +195,10 @@ public class VisitorSentencias implements Visitor{
 
     @Override
     public void visit(NodoSentenciaSimple nodo) throws ErrorSemantico {
+        /*if (nodo.getNodoExpresion() instanceof NodoLlamadaMetodoEstatico){
+            System.out.println("ES LLAMADA METODO");
+        }*/
+        nodo.getNodoExpresion().chequear(ts);
 
     }
 
