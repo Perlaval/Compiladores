@@ -70,6 +70,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
         this.metodoActual = metodo;
     }
     public void setBloqueStart(RegistroStart bloqueStart){this.bloqueStart = bloqueStart;}
+    public void setClaseActual(RegistroClase clase){this.claseActual = clase;}
 
     /*
     public void imprimirClases(){

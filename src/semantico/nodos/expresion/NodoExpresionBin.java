@@ -33,6 +33,7 @@ public class NodoExpresionBin extends NodoExpresion {
 
     @Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+
         // me llega una expresion con dos lados mas el operador
         // debo chequedar que los tipos de coincidan
 
@@ -44,14 +45,13 @@ public class NodoExpresionBin extends NodoExpresion {
         + | - | ++ | -- | !
         * | /
          */
+
         //System.out.println("Vine al chequear de expresion bin con el token: "+token.getLexema());
         //System.out.println("Expresion Izquierda: "+getExprIzq().getToken().getLexema());
         Tipo tipoIzq = exprIzq.chequear(ts);
-        //System.out.println("Exp izq " + exprIzq.getToken().getLexema() + " de tipo: " + tipoIzq.getNombreTipo());
+        System.out.println("Exp izq " + exprIzq.getToken().getLexema() + " de tipo: " + tipoIzq.getNombreTipo());
         Tipo tipoDer = exprDer.chequear(ts);
         //System.out.println("Exp der " + exprDer.getToken().getLexema() + " de tipo: " + tipoIzq.getNombreTipo());
-
-        // RESOLVER CUANDO ESTOY EN UN IF Y DEVO DEVOLVER QUE LA CONDICION ES BOOL
 
         // operador mul: Si o si ambos tInt -> devuelvo int
         // operadores comparacion: deben ser int si o si -> devuelvo bool
@@ -73,6 +73,8 @@ public class NodoExpresionBin extends NodoExpresion {
         // operador igual: == y !=
         // ambos lados deben ser iguales
         if (Operador.esOpIgual(operador)){
+            System.out.println("Vine aca");
+            System.out.println("EL tipoIzq es: "+tipoIzq.getNombreTipo());
             if (!tipoIzq.getNombreTipo().equals(tipoDer.getNombreTipo())){
                 throw new ErrorSemantico(token, "Para el operador: "+token.getLexema()+" se deben comparar dos tipos iguales");
             }

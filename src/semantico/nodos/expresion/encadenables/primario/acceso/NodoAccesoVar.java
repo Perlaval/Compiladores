@@ -3,14 +3,15 @@ package semantico.nodos.expresion.encadenables.primario.acceso;
 import lexico.Token;
 import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
-import semantico.nodos.expresion.encadenables.Encadenable;
+import semantico.nodos.expresion.encadenables.NodoEncadenable;
 import semantico.registros.*;
 import semantico.tipos.Tipo;
+import semantico.tipos.TipoReferencia;
 
-public class NodoAccesoVar extends NodoAcceso implements Encadenable {
+public class NodoAccesoVar extends NodoAcceso{
 
     //private final NodoId id;
-    private Encadenable proxEncadenado;
+    //private Encadenable proxEncadenado;
 
     public NodoAccesoVar(Token token /*NodoId id*/) {
         super(token); // token.getLexema = "." - AccesoVar: id.encadenado
@@ -28,42 +29,62 @@ public class NodoAccesoVar extends NodoAcceso implements Encadenable {
         // obtengo el tipo
         // devuelvo ese tipo
 
-        // si estoy aca estoy verificando por ejemplo un if de un impl
+        // la funcion continuar cadena se encuentra en NodoEncadenable
+
         // por lo tanto busco en la clase de ese impl si tengo esa variable
 
         RegistroClase claseActual = ts.getClaseActual();
         String id = token.getLexema(); //expresion a buscar en la ts
-        RegistroAtributo atributo = claseActual.getListaAtributos().get(id);
+        //System.out.println("El id que estoy buscando en nodoAccesoVar es: "+id);
 
-        if (claseActual.getListaAtributos().containsKey(id)){
-            // obtengo el tipo del atributo
-            Tipo tipoAtributo = atributo.getTipo();
-            //System.out.printf("Tipo val: "+tipoAtributo.getNombreTipo());
-            return tipoAtributo;
-        }
-        // si no es atributo puede estar en los parametros del metodo que tiene el if
         RegistroMetodo metodoActual = ts.getMetodoActual();
-        RegistroParametro parametro = metodoActual.getListaParametros().get(id);
-        if (metodoActual.getListaParametros().containsKey(id)){
-            Tipo tipoParam = parametro.getTipo();
-            return tipoParam;
+
+
+        // puede ser un parametro o una var local
+        if (metodoActual != null){
+            // PARAMETROS METODO ------------------------------------------------------------------
+            RegistroParametro parametro = metodoActual.getListaParametros().get(id);
+            if (parametro != null){
+                return continuarCadena(ts, parametro.getTipo());
+            }
+
+            // Puede ser var local del metodo
+            // VAR LOCAL METODO --------------------------------------------------------------------
+            RegistroVariable variableLocal = metodoActual.getListaVarLocales().get(id);
+            if (variableLocal != null){
+                return continuarCadena(ts, variableLocal.getTipo());
+            }
+        }
+        // sino puede ser un atributo
+        //ATRIBUTO ----------------------------------------------------------------------------
+        RegistroAtributo atributo = claseActual.getListaAtributos().get(id);
+        if (atributo != null){
+            return continuarCadena(ts,atributo.getTipo());
         }
 
-        // Puede ser var local del metodo
-        RegistroVariable variableLocal = metodoActual.getListaVarLocales().get(id);
-        if (metodoActual.getListaVarLocales().containsKey(id)){
-            Tipo tipoVarLocal = variableLocal.getTipo();
-            return tipoVarLocal;
+        //START ----------------------------------------------------------------------------
+        // puedo estar en start, asique busco en las var locales de start
+        if (ts.bloqueStart != null && metodoActual == null){
+            RegistroVariable varEnStart = ts.bloqueStart.listaVariables.get(id);
+            if (varEnStart != null){
+                // devuelvo el tipo de esa var
+                return continuarCadena(ts, varEnStart.getTipo());
+            }
         }
 
-        // si no es ni atributo de la clase, ni parametro del metodo ni var local del metodo -> ERROR
+        // si no es ni atributo de la clase, ni parametro del metodo ni var local del metodo, ni esta en start -> ERROR
+        if (ts.bloqueStart != null && metodoActual == null){
+            throw new ErrorSemantico(token, "Id: '"+id+"' no declarado en start");
+
+        }
         else {
             throw new ErrorSemantico(token, "Id: '"+id+"' no declarado en la clase: "+claseActual.nombre);
         }
-       // return null;
+
+
     }
 
-    //Como eslabón (viene de un encadenado)
+    /*//Como eslabón (viene de un encadenado)
     @Override
     public Tipo chequear(TablaSimbolos ts, Tipo tipoHeredado) throws ErrorSemantico {
         return null;
@@ -74,5 +95,5 @@ public class NodoAccesoVar extends NodoAcceso implements Encadenable {
         if (proxEncadenado != null)
             return proxEncadenado.chequear(ts, tipoActual);
         return tipoActual;
-    }
+    }*/
 }

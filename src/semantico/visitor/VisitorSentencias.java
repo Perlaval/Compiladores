@@ -128,7 +128,12 @@ public class VisitorSentencias implements Visitor{
 
     @Override
     public void visit(NodoBloque nodo) throws ErrorSemantico {
-
+        // tengo token y ListaSentencia
+        // debo chequear todas esas sentencias
+        for (NodoSentencia sentencia : nodo.getListaSent()) {
+            sentencia.accept(this);
+            //sentencia.chequear(ts);
+        }
     }
 
     @Override
@@ -188,18 +193,17 @@ public class VisitorSentencias implements Visitor{
         }
     }
 
+    /* Es abstracto NodoSentencia, con el accept de nodoSentencia lo redirijo a la sentencia que es solicitada
     @Override
     public void visit(NodoSentencia nodo) throws ErrorSemantico {
 
-    }
+    } */
 
     @Override
     public void visit(NodoSentenciaSimple nodo) throws ErrorSemantico {
-        /*if (nodo.getNodoExpresion() instanceof NodoLlamadaMetodoEstatico){
-            System.out.println("ES LLAMADA METODO");
-        }*/
+        // ( Expresion )
+        // debo chequear esa expresion
         nodo.getNodoExpresion().chequear(ts);
-
     }
 
     @Override

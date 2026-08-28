@@ -10,6 +10,7 @@ import semantico.visitor.Visitor;
 
 public class NodoIf extends NodoSentencia{
 
+
     //if (Expresion) SentenciaRec
     //SentenciaRec -> Sentencia(then) RecursivoElse(else)
     private NodoExpresion nodoCondicion;
@@ -35,18 +36,6 @@ public class NodoIf extends NodoSentencia{
         return nodoSentenciaElse;
     }
 
-    /*@Override
-    public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
-        // el resultado de la condicion debe ser de tipo bool
-        /*
-        Tipo tipoCondicion = nodoCondicion.chequear(ts);
-        if (!tipoCondicion.getNombreTipo().equals("tBool")){
-            throw new ErrorSemantico(token.getFila(), token.getColumna(), "La condicionn debe ser de tipo Bool");
-        }
-            throw new ErrorSemantico(nroLinea, nroColumna, "La condicionn debe ser de tipo Bool");
-        }*/
-        //return null;
-    //}
 
     @Override
     public void accept(Visitor visitor) throws ErrorSemantico {

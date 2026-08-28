@@ -5,6 +5,7 @@ import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.nodos.Nodo;
 import semantico.nodos.sentencia.NodoSentencia;
+import semantico.registros.RegistroMetodo;
 import semantico.tipos.Tipo;
 import semantico.visitor.Visitor;
 
@@ -50,6 +51,7 @@ public class NodoBloqueMetodo extends Nodo {//hereda de nodoDeclaracion?
     }*/
 
     public void accept(Visitor visitor) throws ErrorSemantico {
+        //System.out.println("Entro a nodobloque metodo");
         visitor.visit(this);
     }
 

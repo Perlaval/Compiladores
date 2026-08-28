@@ -13,6 +13,7 @@ public class NodoArgumento extends NodoDeclaracion {
 
     @Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+        //System.out.println("Entre al chequear de nodo argumento en decalracion??");
         return null;
     }
 

@@ -53,6 +53,7 @@ public class NodoMetodo extends Nodo {
     }
 
     public void accept(Visitor visitor) throws ErrorSemantico {
+        //System.out.println("Entre al accept de metodo con el constructor?? : "+metodoActual.isConstructor());
         visitor.visit(this);
     }
 
