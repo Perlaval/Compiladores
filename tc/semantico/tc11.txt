@@ -1,13 +1,14 @@
 class Mundo{
     Int a;
     pub Str b;
+    Prueba d;
 }
 
 impl Mundo{
     .(Str saludo, Int num){ a = 42;}
     fn Int get_a(){ ret a; }
     st fn imprimo_algo(){
-        (IO.out_str1("hola mundo"));
+        (IO.out_str("hola mundo"));
     }
 }
 
@@ -19,17 +20,22 @@ class Prueba{
 
 impl Prueba{
     .(){
-        c = new Mundo("hola", 4);
-        //CORREGIR: Error Semantico, tipos incompatibles en la asignación. Se esperaba un valor de tipo tStr pero se obtuvo un valor de tipo Mundo |
-        //Esto es porque me devuelve el valor de c y no de b -> 1ro hay que verificar el tipo de b y comprobar si es primitivo
-        //Si es primitivo devuelvo el tipo de b
-        //Sino si es tipo referencia devuelvo, igual devuelvo el tipo de b
-        //y = c.b; // Acceso correcto al atributo de la clase
-        //z = c.a; // Acceso incorrecto al atributo de la clase
-        //z = c.get_a(); // Acceso correcto al atributo de la clase
+        //c = new Mundo("hola", 4);
+        y = c.b; // Acceso correcto al atributo de la clase
+        z = c.a; // Acceso incorrecto al atributo de la clase
+        z = c.get_a(); // Acceso correcto al atributo de la clase
         (c.imprimo_algo());
+        c.a = c.get_a();
+        Prueba h; // CORREGIR: Se esperaba 'llaveCierra' y se encontro 'idClass' |
+        h = new Prueba();
+
     }
 }
 
 start{
+    h = new Prueba //CORREGIR: Id: 'h' no declarado en la clase: Prueba
+    Prueba h; // CORREGIR: Se esperaba 'llaveCierra' y se encontro 'idClass' |
+    h = new Prueba();
+    a_Mundo = h.c.a;
+    //IO.out_str("hola mundo") //Corregir start
 }

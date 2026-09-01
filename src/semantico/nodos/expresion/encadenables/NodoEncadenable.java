@@ -37,7 +37,7 @@ public abstract class NodoEncadenable extends NodoExpresion {
             // obtengo la clase
             RegistroClase claseSig = ts.getClase(tipo.getNombreTipo());
             if (claseSig == null){
-                throw new ErrorSemantico(token, "La clase: "+claseSig.getNombre()+"no ha sido declarada");
+                throw new ErrorSemantico(token, "La clase: "+claseSig.getNombre()+" no ha sido declarada");
             }
 
             RegistroClase claseAnterior = ts.claseActual; // clase donde estaba

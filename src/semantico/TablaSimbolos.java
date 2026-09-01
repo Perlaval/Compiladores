@@ -479,44 +479,44 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
         // st fn out_str(Str s):
         RegistroMetodo metodoStr = crearRegMetodo("out_str", true, new TipoVoid());
-        RegistroParametro paramStr = crearRegParametros("s", new TipoPrimitivo("String"));
+        RegistroParametro paramStr = crearRegParametros("s", new TipoPrimitivo("tStr"));
         guardar(metodoStr, paramStr, claseIO);
 
         // st fn out_int(Int i):
         RegistroMetodo metodoInt = crearRegMetodo("out_int", true, new TipoVoid());
-        RegistroParametro paramInt = crearRegParametros("i", new TipoPrimitivo("Int"));
+        RegistroParametro paramInt = crearRegParametros("i", new TipoPrimitivo("tInt"));
         guardar(metodoInt, paramInt, claseIO);
 
         // st fn out_bool(Bool b):
         RegistroMetodo metodoBool = crearRegMetodo("out_bool", true, new TipoVoid());
-        RegistroParametro paramBool = crearRegParametros("b", new TipoPrimitivo("Bool"));
+        RegistroParametro paramBool = crearRegParametros("b", new TipoPrimitivo("tBool"));
         guardar(metodoBool, paramBool, claseIO);
 
         // st fn out_array_int(Array Int a):
         RegistroMetodo metodoAInt = crearRegMetodo("out_array_int", true, new TipoVoid());
-        RegistroParametro paramAInt = crearRegParametros("a", new TipoArreglo(new TipoPrimitivo("Int")));
+        RegistroParametro paramAInt = crearRegParametros("a", new TipoArreglo(new TipoPrimitivo("tInt")));
         guardar(metodoAInt, paramAInt, claseIO);
 
         // st fn out_array_str(Array Str a):
         RegistroMetodo metodoAStr = crearRegMetodo("out_array_str", true, new TipoVoid());
-        RegistroParametro paramAStr = crearRegParametros("a", new TipoArreglo(new TipoPrimitivo("Str")));
+        RegistroParametro paramAStr = crearRegParametros("a", new TipoArreglo(new TipoPrimitivo("tStr")));
         guardar(metodoAStr, paramAStr, claseIO);
 
         // st fn out_array bool(Array Bool a):
         RegistroMetodo metodoABool = crearRegMetodo("out_array_bool", true, new TipoVoid());
-        RegistroParametro paramABool = crearRegParametros("a", new TipoArreglo(new TipoPrimitivo("Bool")));
+        RegistroParametro paramABool = crearRegParametros("a", new TipoArreglo(new TipoPrimitivo("tBool")));
         guardar(metodoABool, paramABool, claseIO);
 
         // st fn Str in_str():
-        RegistroMetodo metodoInStr = crearRegMetodo("in_str", true, new TipoPrimitivo("Str"));
+        RegistroMetodo metodoInStr = crearRegMetodo("in_str", true, new TipoPrimitivo("tStr"));
         guardar(metodoInStr, null, claseIO);
 
         // st fn Int in_int():
-        RegistroMetodo metodoInInt = crearRegMetodo("in_int", true, new TipoPrimitivo("Int"));
+        RegistroMetodo metodoInInt = crearRegMetodo("in_int", true, new TipoPrimitivo("tInt"));
         guardar(metodoInInt, null, claseIO);
 
         // st fn Bool in_bool():
-        RegistroMetodo metodoInBool = crearRegMetodo("in_bool", true, new TipoPrimitivo("Bool"));
+        RegistroMetodo metodoInBool = crearRegMetodo("in_bool", true, new TipoPrimitivo("tBool"));
         guardar(metodoInBool, null, claseIO);
 
         claseIO.setDeclarada(true);
@@ -549,25 +549,25 @@ public class TablaSimbolos implements ValidarDeclaracion{
         RegistroClase claseArray = crearRegClase("Array", "Object");
 
         // fn Int length(), length devuelve la longitud del parámetro self y los métodos de la interfaz Iterator
-        RegistroMetodo metodoLength = crearRegMetodo("length", false, new TipoPrimitivo("Int"));
+        RegistroMetodo metodoLength = crearRegMetodo("length", false, new TipoPrimitivo("tInt"));
         guardar(metodoLength, null, claseArray);
 
         // (hasNext() y next <type>()) para iterar sobre los elementos del arreglo.
 
         // fn Bool hasNext()
-        RegistroMetodo hasNext = crearRegMetodo("hasNext", false, new TipoPrimitivo("Bool"));
+        RegistroMetodo hasNext = crearRegMetodo("hasNext", false, new TipoPrimitivo("tBool"));
         guardar(hasNext, null, claseArray);
 
         // fn next_int()
-        RegistroMetodo nextInt = crearRegMetodo("next_int", false, new TipoPrimitivo("Int"));
+        RegistroMetodo nextInt = crearRegMetodo("next_int", false, new TipoPrimitivo("tInt"));
         guardar(nextInt, null, claseArray);
 
         // fn next_str():
-        RegistroMetodo nextStr = crearRegMetodo("next_str", false, new TipoPrimitivo("Str"));
+        RegistroMetodo nextStr = crearRegMetodo("next_str", false, new TipoPrimitivo("tStr"));
         guardar(nextStr, null, claseArray);
 
         // fn next_bool():
-        RegistroMetodo nextBool = crearRegMetodo("next_bool", false, new TipoPrimitivo("Bool"));
+        RegistroMetodo nextBool = crearRegMetodo("next_bool", false, new TipoPrimitivo("tBool"));
         guardar(nextBool, null, claseArray);
 
         claseArray.setDeclarada(true);
@@ -587,12 +587,12 @@ public class TablaSimbolos implements ValidarDeclaracion{
         RegistroClase claseStr = crearRegClase("Str", "Object");
 
         // fn Int length(). length devuelve la longitud del parámetro self.
-        RegistroMetodo mStr = crearRegMetodo("length",false,new TipoPrimitivo("Int"));
+        RegistroMetodo mStr = crearRegMetodo("length",false,new TipoPrimitivo("tInt"));
         guardar(mStr, null, claseStr);
 
         // fn Str concat(Str s). El método concat devuelve la cadena formada al concatenar s después de self.
-        RegistroMetodo concat = crearRegMetodo("concat", false, new TipoPrimitivo("Str"));
-        RegistroParametro paramConcat = crearRegParametros("s", new TipoPrimitivo("Str"));
+        RegistroMetodo concat = crearRegMetodo("concat", false, new TipoPrimitivo("tStr"));
+        RegistroParametro paramConcat = crearRegParametros("s", new TipoPrimitivo("tStr"));
         guardar(concat, paramConcat, claseStr);
 
         claseStr.setDeclarada(true);

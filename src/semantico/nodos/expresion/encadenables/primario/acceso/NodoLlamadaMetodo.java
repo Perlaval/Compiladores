@@ -67,7 +67,7 @@ public class NodoLlamadaMetodo extends NodoAcceso {
             Tipo tipoArgActual = listaArg.get(i).chequear(ts);
 
             if (!tipoParam.getNombreTipo().equals(tipoArgActual.getNombreTipo())) {
-                throw new ErrorSemantico(token, "En los parametros se esperaba un tipo: " + tipoParam.getNombreTipo() +
+                throw new ErrorSemantico(token, "En los parametros de llamada al método "+ nombreMetodo + " se esperaba un tipo: " + tipoParam.getNombreTipo() +
                         " y se obtuvo: " + tipoArgActual.getNombreTipo());
             }
             i++;
