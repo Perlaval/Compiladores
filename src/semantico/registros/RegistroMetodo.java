@@ -19,6 +19,7 @@ public class RegistroMetodo {
     // forma del metodo puede ser st o no
     public boolean esEstatico; // true: estatico
 
+
     // cada metodo tiene una lista de parametros (que serian los argumentos formales)
     public Map<String, RegistroParametro> listaParametros;
 
