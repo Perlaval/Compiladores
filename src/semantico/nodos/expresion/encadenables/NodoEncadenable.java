@@ -5,6 +5,7 @@ import semantico.ErrorSemantico;
 import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoExpresion;
 import semantico.registros.RegistroClase;
+import semantico.registros.RegistroMetodo;
 import semantico.tipos.Tipo;
 
 public abstract class NodoEncadenable extends NodoExpresion {
@@ -30,6 +31,11 @@ public abstract class NodoEncadenable extends NodoExpresion {
     protected Tipo continuarCadena(TablaSimbolos ts, Tipo tipo) throws ErrorSemantico {
         // veo encadenado
         if (proxEncadenado != null){
+            if (tipo.esTipoArreglo()){
+                System.out.println("Arreglo");
+                // resolver aca que pasa si es arreglo
+
+            }
             // si tiene encadenado y no es de tipo referencia donde estoy entonces error
             if (!tipo.esTipoReferencia()){
                 throw new ErrorSemantico(token, "No se puede acceder a un miembro de un tipo que no es una clase");

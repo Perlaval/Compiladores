@@ -231,6 +231,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
     public void consolidar() throws ErrorSemantico {
         for (RegistroClase clase : tablaClases.values()) {
             if (clase.getEsPredefinida()){
+                // consolidar los metodos de iterator a array (la implementa)
                 continue;
             }
             verificarDeclarada(clase);
@@ -528,18 +529,18 @@ public class TablaSimbolos implements ValidarDeclaracion{
         //RegistroClase iterator = crearRegClase("Iterator", "Object");
 
         // fn Bool hasNext(): devuelve true si hay más elementos para iterar, de lo contrario devuelve false.
-        RegistroMetodo hasNext = crearRegMetodo("hasNext", false, new TipoPrimitivo("Bool"));
+        RegistroMetodo hasNext = crearRegMetodo("hasNext", false, new TipoPrimitivo("tBool"));
         guardar(hasNext, null, iterator);
 
         // fn next <type>(): devuelve el siguiente elemento en la iteración. El tipo de retorno debe ser
         //el mismo que el tipo de los elementos de la colección que se está iterando
 
         // fn next_int():
-        RegistroMetodo nextInt = crearRegMetodo("next_int", false, new TipoPrimitivo("Int"));
+        RegistroMetodo nextInt = crearRegMetodo("next_int", false, new TipoPrimitivo("tInt"));
         guardar(nextInt, null, iterator);
 
         // fn next_str():
-        RegistroMetodo nextStr = crearRegMetodo("next_str", false, new TipoPrimitivo("Str"));
+        RegistroMetodo nextStr = crearRegMetodo("next_str", false, new TipoPrimitivo("tStr"));
         guardar(nextStr, null, iterator);
 
         this.tablaClases.put(iterator.getNombre(), iterator); */
