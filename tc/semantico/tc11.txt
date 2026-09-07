@@ -17,20 +17,39 @@ class Prueba{
     Mundo c;
     Str y;
     Int z;
+    B claseB;
 }
 
 impl Prueba{
     .(){
-        //c = new Mundo("hola", 4);
+
         Prueba h;
+        c = new Mundo(4, "hola");
         y = c.b; // Acceso correcto al atributo de la clase
         z = c.a; // Acceso incorrecto al atributo de la clase
         z = c.get_a(); // Acceso correcto al atributo de la clase
         (c.imprimo_algo());
         //c.a = c.get_a();
-        //c.b = self.y; // No esta entrando al chequear de NodoAccesoSelf
+        c.b = self.y;
         h = new Prueba();
 
+    }
+    fn pruebaB(){
+        //self.claseB.llamarPrueba(); //CORREGIR: Se esperaba 'opIgual' y se encontro 'parAbre'
+    }
+}
+
+class B : Prueba{
+    Prueba l; //CORREGIR: me esta error pero habia colocado l Prueba: Se esperaba 'llaveCierra' y se encontro 'idMetVar'
+}
+
+impl B{
+    .(){
+        Str j;
+         j = l.y; //No deberia dejar pq y es un atributo privado de l (clase Prueba)
+    }
+    fn llamarPrueba(){
+        self.l.pruebaB();
     }
 }
 
