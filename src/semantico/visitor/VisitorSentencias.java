@@ -32,8 +32,10 @@ public class VisitorSentencias implements Visitor{
         // voy a chequear los impl de program
         // primero chequeo todas las definiciones (class e impl)
         for(NodoDefinicion def : nodo.getListaDefiniciones()) {
-            def.accept(this);
+            def.accept(this); //aca se va actualizando la clase actual a medida que se recorre el ast
         }
+        ts.setMetodoActual(null);
+        ts.setClaseActual(null);
         nodo.getNodoStart().accept(this);
         //nodoStart.chequear(ts);
         //return null;
@@ -41,12 +43,14 @@ public class VisitorSentencias implements Visitor{
     }
 
     @Override
-    public void visit(NodoStart nodo) throws ErrorSemantico {
+    public void visit(NodoStart nodo) throws ErrorSemantico { //REvisar
+
         // recorrido para probar nodo ret
         //System.out.println("Chequeo start");
-
-        ts.setMetodoActual(ts.getMetodoActual());
-        //System.out.println("Metodo actual en start ?? "+ts.getMetodoActual().nombre);
+        //ts.setClaseActual(null);
+        //ts.setMetodoActual(ts.getMetodoActual());
+        System.out.println("Metodo actual en start ?? " +ts.getMetodoActual());
+        //System.out.println("Clase actual en start ?? "+ts.getClaseActual().nombre);
         //nodoBloqueMetodo.chequear(ts);
         nodo.getNodoBloqueMetodo().accept(this);
         //return null;
@@ -115,6 +119,7 @@ public class VisitorSentencias implements Visitor{
     @Override
     public void visit(NodoAsignacion nodo) throws ErrorSemantico {
 
+        //System.out.println("En nodo asignacion, tipo acceso");
         Tipo tipoAcceso = nodo.getNodoAcceso().chequear(ts);
 
         Tipo tipoExpresion = nodo.getNodoExpresion().chequear(ts);

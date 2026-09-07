@@ -2,9 +2,10 @@
 // prueba para que largue error
 
 impl B{
+    .(){}
     st fn Int m2(Int x){
         Bool a;
-        if (self.y == "a"){} //No puede accederse a una variable de instancia en un contexto estático
+        //if (self.y == "a"){} //No puede accederse a una variable de instancia en un contexto estático
     }
 }
 class B {

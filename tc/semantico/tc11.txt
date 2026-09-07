@@ -1,4 +1,5 @@
 class Mundo{
+    Bool c;
     Int a;
     pub Str b;
     Prueba d;
@@ -21,21 +22,40 @@ class Prueba{
 impl Prueba{
     .(){
         //c = new Mundo("hola", 4);
+        Prueba h;
         y = c.b; // Acceso correcto al atributo de la clase
         z = c.a; // Acceso incorrecto al atributo de la clase
         z = c.get_a(); // Acceso correcto al atributo de la clase
         (c.imprimo_algo());
-        c.a = c.get_a();
-        Prueba h; // CORREGIR: Se esperaba 'llaveCierra' y se encontro 'idClass' |
+        //c.a = c.get_a();
+        //c.b = self.y; // No esta entrando al chequear de NodoAccesoSelf
         h = new Prueba();
 
     }
 }
 
 start{
-    h = new Prueba //CORREGIR: Id: 'h' no declarado en la clase: Prueba
-    Prueba h; // CORREGIR: Se esperaba 'llaveCierra' y se encontro 'idClass' |
-    h = new Prueba();
-    a_Mundo = h.c.a;
-    //IO.out_str("hola mundo") //Corregir start
+    //h = new Prueba(); //CORREGIR: Id: 'h' no declarado en la clase: Prueba
+    //Prueba h; // CORREGIR: Se esperaba 'llaveCierra' y se encontro 'idClass' |
+    //h.z = 3;
+    //Int a_Mundo; //Se esperaba 'llaveCierra' y se encontro 'tInt': es porque la declaracion no esta en el lugar correcto
+    //a_Mundo = h.c.a;
+    //(} //1. Mejorar error: Se esperaba un operando y se encontro llaveCierra
+    //(IO.out_str("hola mundo"));
+    Int a; //what: Se esperaba 'llaveCierra' y se encontro 'tInt' -> este error es porque la disposicion de la declaracion es incorrecta: o sea las declaraciones van antes de las sentencias ((IO.out_str("hola mundo")); a_Mundo = h.c.a;) SIEMPRE.
+    Str c;
+    Str b;
+    /*Fibonacci fib; //2. MEJORAR: La clase: 'Fibonacci' nunca fue definida
+    Int n;
+    fib = new Fibonacci();
+    n = IO.in_int();
+    (IO.out_int(fib.sucesion_fib(n)));*/
+    b="3.0";
+    a=10;
+    c = "hola";
+    //c = b + c; ERROR: estoy intentando concatenar dos string
+    //c=a+a; //esto devuelve error de tipo
+    (IO.out_str(c));
+    //IO.out_str(c); es un error pq para hacer una llamadaMetodo como esta. Tiene que ser por medio de SentenciaSimple -> ( Expresion )
+
 }

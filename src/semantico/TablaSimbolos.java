@@ -552,10 +552,13 @@ public class TablaSimbolos implements ValidarDeclaracion{
         RegistroMetodo metodoLength = crearRegMetodo("length", false, new TipoPrimitivo("tInt"));
         guardar(metodoLength, null, claseArray);
 
+        //IMPLEMENTA LA INTERFAZ ITERATOR
+        claseArray.setHeredaDe("Iterator");
+
         // (hasNext() y next <type>()) para iterar sobre los elementos del arreglo.
 
         // fn Bool hasNext()
-        RegistroMetodo hasNext = crearRegMetodo("hasNext", false, new TipoPrimitivo("tBool"));
+        /*RegistroMetodo hasNext = crearRegMetodo("hasNext", false, new TipoPrimitivo("tBool"));
         guardar(hasNext, null, claseArray);
 
         // fn next_int()
@@ -568,7 +571,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
 
         // fn next_bool():
         RegistroMetodo nextBool = crearRegMetodo("next_bool", false, new TipoPrimitivo("tBool"));
-        guardar(nextBool, null, claseArray);
+        guardar(nextBool, null, claseArray);*/
 
         claseArray.setDeclarada(true);
         claseArray.setEsPredefinida(true);

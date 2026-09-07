@@ -33,11 +33,27 @@ public class NodoAccesoVar extends NodoAcceso{
 
         // por lo tanto busco en la clase de ese impl si tengo esa variable
 
+        String id = token.getLexema();
+        RegistroMetodo metodoActual = ts.getMetodoActual();
+
+        //START ----------------------------------------------------------------------------
+        // puedo estar en start, asique busco en las var locales de start
+        if (ts.bloqueStart != null && metodoActual == null){
+            //System.out.println("cheque metodo start");
+            RegistroVariable varEnStart = ts.bloqueStart.listaVariables.get(id);
+            if (varEnStart != null){
+                // devuelvo el tipo de esa var
+                return continuarCadena(ts, varEnStart.getTipo());
+            }
+
+            throw new ErrorSemantico(token, "Id: '"+id+"' no declarado en start");
+        }
+
         RegistroClase claseActual = ts.getClaseActual();
-        String id = token.getLexema(); //expresion a buscar en la ts
+        //String id = token.getLexema(); //expresion a buscar en la ts
         //System.out.println("El id que estoy buscando en nodoAccesoVar es: "+id);
 
-        RegistroMetodo metodoActual = ts.getMetodoActual();
+        //RegistroMetodo metodoActual = ts.getMetodoActual();
 
 
         // puede ser un parametro o una var local
@@ -64,19 +80,22 @@ public class NodoAccesoVar extends NodoAcceso{
 
         //START ----------------------------------------------------------------------------
         // puedo estar en start, asique busco en las var locales de start
-        if (ts.bloqueStart != null && metodoActual == null){
+        /*if (ts.bloqueStart != null && metodoActual == null){
+            System.out.println("cheque metodo start");
             RegistroVariable varEnStart = ts.bloqueStart.listaVariables.get(id);
             if (varEnStart != null){
                 // devuelvo el tipo de esa var
+                System.out.println("Variable en start: " + varEnStart.getNombre());
+                System.out.println("Variable en start tipo: " + varEnStart.getTipo().getNombreTipo());
                 return continuarCadena(ts, varEnStart.getTipo());
             }
-        }
+        }*/
 
         // si no es ni atributo de la clase, ni parametro del metodo ni var local del metodo, ni esta en start -> ERROR
-        if (ts.bloqueStart != null && metodoActual == null){
+        /*if (ts.bloqueStart != null && metodoActual == null){
             throw new ErrorSemantico(token, "Id: '"+id+"' no declarado en start");
 
-        }
+        }*/
         else {
             throw new ErrorSemantico(token, "Id: '"+id+"' no declarado en la clase: "+claseActual.nombre);
         }

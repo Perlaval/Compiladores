@@ -23,13 +23,14 @@ public class NodoAccesoSelf extends NodoAcceso{
     // voy a devolver la clase a la que pertenece x
     @Override
     public Tipo chequear(TablaSimbolos ts) throws ErrorSemantico {
+
         // devuelvo el tipo de la clase actual
         // si el metodoactual es estatico largo error -> no puede acceder a una variable de instancia (self)
         RegistroMetodo metodoActual = ts.getMetodoActual();
         RegistroClase claseActual = ts.getClaseActual();
 
         /*if (metodoActual.isConstructor()){
-            System.out.println("Estoy en el constructor");
+            System.out.println("Estoy en el constructor de self");
         }*/
 
         //System.out.println("Estoy en nodoSelf y obtuve la clase actual: "+claseActual.getNombre());
@@ -53,7 +54,7 @@ public class NodoAccesoSelf extends NodoAcceso{
 
         // debo retornar el tipo de la clase actual
         //return new TipoSelf();
-        //System.out.println("Estoy en nodoself y retorno: "+claseActual.getNombre());
+        System.out.println("Estoy en nodoself y retorno: "+claseActual.getNombre());
         return new TipoReferencia(claseActual.getNombre());
         //return null;
     }
