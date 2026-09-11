@@ -49,7 +49,7 @@ impl B{
          j = l.y; //No deberia dejar pq y es un atributo privado de l (clase Prueba)
     }
     fn llamarPrueba(){
-        self.l.pruebaB();
+        //self.l.pruebaB();
     }
 }
 

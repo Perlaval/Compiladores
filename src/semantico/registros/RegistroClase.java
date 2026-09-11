@@ -25,10 +25,10 @@ public class RegistroClase {
 
     // metodos de la clase
     // voy a guardar el nombre de la clase y sus metodos
-    public Map<String, RegistroMetodo> listaMetodos;
+    public LinkedHashMap<String, RegistroMetodo> listaMetodos;
 
     // atributos de la clase
-    public Map<String, RegistroAtributo> listaAtributos;
+    public LinkedHashMap<String, RegistroAtributo> listaAtributos;
 
     // constructor de la clase
     // es un metodo porque tmb va a tener parametros y var locales, y el tipo de retorno va a ser void
@@ -63,7 +63,7 @@ public class RegistroClase {
     public void setEsPredefinida(boolean predefinida){ this.esPredefinida = predefinida; }
     public void setImplementada(boolean implementada){ this.implementada = implementada; }
     // metodo utilizado paea las clases predefinidas
-    public void setListaMetodos(Map<String, RegistroMetodo> metodos){
+    public void setListaMetodos(LinkedHashMap<String, RegistroMetodo> metodos){
         this.listaMetodos = metodos;
     }
 

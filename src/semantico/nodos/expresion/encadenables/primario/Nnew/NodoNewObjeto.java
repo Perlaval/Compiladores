@@ -42,11 +42,23 @@ public class NodoNewObjeto extends NodoNew {
 
             if (reg.getTipo().esTipoReferencia()) {
                 if (!ts.conforma(reg.getTipo().getNombreTipo(), expresion.chequear(ts).getNombreTipo()))
-                    throw new ErrorSemantico(reg.tokenVarLocal, "Error Semantico, el tipo de la variable " + expresion.getToken().getLexema() + " no coincide con el tipo esperado " + reg.getTipo());
+                    throw new ErrorSemantico(token, "Error Semantico, argumento invalido en la pos "
+                            + reg.getPos()
+                            + " del constructor de la clase "
+                            + token.getLexema() + ": Esperado: "
+                            + reg.getTipo().getNombreTipo()
+                            + " - Recibido: "
+                            + expresion.getToken().getTipo());
 
             } else {
                 if (!reg.getTipo().equals(expresion.chequear(ts)))
-                    throw new ErrorSemantico(reg.tokenVarLocal, "Error Semantico, el tipo de la variable " + expresion.getToken().getLexema() + " no coincide con el tipo esperado " + reg.getTipo());
+                    throw new ErrorSemantico(token, "Error Semantico, argumento invalido en la pos "
+                            + reg.getPos()
+                            + " del constructor de la clase "
+                            + token.getLexema() + ": Esperado: "
+                            + reg.getTipo().getNombreTipo()
+                            + " - Recibido: "
+                            + expresion.getToken().getTipo());
             }
         }
 

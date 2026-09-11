@@ -10,7 +10,7 @@ public class RegistroVariable{
     public String nombre; // nombre
     public Tipo tipo; // tipo
 
-    public Token tokenVarLocal;
+    public Token tokenVarLocal; //revisar en algunos casos este token es null
 
     public RegistroVariable(String nombre){
         this.nombre = nombre;
