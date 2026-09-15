@@ -32,7 +32,7 @@ impl Lista {
 
     fn Int suma(Array Int v, Int pos) {
 
-        if (v[pos] > 0 && pos < v.length()) {
+        if (v[pos] > 0 && pos < v.length()) { // llamada metodo de un metodo de iterator que lo implementa array
             ret v[pos];
         }
         else {
@@ -40,10 +40,10 @@ impl Lista {
         }
     }
 
-    fn Bool test(Array Bool b, Int i) {
-
+    fn Bool test(Str b, Int i) {
+        Int a;
         while (i < b.length()) {
-            if (b[i]) {
+            if (i == 1) {
                 ret true;
             }
             i = i + 1;
@@ -58,8 +58,11 @@ start {
     Array Int numeros;
     Array Bool estados;
     Array Str nombres;
-
+    Str b;
+    Str palabra;
     Lista l;
+
+    palabra = b.concat("Ad");
 
     l = new Lista();
 
@@ -85,6 +88,6 @@ start {
     }
 
     (IO.out_int(l.suma(numeros, 2)));
-    (IO.out_bool(l.test(estados, 0)));
+    (IO.out_bool(l.test("2", 0)));
 
 }

@@ -3,7 +3,7 @@ impl B {
 }
 
 impl B{
-     fn Int m2(Int x){
+     fn void m2(Int x){
         Bool a;
         x = 2;
         self.c.x = 2;

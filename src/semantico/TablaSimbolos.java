@@ -23,6 +23,9 @@ public class TablaSimbolos implements ValidarDeclaracion{
     // start
     public RegistroStart bloqueStart;
 
+    // clase del metodo, utilizado para chequear visibilidad de atributos
+    public RegistroClase claseDelMetodoActual;
+
     public TablaSimbolos() {
         this.tablaClases = new HashMap<>();
         //clases predefinidas
@@ -36,6 +39,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
     }
     public RegistroClase getClaseActual() { return this.claseActual;}
     public RegistroMetodo getMetodoActual() { return  this.metodoActual;}
+    public RegistroClase getClaseDelMetodoActual(){return this.claseDelMetodoActual;}
     public RegistroVariable getVariable(String id){
 
         //1. Buscos en el met actual
@@ -71,6 +75,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
     }
     public void setBloqueStart(RegistroStart bloqueStart){this.bloqueStart = bloqueStart;}
     public void setClaseActual(RegistroClase clase){this.claseActual = clase;}
+    public void setClaseDelMetodoActual(RegistroClase c){this.claseDelMetodoActual = c;}
 
     /*
     public void imprimirClases(){
@@ -232,6 +237,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
         for (RegistroClase clase : tablaClases.values()) {
             if (clase.getEsPredefinida()){
                 // consolidar los metodos de iterator a array (la implementa)
+                //if (clase.nombre.equals("ClaseArray"))
                 continue;
             }
             verificarDeclarada(clase);
@@ -327,6 +333,7 @@ public class TablaSimbolos implements ValidarDeclaracion{
                 atributohijo.setPos(atributohijo.getPos() + desplazamiento);
             }
             // agrego los atributos del padre al hijo
+            // agrego todos, aunque sean privados para el offset, en chequeo semantico verifico su acceso si es priv
             for (RegistroAtributo atributo : padre.getListaAtributos().values()) {
                 // si el atributo ya esta en la clase hija error, sino lo agrego
                 if (clase.getListaAtributos().containsKey(atributo.getNombre())) {
@@ -524,6 +531,11 @@ public class TablaSimbolos implements ValidarDeclaracion{
         claseIO.setEsPredefinida(true);
         this.tablaClases.put(claseIO.getNombre(), claseIO);
         // --------------------------------------------------------------------------------------
+
+        //CLASE ITERATOR Y CLASE ARRAY NO LAS CARGAMOS COMO PREDEFINIDAS, MANEJAMOS LOS METODOS
+        // QUE IMPLEMENTA ARRAY DE ITERATOR CUANDO LLEGA UNO, YA QUE PUEDEN RECIBIR LOS 3 TIPOS
+        // iNT, sTR O bOOL, POR LO TANTO NO PUEDO ARMAR EL METODO FIJO
+
         /*
         // Clase Iterator, es una interfaz que define los métodos necesarios para iterar sobre una colección de elementos.
         //RegistroClase iterator = crearRegClase("Iterator", "Object");
@@ -547,14 +559,14 @@ public class TablaSimbolos implements ValidarDeclaracion{
         // --------------------------------------------------------------------------------------
 
         // Clase Array, La clase arreglo proporciona listas de tamaño estático de elementos de tipos primitivos
-        RegistroClase claseArray = crearRegClase("Array", "Object");
+        //RegistroClase claseArray = crearRegClase("Array", "Object");
 
         // fn Int length(), length devuelve la longitud del parámetro self y los métodos de la interfaz Iterator
-        RegistroMetodo metodoLength = crearRegMetodo("length", false, new TipoPrimitivo("tInt"));
-        guardar(metodoLength, null, claseArray);
+        //RegistroMetodo metodoLength = crearRegMetodo("length", false, new TipoPrimitivo("tInt"));
+        //guardar(metodoLength, null, claseArray);
 
         //IMPLEMENTA LA INTERFAZ ITERATOR
-        claseArray.setHeredaDe("Iterator");
+        //claseArray.setHeredaDe("Iterator");
 
         // (hasNext() y next <type>()) para iterar sobre los elementos del arreglo.
 
@@ -574,9 +586,9 @@ public class TablaSimbolos implements ValidarDeclaracion{
         RegistroMetodo nextBool = crearRegMetodo("next_bool", false, new TipoPrimitivo("tBool"));
         guardar(nextBool, null, claseArray);*/
 
-        claseArray.setDeclarada(true);
-        claseArray.setEsPredefinida(true);
-        this.tablaClases.put(claseArray.getNombre(), claseArray);
+        //claseArray.setDeclarada(true);
+        //claseArray.setEsPredefinida(true);
+        //this.tablaClases.put(claseArray.getNombre(), claseArray);
 
         // --------------------------------------------------------------------------------------
         // Clase Int, La clase Int proporciona números enteros. No hay métodos especiales para Int.

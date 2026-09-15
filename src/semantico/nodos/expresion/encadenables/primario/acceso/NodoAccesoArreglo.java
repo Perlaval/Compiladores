@@ -52,12 +52,14 @@ public class NodoAccesoArreglo extends NodoAcceso{
         }
 
         //ATRIBUTO ----------------------------------------------------------------------------
-        RegistroAtributo atributo = claseActual.getListaAtributos().get(id);
-        if (atributo != null){
-            // verifico que sea de tipo Array
-            //Tipo tipo = atributo.getTipo();
-            return verificarArreglo(token, atributo.getTipo(), ts);
+        if (claseActual != null){
+            RegistroAtributo atributo = claseActual.getListaAtributos().get(id);
+            if (atributo != null){
+                // verifico que sea de tipo Array
+                //Tipo tipo = atributo.getTipo();
+                return verificarArreglo(token, atributo.getTipo(), ts);
 
+            }
         }
 
         // Puede estar en start
@@ -83,7 +85,7 @@ public class NodoAccesoArreglo extends NodoAcceso{
         if (!tipo.esTipoArreglo()){
             throw new ErrorSemantico(token, "El id '"+id.getLexema()+"' debe ser un Array y es de tipo "+tipo.getNombreTipo());
         }
-        // si es array veo la expresion debe ser de tipo int
+        // si es Array veo la expresion debe ser de tipo int
         Tipo tipoIndice = indice.chequear(ts);
 
         // si el indice no es int -> ERROR

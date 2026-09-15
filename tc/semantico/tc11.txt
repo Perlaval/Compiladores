@@ -24,7 +24,8 @@ impl Prueba{
     .(){
 
         Prueba h;
-        c = new Mundo(4, "hola");
+        //c = new Mundo("hola",4);
+        c = new Mundo(4, "hola"); // mundo tiene str y dsp int, por eso da null aca
         y = c.b; // Acceso correcto al atributo de la clase
         z = c.a; // Acceso incorrecto al atributo de la clase
         z = c.get_a(); // Acceso correcto al atributo de la clase
@@ -35,7 +36,7 @@ impl Prueba{
 
     }
     fn pruebaB(){
-        //self.claseB.llamarPrueba(); //CORREGIR: Se esperaba 'opIgual' y se encontro 'parAbre'
+        (self.claseB.llamarPrueba()); //CORREGIR: Se esperaba 'opIgual' y se encontro 'parAbre'
     }
 }
 
@@ -49,7 +50,7 @@ impl B{
          j = l.y; //No deberia dejar pq y es un atributo privado de l (clase Prueba)
     }
     fn llamarPrueba(){
-        self.l.pruebaB();
+        (self.l.pruebaB());
     }
 }
 

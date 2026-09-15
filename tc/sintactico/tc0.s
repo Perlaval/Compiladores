@@ -1,13 +1,15 @@
-class Calculadora {
+class Calculadora  {
     Int resultado;
     Bool estado;
+    Str palabra;
 
 }
 
 impl Calculadora {
-    .(Int x) {
+    .() {
         resultado = 0;
         estado = true;  // aca me devuelve error, arreglarlo
+        palabra = "hola";
     }
 
     fn Int calcular(Int x, Int y, Bool t) {
@@ -27,6 +29,8 @@ impl Calculadora {
 
 start {
     Calculadora c;
+    Str l;
+    l = "Holas";
     c = new Calculadora();
     //(IO.out_int(c.calcular(10, 5))); // aca larga error, hay que analizar y resolver start
 

@@ -269,9 +269,13 @@ public class ParserDeclaraciones {
         boolean estatico = formaMetodoOpt(); // true = estatico, false = no estatico
         parser.match("prFn");
         // si el tipo de retorno es vacio es porque es void
+        //System.out.println("Voy a tipo metodo con: "+parser.token().getTipo());
         Tipo tipo = tipoMetodoOpt(); // va a guardar en la ts el tipo de retorno de la funcion
+        // sie s void tengo que hacerle match
+        //System.out.println("El tipo es: "+tipo.getNombreTipo());
         // aca es donde guardo el metodo con forma, tipo nombre
         Token tMetodo = parser.token();
+        //System.out.println("Lei void y ahora tengo: "+tMetodo.getLexema());
         if (parser.token().getTipo().equals("idMetVar")){
 
             if (!parser.ts().validarNombre(ValidarDeclaracion.Definicion.METODO, parser.token().getLexema())){
@@ -290,6 +294,7 @@ public class ParserDeclaraciones {
             metodo.setTokenMetodo(tMetodo);
             parser.match("idMetVar");
             parser.ts().claseActual.listaMetodos.put(metodo.getNombre(), metodo);
+
             // seteo el metodo actual para los parametros y varlocales
             parser.ts().metodoActual = metodo;
             //System.out.println("Metodo: "+metodo.getNombre());
@@ -334,9 +339,11 @@ public class ParserDeclaraciones {
     //------------------------------------------------------------------------------------------------------------------
     private Tipo tipoMetodoOpt() throws ErrorSintactico, ErrorLexico {
         // si el tokoen esta en los primeros de tipoMetodo entro
-        if (parser.esPrimeroTipoMetodo(parser.token())){
+        if (parser.esPrimeroTipoMetodo(parser.token()) || parser.token().getLexema().equals("void")){
             return tipoMetodo();
         }
+        // puede no ser explicito y no estar la palabra void
+        // si no puse nada es de tipo void, pero no matcheo nada
         return new TipoVoid();
     }
 
@@ -355,7 +362,7 @@ public class ParserDeclaraciones {
             return tipo();
         }*/
         else {
-            parser.match("prVoid");
+            parser.match("idMetVar"); // si vino aca ya verifico antes que el lexema es void, y lo matcheo
             return new TipoVoid();
         }
 
@@ -367,7 +374,6 @@ public class ParserDeclaraciones {
     //------------------------------------------------------------------------------------------------------------------
     private Tipo tipo() throws ErrorSintactico, ErrorLexico {
         // si lo que viene esta en los primeros de tipo primitivo entro ahi
-        Tipo tipo = null;
         if (parser.esPrimeroTipoPrimitivo(parser.token())){
             return tipoPrimitivo();
         }
@@ -384,7 +390,7 @@ public class ParserDeclaraciones {
                 }
             }
         }
-        return tipo;
+        return null;
     }
 
     //------------------------------------------------------------------------------------------------------------------
@@ -653,6 +659,8 @@ public class ParserDeclaraciones {
                         atributo = parser.ts().crearRegAtributo(parser.token().getLexema(), tipo, vis);
                         atributo.setPos(parser.ts().claseActual.getProxPosAtributo());
                         atributo.setTokenAtributo(parser.token()); // le seteo el token para luego lanzar bien errores
+                        // seteo quien la declara para luego el chequeo de pub y priv
+                        atributo.setClaseDeclaradora(parser.ts().claseActual);
                         parser.ts().claseActual.listaAtributos.put(atributo.getNombre(), atributo);
                         listaDec.add(new NodoAtributo(parser.token()));
                     }

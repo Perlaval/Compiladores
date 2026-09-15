@@ -4,6 +4,7 @@ class Motor {
 
 impl Motor {
     .() {
+        Motor m; // esto es correcto, sintactica y semanticamente
         self.potencia = 100;
     }
 
@@ -26,6 +27,10 @@ impl Auto {
 
     fn Int obtenerPotencia(Int x) {
         ret self.motor.getPotencia(); // verificar que los parametros coincidan con el metodo originl
+    }
+
+    fn Int obtenerPotencia2() {
+        ret self.motor.potencia; // deberia fallar: potencia es privado y claseActual es Auto, no Motor
     }
 }
 

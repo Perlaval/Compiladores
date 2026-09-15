@@ -6,7 +6,6 @@ import semantico.TablaSimbolos;
 import semantico.nodos.expresion.encadenables.primario.NodoPrimario;
 import semantico.registros.RegistroClase;
 import semantico.registros.RegistroMetodo;
-import semantico.registros.RegistroParametro;
 import semantico.tipos.Tipo;
 
 public class NodoLlamadaMetodoEstatico extends NodoPrimario {
@@ -43,30 +42,14 @@ public class NodoLlamadaMetodoEstatico extends NodoPrimario {
         }
 
         // si es estatico verifio parametros y arg (al igual que con llamadametodo)
-        if (metodoActual.getListaParametros().size() != nodoLL.getListaArg().size()) {
-            throw new ErrorSemantico(token, "La cantidad de parametros recibidos no coincide con los esperados");
-        }
-        // si si coincide verifico uno por uno que tengan el mismo tipo
-        // param[0] == listaArg[0]
-        int i = 0;
-        for (RegistroParametro parametro : metodoActual.getListaParametros().values()) {
-            // obtengo el tipo de ese parametro
-            Tipo tipoParam = parametro.getTipo();
-            Tipo tipoArgActual = nodoLL.getListaArg().get(i).chequear(ts);
-
-            if (!tipoParam.getNombreTipo().equals(tipoArgActual.getNombreTipo())) {
-                throw new ErrorSemantico(token, "En los parametros se esperaba un tipo: " + tipoParam.getNombreTipo() +
-                        " y se obtuvo: " + tipoArgActual.getNombreTipo());
-            }
-            i++;
-        }
+        verificarParametrosMetodo(ts, metodoActual, nodoLL.getListaArg(), metodo);
 
         // la funcion continuar cadena se encuentra en NodoEncadenable
         return continuarCadena(ts, metodoActual.getTipoRetorno());
     }
 
-    public NodoLlamadaMetodo getNodoLL() {
+    /*public NodoLlamadaMetodo getNodoLL() {
         return nodoLL;
-    }
+    }*/
 
 }

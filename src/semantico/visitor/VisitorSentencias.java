@@ -15,6 +15,7 @@ import semantico.nodos.programa.NodoStart;
 import semantico.nodos.sentencia.*;
 import semantico.registros.RegistroMetodo;
 import semantico.tipos.Tipo;
+import semantico.tipos.TipoArreglo;
 
 public class VisitorSentencias implements Visitor{
 
@@ -47,7 +48,7 @@ public class VisitorSentencias implements Visitor{
         //System.out.println("Chequeo start");
         //ts.setClaseActual(null);
         //ts.setMetodoActual(ts.getMetodoActual());
-        System.out.println("Metodo actual en start ?? " +ts.getMetodoActual());
+        //System.out.println("Metodo actual en start ?? " +ts.getMetodoActual());
         //System.out.println("Clase actual en start ?? "+ts.getClaseActual().nombre);
 
         ts.setMetodoActual(ts.getMetodoActual());
@@ -80,11 +81,10 @@ public class VisitorSentencias implements Visitor{
 
     @Override
     public void visit(NodoMetodo nodo) throws ErrorSemantico {
-        if (!nodo.getMetodoActual().isConstructor()){
-            //System.out.println("retorno: "+metodoActual.getTipoRetorno().getNombreTipo());
-        }
-        //System.out.println("retorno: "+metodoActual.getTipoRetorno().getNombreTipo());
         ts.setMetodoActual(nodo.getMetodoActual());
+
+        // seteo quien ejecuta el metodo para verificar la visibilidad de los atributos
+        ts.setClaseDelMetodoActual(ts.claseActual);
 
         nodo.getNodoBloqueMetodo().accept(this);
     }
@@ -109,16 +109,61 @@ public class VisitorSentencias implements Visitor{
     @Override
     public void visit(NodoAsignacion nodo) throws ErrorSemantico {
 
-        //System.out.println("En nodo asignacion, tipo acceso");
-        Tipo tipoAcceso = nodo.getNodoAcceso().chequear(ts);
+        // acceso = expresion
 
+        Tipo tipoAcceso = nodo.getNodoAcceso().chequear(ts);
         Tipo tipoExpresion = nodo.getNodoExpresion().chequear(ts);
 
-        if (!tipoAcceso.equals(tipoExpresion)) throw new ErrorSemantico(nodo.getToken(), "Error Semantico, tipos incompatibles en la asignación. "
+        if (tipoAcceso.esTipoArreglo()) {
+            // el lado izquierdo es un arreglo: el derecho también tiene que serlo
+            if (!tipoExpresion.esTipoArreglo()) {
+                throw new ErrorSemantico(nodo.getToken(), "Tipos incompatibles en la asignación. "
+                        + "Se esperaba un valor de tipo " + tipoAcceso.getNombreTipo()
+                        + " pero se obtuvo un valor de tipo " + tipoExpresion.getNombreTipo());
+            }
+
+            TipoArreglo arrAcceso = (TipoArreglo) tipoAcceso;
+            TipoArreglo arrExpresion = (TipoArreglo) tipoExpresion;
+
+            // comparo el tipo interno de ambos arreglos
+            Tipo internoAcceso = arrAcceso.getTipoInterno();
+            Tipo internoExpresion = arrExpresion.getTipoInterno();
+
+            if (!internoAcceso.getNombreTipo().equals(internoExpresion.getNombreTipo())) {
+                throw new ErrorSemantico(nodo.getToken(), "Tipos incompatibles en la asignación. "
+                        + "Se esperaba un arreglo de tipo " + internoAcceso.getNombreTipo()
+                        + " pero se obtuvo un arreglo de tipo " + internoExpresion.getNombreTipo());
+            }
+
+        } else {
+            // caso normal, ninguno de los dos es arreglo
+            if (!tipoAcceso.getNombreTipo().equals(tipoExpresion.getNombreTipo())) {
+                throw new ErrorSemantico(nodo.getToken(), "Tipos incompatibles en la asignación. "
+                        + "Se esperaba un valor de tipo " + tipoAcceso.getNombreTipo()
+                        + " pero se obtuvo un valor de tipo " + tipoExpresion.getNombreTipo());
+            }
+        }
+
+        /*
+        //System.out.println("En nodo asignacion, tipo acceso");
+        Tipo tipoAcceso = nodo.getNodoAcceso().chequear(ts);
+        // si tipo acceso es de tipo arreglo veo el tipo interno
+        if (tipoAcceso.esTipoArreglo()){
+            TipoArreglo tipoArr = (TipoArreglo) tipoAcceso;
+            Tipo tipoInterno = tipoArr.getTipoInterno();
+        }
+
+        Tipo tipoExpresion = nodo.getNodoExpresion().chequear(ts);
+        System.out.println("Tipo expresion: "+tipoExpresion.getNombreTipo());
+
+        if (!tipoAcceso.getNombreTipo().equals(tipoExpresion.getNombreTipo())) throw new ErrorSemantico(nodo.getToken(), "Tipos incompatibles en la asignación. "
                 + "Se esperaba un valor de tipo "
                 + tipoAcceso.getNombreTipo()
                 + " pero se obtuvo un valor de tipo "
                 + tipoExpresion.getNombreTipo());
+
+
+         */
     }
 
     @Override
@@ -206,8 +251,9 @@ public class VisitorSentencias implements Visitor{
     @Override
     public void visit(NodoWhile nodo) throws ErrorSemantico {
         Tipo tipoCond = nodo.getNodoExpresion().chequear(ts);
-        if (!tipoCond.equals("tBool"))
+        if (!tipoCond.getNombreTipo().equals("tBool")) {
             throw new ErrorSemantico(nodo.getNodoExpresion().getToken(), "La condicion debe ser de tipo bool");
+        }
         nodo.getNodoSentencia().accept(this);
 
     }
