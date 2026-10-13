@@ -25,6 +25,10 @@ impl Auto {
 
     //self.motor.potencia = 3;
 
+    fn Int metodo(Motoor m){
+        ret 2;
+    }
+
     fn Int obtenerPotencia(Int x) {
         ret self.motor.getPotencia(); // verificar que los parametros coincidan con el metodo originl
     }
