@@ -53,6 +53,12 @@ impl B{
     }
 }
 
+
+
+impl P{
+    .(){}
+}
+
 start{
     //h = new Prueba(); //CORREGIR: Id: 'h' no declarado en la clase: Prueba
     //Prueba h; // CORREGIR: Se esperaba 'llaveCierra' y se encontro 'idClass' |
@@ -64,6 +70,7 @@ start{
     Int a; //what: Se esperaba 'llaveCierra' y se encontro 'tInt' -> este error es porque la disposicion de la declaracion es incorrecta: o sea las declaraciones van antes de las sentencias ((IO.out_str("hola mundo")); a_Mundo = h.c.a;) SIEMPRE.
     Str c;
     Str b;
+    Iterator x; //CORREGIR: La clase: 'Iterator' nunca fue definida
     /*Fibonacci fib; //2. MEJORAR: La clase: 'Fibonacci' nunca fue definida
     Int n;
     fib = new Fibonacci();
