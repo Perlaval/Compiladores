@@ -6,8 +6,9 @@ import semantico.TablaSimbolos;
 import semantico.nodos.expresion.NodoExpresion;
 import semantico.registros.RegistroClase;
 import semantico.registros.RegistroMetodo;
-import semantico.registros.RegistroParametro;
 import semantico.tipos.Tipo;
+import semantico.tipos.TipoArreglo;
+import semantico.tipos.TipoPrimitivo;
 
 import java.util.ArrayList;
 
@@ -54,28 +55,42 @@ public class NodoLlamadaMetodo extends NodoAcceso {
         // la cant de parametros debe ser igual a la lista de argumentos actuales que recibo
         //System.out.println("Cantidad de aprametros del metodo: " + metodoActual.getListaParametros().size());
         //System.out.println("La lista de argumentos actuales es: " + listaArg.size());
-
-        if (metodoActual.getListaParametros().size() != listaArg.size()) {
-            throw new ErrorSemantico(token, "La cantidad de parametros recibidos no coincide con los esperados");
-        }
-        // si si coincide verifico uno por uno que tengan el mismo tipo
-        // param[0] == listaArg[0]
-        int i = 0;
-        for (RegistroParametro parametro : metodoActual.getListaParametros().values()) {
-            // obtengo el tipo de ese parametro
-            Tipo tipoParam = parametro.getTipo();
-            Tipo tipoArgActual = listaArg.get(i).chequear(ts);
-
-            if (!tipoParam.getNombreTipo().equals(tipoArgActual.getNombreTipo())) {
-                throw new ErrorSemantico(token, "En los parametros de llamada al método "+ nombreMetodo + " se esperaba un tipo: " + tipoParam.getNombreTipo() +
-                        " y se obtuvo: " + tipoArgActual.getNombreTipo());
-            }
-            i++;
-        }
+        verificarParametrosMetodo(ts, metodoActual, listaArg, nombreMetodo);
 
         // veo si tiene encadenado en la funcion continuar cadena, si es asi avanzo hasta llegar a un tipo primitivo
         // la funcion continuar cadena se encuentra en NodoEncadenable
         return continuarCadena(ts, metodoActual.getTipoRetorno());
     }
 
+    // lo llamo desde nodoEncadenable
+    public Tipo tipoMetodoArray(TablaSimbolos ts, TipoArreglo tipoArreglo) throws ErrorSemantico {
+        String nombreMetodo = token.getLexema();
+        Tipo tipoRetorno;
+
+        switch (nombreMetodo){
+            case "hasNext":
+                if (!listaArg.isEmpty()){
+                    throw new ErrorSemantico(token, "El metodo hasNext() no recibe parametros");
+                }
+                tipoRetorno = new TipoPrimitivo("tBool");
+                break;
+
+            case "next": // PUEDE SER INT STR O BOOL
+                if (!listaArg.isEmpty()){
+                    throw new ErrorSemantico(token, "El metodo next() no recibe parametros");
+                }
+                tipoRetorno = tipoArreglo.getTipoInterno();
+                break;
+            case "length":
+                if (!listaArg.isEmpty()){
+                    throw new ErrorSemantico(token, "El metodo length() no recibe parametros");
+                }
+                tipoRetorno = new TipoPrimitivo("tInt");
+                break;
+            default:
+                throw new ErrorSemantico(token, "La clase Array no posee el metodo: "+nombreMetodo);
+        }
+
+        return continuarCadena(ts, tipoRetorno);
+    }
 }

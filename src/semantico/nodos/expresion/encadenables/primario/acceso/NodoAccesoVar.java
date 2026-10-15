@@ -74,7 +74,17 @@ public class NodoAccesoVar extends NodoAcceso{
         // sino puede ser un atributo
         //ATRIBUTO ----------------------------------------------------------------------------
         RegistroAtributo atributo = claseActual.getListaAtributos().get(id);
+        // si el atributo es visibilidad false entonces es privado, y verifico el acceso
+        // si es priv, debo verificar que la clase actual sea la clase que lo declaro
+        // y no alguna clase hija, porque ahi no tendria permiso
+
+        // SOLUCIONAR ESTO NO FUNCIONA
+        //System.out.println("Es atributo: "+atributo.visibilidad);
         if (atributo != null){
+            if (!atributo.visibilidad && !atributo.getClaseDeclaradora().equals(ts.getClaseDelMetodoActual())){ // falso = priv
+                // es privada y quiero acceder desde otra clase, no la que la declare
+                throw new ErrorSemantico(token, "El atributo '"+atributo.nombre+"' es privado, solo se puede acceder desde la clase '"+atributo.getClaseDeclaradora().getNombre()+"'");
+            }
             return continuarCadena(ts,atributo.getTipo());
         }
 

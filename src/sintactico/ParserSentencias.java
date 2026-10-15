@@ -201,7 +201,7 @@ public class ParserSentencias {
     //------------------------------------------------------------------------------------------------------------
     private NodoAsignacion asignacion() throws ErrorSintactico, ErrorLexico, ErrorSemantico {
         // si esta en los primeros de acceso var simple entro
-        // Prim(AccesoVarSimple) = {id}
+        // Prim(FSimple) = {id}
         if (parser.token().getTipo().equals("idMetVar")){
             NodoAcceso nodoAccesoVarSimple = parser.getParserExpresiones().accesoVarSimple(); //NODO IZQ
             Token tAsig = parser.token();

@@ -11,9 +11,12 @@ public class RegistroAtributo extends RegistroVariable {
 
     private Token tokenAtributo;
 
+    private RegistroClase claseDeclaradora; // para manejo de pub y priv en semantico
+
     public void setVisibilidad(boolean vis) {
         this.visibilidad = vis;
     }
+    public void setClaseDeclaradora(RegistroClase claseDeclaradora){ this.claseDeclaradora = claseDeclaradora;}
 
     public RegistroAtributo(String nombre) {
         super(nombre);
@@ -26,6 +29,7 @@ public class RegistroAtributo extends RegistroVariable {
     public Token getTokenAtributo(){
         return this.tokenAtributo;
     }
+    public RegistroClase getClaseDeclaradora(){ return this.claseDeclaradora;}
 
 
     @Override
